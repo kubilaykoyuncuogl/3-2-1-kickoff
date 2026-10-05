@@ -1,5 +1,7 @@
 # Ekran akışı (taslak: 2026-10-05, Kubilay'ın önerisi + notlar)
 
+Önizleme (telefon çerçeveleri + geçiş demosu): `docs/screens-preview.html` · https://claude.ai/artifact/WMQ8tLym8b9hKbRi763T4B
+
 İlke: **her oyuncu kendi ekranında üsttedir**, rakip alttadır. Sunucu için A/B; istemci kendini her zaman üste çizer. Sebep: klavye alttan açılır, kendi alanı ve yazı kutusu klavyenin üstünde kalmalı.
 
 Portre kilitli. Masaüstü/web'de aynı düzen, sadece klavye yok.

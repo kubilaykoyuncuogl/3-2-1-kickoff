@@ -1,0 +1,312 @@
+<title>Kickoff Screen Flow</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&display=swap">
+<style>
+/* Layout: intro, then phone frames in rows (multi flow, single flow), each frame a static mock; one frame plays the panel-merge transition */
+:root{
+  --bg:#F2F2F5;--surface:#FFFFFF;--fg:#1B1A21;--muted:#5F5D6B;--line:#DCDBE3;
+  --v-fill:#5E4BC9;--v-ink:#4A3AAE;--v-soft:#E9E5FA;--v-on:#FFFFFF;
+  --a-fill:#E9A23B;--a-ink:#9A6207;--a-soft:#FBEFD8;--a-on:#1B1A21;
+  --ok:#167A52;--ok-soft:#DCF3E8;--no:#C2334F;--no-soft:#FBE1E7;
+  --font:"Sora",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#131218;--surface:#1C1B23;--fg:#ECEBF2;--muted:#A09EAD;--line:#2E2D38;
+  --v-fill:#8C7CF0;--v-ink:#B3A7FF;--v-soft:#272443;--v-on:#131218;
+  --a-fill:#F0B45A;--a-ink:#F4C77A;--a-soft:#3A2D14;--a-on:#131218;
+  --ok:#4FCF93;--ok-soft:#163528;--no:#FF7D96;--no-soft:#3C1B25;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#131218;--surface:#1C1B23;--fg:#ECEBF2;--muted:#A09EAD;--line:#2E2D38;
+  --v-fill:#8C7CF0;--v-ink:#B3A7FF;--v-soft:#272443;--v-on:#131218;
+  --a-fill:#F0B45A;--a-ink:#F4C77A;--a-soft:#3A2D14;--a-on:#131218;
+  --ok:#4FCF93;--ok-soft:#163528;--no:#FF7D96;--no-soft:#3C1B25;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);padding-inline:16px;padding-block:28px 56px;line-height:1.45;font-size:14px}
+main{max-width:1100px;margin:0 auto;display:grid;gap:36px}
+h1{font-size:clamp(26px,5vw,38px);font-weight:800;margin:0;line-height:1.05;letter-spacing:-.02em;text-wrap:balance}
+h2{font-size:18px;font-weight:700;margin:0}
+p{margin:0;max-width:62ch;color:var(--muted)}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.lean{display:inline-block;transform:skewX(-3deg);transform-origin:left bottom}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.controls button{font:inherit;font-weight:600;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+button:focus-visible{outline:2px solid var(--v-ink);outline-offset:2px}
+section{display:grid;gap:14px}
+.flow{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.step{display:grid;gap:8px;min-width:0}
+.cap{display:grid;gap:2px}
+.cap b{font-size:13px;font-weight:700}
+.cap span{font-size:12px;color:var(--muted)}
+.arrow{font-size:11px;color:var(--v-ink);font-weight:600;letter-spacing:.06em}
+
+/* phone */
+.phone{background:var(--surface);border:1px solid var(--line);border-radius:26px;aspect-ratio:9/18.5;max-width:100%;padding:14px 12px;display:flex;flex-direction:column;gap:9px;position:relative;overflow:hidden;font-variant-numeric:tabular-nums}
+.phone:before{content:"";width:64px;height:5px;border-radius:999px;background:var(--line);margin:0 auto 2px}
+.wm{font-weight:800;font-size:30px;line-height:.95;letter-spacing:-.03em}
+.wm small{display:block;font-size:12px;letter-spacing:.22em;font-weight:700;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:600;background:var(--v-soft);color:var(--v-ink)}
+.chip.a{background:var(--a-soft);color:var(--a-ink)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.no{background:var(--no-soft);color:var(--no)}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.card{border:1px solid var(--line);border-radius:14px;padding:10px;display:grid;gap:4px}
+.card b{font-size:12px}
+.card small{font-size:11px;color:var(--muted)}
+.card.daily{background:var(--v-soft);border-color:transparent;color:var(--v-ink)}
+.card.daily small{color:inherit;opacity:.8}
+.btn{border-radius:14px;padding:12px;text-align:center;font-weight:800;font-size:14px;letter-spacing:-.01em}
+.btn.v{background:var(--v-fill);color:var(--v-on)}
+.btn.a{background:var(--a-fill);color:var(--a-on)}
+.btn.ghost{border:1.5px solid var(--line);color:var(--fg);font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.two .card{background:var(--a-soft);border-color:transparent;color:var(--a-ink)}
+.two .card small{color:inherit;opacity:.85}
+.links{margin-top:auto;display:flex;justify-content:center;gap:12px;font-size:10px;color:var(--muted);font-weight:600}
+.panel{border-radius:16px;padding:10px;display:grid;gap:4px;min-height:0}
+.panel small{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;opacity:.8}
+.panel strong{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.panel.v{background:var(--v-soft);color:var(--v-ink)}
+.panel.a{background:var(--a-soft);color:var(--a-ink)}
+.panel.grow{flex:1}
+.input{border:1.5px solid var(--line);border-radius:12px;padding:9px 10px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.input.v{border-color:var(--v-fill)}
+.input.locked{border-color:var(--no);background:var(--no-soft);color:var(--no)}
+.sug{display:grid;gap:4px;font-size:12px}
+.sug div{padding:6px 8px;border-radius:8px;background:var(--bg)}
+.sug div.dim{opacity:.4}
+.sug div.hi{background:var(--v-soft);color:var(--v-ink);font-weight:600}
+.bar{height:5px;border-radius:999px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:999px;background:var(--fg)}
+.bar.hot i{background:var(--no)}
+.tbar{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;color:var(--muted);font-weight:600}
+.tbar b{font-size:16px;color:var(--fg);font-weight:800}
+.tbar.hot b{color:var(--no)}
+.kb{margin-top:auto;background:var(--bg);border-radius:12px;height:34%;display:grid;place-items:center;font-size:10px;color:var(--muted);letter-spacing:.14em;font-weight:600}
+.strip{font-size:11px;color:var(--muted);display:flex;justify-content:space-between;padding:4px 2px}
+.strip b{color:var(--no);font-weight:600}
+.big{font-weight:800;font-size:48px;line-height:1;letter-spacing:-.04em;text-align:center}
+.score{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;text-align:center}
+.score .n{font-weight:800;font-size:26px;letter-spacing:-.02em}
+.center{display:grid;place-items:center;flex:1;gap:6px;text-align:center}
+.code{font-weight:800;font-size:40px;letter-spacing:.12em;line-height:1}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--a-fill);display:inline-block;margin-right:6px}
+.lives{display:flex;gap:3px;font-size:12px}
+.opt{border:1.5px solid var(--line);border-radius:12px;padding:10px;font-size:13px;font-weight:600;text-align:center}
+.opt.ok{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.opts{display:grid;gap:6px;flex:1;align-content:center}
+.lb{display:grid;gap:3px;font-size:11px}
+.lb div{display:flex;justify-content:space-between;padding:4px 6px;border-radius:6px}
+.lb div.me{background:var(--v-soft);color:var(--v-ink);font-weight:600}
+.faint{opacity:.55}
+
+/* merge demo */
+.demo{position:relative}
+.demo .pv,.demo .pa{position:absolute;left:12px;right:12px;height:42%;border-radius:16px;padding:10px;display:grid;gap:4px;align-content:start;transition:all .32s cubic-bezier(.2,.8,.2,1)}
+.demo .pv{top:30px;background:var(--v-soft);color:var(--v-ink)}
+.demo .pa{bottom:14px;background:var(--a-soft);color:var(--a-ink)}
+.demo .pv small,.demo .pa small{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;opacity:.8}
+.demo .pv strong,.demo .pa strong{font-size:16px;font-weight:800}
+.demo .num{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%) scale(1);text-align:center;font-weight:800;font-size:72px;letter-spacing:-.04em;line-height:1;opacity:0;transition:opacity .15s,transform .25s}
+.demo .num.show{opacity:1}
+.demo .num.pop{transform:translateY(-50%) scale(1.2)}
+.demo .round{position:absolute;left:12px;right:12px;top:30px;bottom:14px;display:flex;flex-direction:column;gap:9px;opacity:0;transition:opacity .26s}
+.demo.s-merge .pv{top:calc(50% - 42%)}
+.demo.s-merge .pa{bottom:calc(50% - 42%)}
+.demo.s-round .pv,.demo.s-round .pa{opacity:0;height:28px;top:30px;bottom:auto}
+.demo.s-round .pa{top:56px}
+.demo.s-round .round{opacity:1}
+.demo .play{position:absolute;left:50%;bottom:50%;transform:translate(-50%,50%);z-index:3;font:inherit;font-weight:700;font-size:12px;padding:8px 14px;border-radius:999px;border:0;background:var(--fg);color:var(--bg);cursor:pointer}
+.demo.s-merge .play,.demo.s-round .play,.demo.s-count .play{opacity:0;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.demo .pv,.demo .pa,.demo .num,.demo .round{transition:opacity .12s}}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+td:first-child{font-weight:600;white-space:nowrap}
+.tw{overflow-x:auto}
+</style>
+
+<main>
+<header style="display:grid;gap:10px">
+  <span class="eyebrow">3-2-1 Kickoff · ekran akışı · 2026-10-05</span>
+  <h1 class="lean">İki panel, bir oyun</h1>
+  <p>Her oyuncu kendi ekranında üsttedir, rakip alttadır. Bütün geçişler bu iki panelin hareketidir: ortaya gelirler, buluştukları çizgiye geri sayım ve skor yazılır, sonra tura yer açmak için küçülürler. Başka bir geçiş efekti yok.</p>
+  <div class="controls"><span class="eyebrow">Tema</span><button type="button" id="t-sys" aria-pressed="true">Sistem</button><button type="button" id="t-light" aria-pressed="false">Light</button><button type="button" id="t-dark" aria-pressed="false">Dark</button></div>
+</header>
+
+<section>
+  <h2>Ana menü ve lobi</h2>
+  <div class="flow">
+    <div class="step">
+      <div class="phone">
+        <div class="top"><div class="wm lean">3·2·1<small>KICKOFF</small></div><span class="chip">● kubi</span></div>
+        <div class="card daily"><small>BUGÜNÜN KOŞUSU · 5 EKİ</small><b>Blitz 23 soru · Klasik 7. basamak</b><small>Sıran #41 · 1.280 kişi oynadı</small></div>
+        <div class="btn v">ARKADAŞINLA OYNA ▸</div>
+        <div class="two"><div class="card"><b>KLASİK</b><small>merdiven · yaz</small></div><div class="card"><b>BLİTZ</b><small>5 isim · dokun</small></div></div>
+        <div class="links"><span>Tablo</span><span>Nasıl oynanır</span><span>Ayarlar</span></div>
+      </div>
+      <div class="cap"><b>Ana menü</b><span>Tek birincil aksiyon. Günlük kart sosyal kanca.</span></div>
+      <div class="arrow">→ sağdan kayar, 220 ms</div>
+    </div>
+    <div class="step">
+      <div class="phone">
+        <div class="top"><span class="chip">‹ Geri</span><b style="font-size:13px">Arkadaşınla oyna</b><span></span></div>
+        <div class="card" style="gap:8px"><b>ODA KUR</b><small>Kod oluşur, arkadaşına gönder</small><div class="btn v" style="padding:9px">Oda kur</div></div>
+        <div class="card" style="gap:8px"><b>KODA KATIL</b><div class="input" style="letter-spacing:.3em;font-weight:800;justify-content:center">7 3 _ _</div></div>
+        <div class="links"><span>Rastgele eşleş · yakında</span></div>
+      </div>
+      <div class="cap"><b>Lobi</b><span>İki kart, iki yol. Kod 4 hane, otomatik ilerler.</span></div>
+      <div class="arrow">→ oda kurulunca</div>
+    </div>
+    <div class="step">
+      <div class="phone">
+        <div class="panel v"><small>Sen</small><strong>kubi</strong></div>
+        <div class="center"><span class="eyebrow">Oda kodu</span><div class="code">7 3 4 1</div><div class="controls"><button type="button">Kopyala</button><button type="button">Paylaş</button></div></div>
+        <div class="panel a" style="opacity:.6"><small>Rakip</small><strong><span class="pulse"></span>Bekleniyor…</strong></div>
+      </div>
+      <div class="cap"><b>Bekleme</b><span>Rakip gelince alt panel yukarı kayarak adıyla dolar.</span></div>
+      <div class="arrow">→ 300 ms, takım seçimine</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Çok oyunculu maç</h2>
+  <div class="flow">
+    <div class="step">
+      <div class="phone">
+        <div class="panel v grow"><small>Sen · takımını seç</small><div class="input v" style="background:var(--surface);color:var(--fg)">Gala|</div>
+          <div class="sug"><div class="hi">Galatasaray</div><div>Galatasaray (K)</div><div class="dim">Gaziantep FK · kullanıldı</div></div>
+          <small style="text-transform:none;letter-spacing:0;opacity:.9">Favoriler: Fenerbahçe · Beşiktaş · Inter</small></div>
+        <div class="panel a"><small>Rakip · arda</small><strong>Düşünüyor…</strong></div>
+      </div>
+      <div class="cap"><b>Takım seçimi</b><span>Süre yok. Kullanılmış takım soluk. Takım adı rakibe hazır deyince gider.</span></div>
+      <div class="arrow">→ ikisi hazır</div>
+    </div>
+    <div class="step">
+      <div class="phone demo" id="demo">
+        <div class="pv"><small>Sen</small><strong>Galatasaray</strong><span class="chip ok" style="justify-self:start">Hazır ✓</span></div>
+        <div class="num" id="num">3</div>
+        <div class="pa"><small>Rakip · arda</small><strong>Inter</strong><span class="chip ok" style="justify-self:start">Hazır ✓</span></div>
+        <div class="round">
+          <div class="tbar"><span>Galatasaray <span class="chip a" style="margin-left:4px">Inter</span></span><b>15</b></div>
+          <div class="bar"><i style="width:100%"></i></div>
+          <div class="input v">|</div>
+          <div class="sug"><div class="faint">yazmaya başla…</div></div>
+          <div class="kb">KLAVYE</div>
+        </div>
+        <button type="button" class="play" id="play">Geçişi oynat ▸</button>
+      </div>
+      <div class="cap"><b>Geri sayım → tur</b><span>Paneller ortaya kayar, 3·2·1 birleşme çizgisinde. "1" bitince paneller chip'e küçülür, klavye açılır.</span></div>
+      <div class="arrow">320 ms + 3 × 1 s + 260 ms</div>
+    </div>
+    <div class="step">
+      <div class="phone">
+        <div class="tbar hot"><span><span class="chip">Galatasaray</span> <span class="chip a">Inter</span></span><b>4</b></div>
+        <div class="bar hot"><i style="width:27%"></i></div>
+        <div class="input v">Hak|</div>
+        <div class="sug"><div class="hi">Hakan Çalhanoğlu</div><div>Hakan Şükür</div><div>Hakan Balta</div></div>
+        <div class="strip"><span>Rakip: <b>Podolski ✗</b> ⏳ 3</span><span>2 : 1</span></div>
+        <div class="kb">KLAVYE</div>
+      </div>
+      <div class="cap"><b>Tur, son 5 sn</b><span>Öneriye dokunmak gönderir. Rakibin yanlışı isimle, klavyenin hemen üstünde.</span></div>
+      <div class="arrow">→ bilindi / süre bitti</div>
+    </div>
+    <div class="step">
+      <div class="phone">
+        <div class="panel v grow" style="align-content:end"><small>Sen</small><strong>Galatasaray</strong><span class="chip ok" style="justify-self:start">Hakan Çalhanoğlu ✓ +1</span></div>
+        <div class="score"><span class="chip">Sen</span><div class="n">3 : 1</div><span class="chip a">arda</span></div>
+        <div class="panel a grow"><small>Rakip · arda</small><strong>Inter</strong><small style="text-transform:none;letter-spacing:0">Olası: Şükür, Emre Belözoğlu, Muslera… +9</small></div>
+      </div>
+      <div class="cap"><b>Tur sonu</b><span>Chip'ler açılıp panele döner, skor sayarak güncellenir. 4 sn sonra takım seçimine.</span></div>
+      <div class="arrow">→ 3 puan</div>
+    </div>
+    <div class="step">
+      <div class="phone">
+        <div class="panel v" style="flex:1.5;align-content:center;text-align:center"><small>Kazandın</small><div class="big lean">3 : 1</div><small style="text-transform:none;letter-spacing:0">4 tur · 2 yanlış · 1 boş</small></div>
+        <div class="panel a" style="opacity:.7"><small>arda</small><strong>İyi oyundu</strong></div>
+        <div class="btn v">RÖVANŞ</div>
+        <div class="btn ghost">Ayrıl</div>
+      </div>
+      <div class="cap"><b>Maç sonu</b><span>Kazanan panel büyür, kaybeden küçülür. Konfeti yok, tek düdük.</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Tek oyunculu</h2>
+  <div class="flow">
+    <div class="step">
+      <div class="phone">
+        <div class="tbar"><span>BASAMAK 7 <span class="lives">⚽⚽<span class="faint">⚽</span></span></span><b>14</b></div>
+        <div class="bar"><i style="width:70%"></i></div>
+        <div style="display:flex;gap:6px"><span class="chip">Ajax</span><span class="chip a">Sevilla</span></div>
+        <div class="input v">Ber|</div>
+        <div class="sug"><div class="hi">Dennis Bergkamp</div><div>Bernard Lama</div><div>Bertrand Traoré</div></div>
+        <div class="strip"><span>Pas hakkı: 1</span><span>Puan 740</span></div>
+        <div class="kb">KLAVYE</div>
+      </div>
+      <div class="cap"><b>Klasik merdiven</b><span>Multi tur iskeleti, rakip şeridi yerine can ve puan.</span></div>
+    </div>
+    <div class="step">
+      <div class="phone">
+        <div class="tbar"><span>SORU 12 <span class="chip ok">×1.6</span></span><b>5</b></div>
+        <div class="bar"><i style="width:60%"></i></div>
+        <div style="display:flex;gap:6px;justify-content:center"><span class="chip">Beşiktaş</span><span class="chip a">Porto</span></div>
+        <div class="opts"><div class="opt">Ricardo Quaresma</div><div class="opt">Fabri</div><div class="opt">Pepe</div><div class="opt">Mario Gómez</div><div class="opt">Jackson Martínez</div></div>
+      </div>
+      <div class="cap"><b>Blitz</b><span>Klavye yok. 5 büyük hedef, 2'si A, 2'si B, 1'i ikisi. Yanlışta koşu biter.</span></div>
+    </div>
+    <div class="step">
+      <div class="phone">
+        <div class="panel v" style="text-align:center;align-content:center;padding:16px"><small>Blitz · bugün</small><div class="big lean">23</div><small style="text-transform:none;letter-spacing:0">soru · en iyi kombo ×2.0</small></div>
+        <div class="lb"><div><span>1 · ercan</span><span>41</span></div><div><span>2 · mert</span><span>38</span></div><div><span>3 · arda</span><span>30</span></div><div class="me"><span>41 · kubi</span><span>23</span></div></div>
+        <div class="btn a">TEKRAR</div>
+        <div class="btn ghost">Paylaş 🟩🟩🟩🟥</div>
+      </div>
+      <div class="cap"><b>Koşu sonu</b><span>Skor, sıralama, tekrar ve Wordle tarzı paylaşım.</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Geçiş tablosu</h2>
+  <div class="tw"><table>
+    <tr><th>Geçiş</th><th>Hareket</th><th>Süre</th></tr>
+    <tr><td>Menü → Lobi</td><td>sayfa sağdan kayar</td><td>220 ms</td></tr>
+    <tr><td>Rakip girdi</td><td>alt panel yukarı kayar</td><td>300 ms</td></tr>
+    <tr><td>Hazır → Geri sayım</td><td>paneller ortaya, 3·2·1 pop</td><td>320 ms + 3 × 1 s</td></tr>
+    <tr><td>"1" → Tur</td><td>paneller chip'e küçülür, klavye açılır</td><td>260 ms</td></tr>
+    <tr><td>Bilindi → Tur sonu</td><td>chip'ler panele açılır, skor sayar</td><td>300 + 400 ms</td></tr>
+    <tr><td>Tur sonu → Seçim</td><td>paneller tam konuma</td><td>300 ms</td></tr>
+    <tr><td>Yanlış tahmin</td><td>kutu 2× sallanır, kırmızı</td><td>240 ms</td></tr>
+    <tr><td>Azaltılmış hareket</td><td>hepsi çapraz geçiş</td><td>120 ms</td></tr>
+  </table></div>
+</section>
+</main>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  var btns={sys:document.getElementById('t-sys'),light:document.getElementById('t-light'),dark:document.getElementById('t-dark')};
+  function setTheme(t){if(t==='sys')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);for(var k in btns)btns[k].setAttribute('aria-pressed',String(k===t));try{localStorage.setItem('kickoff-theme',t)}catch(e){}}
+  for(var k in btns)(function(k){btns[k].addEventListener('click',function(){setTheme(k)})})(k);
+  var saved=null;try{saved=localStorage.getItem('kickoff-theme')}catch(e){}
+  if(saved&&btns[saved])setTheme(saved);
+
+  var demo=document.getElementById('demo'),num=document.getElementById('num'),play=document.getElementById('play'),busy=false;
+  function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
+  async function run(){
+    if(busy)return;busy=true;
+    demo.className='phone demo s-merge';
+    await wait(340);
+    demo.classList.add('s-count');
+    for(var i=3;i>=1;i--){num.textContent=i;num.className='num show pop';await wait(30);num.className='num show';await wait(970);}
+    num.className='num';
+    demo.className='phone demo s-round';
+    await wait(2600);
+    demo.className='phone demo';busy=false;
+  }
+  play.addEventListener('click',run);
+  demo.addEventListener('click',function(e){if(e.target!==play&&!busy)run()});
+})();
+</script>
