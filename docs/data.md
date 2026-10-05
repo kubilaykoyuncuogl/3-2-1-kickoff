@@ -49,3 +49,6 @@ python tools/encrypt_index.py --gen-key          # anahtar üret → .env
 KICKOFF_INDEX_KEY=... python tools/encrypt_index.py --in data/index/index.sqlite --out data/index/index.enc
 KICKOFF_INDEX_KEY=... uvicorn server.index_service:app --port 9081
 ```
+
+## Yerel test (2026-10-05)
+`./run_local.sh` → index servisi + Godot sunucu + web (http://localhost:8080). Bot rakip: `godot --headless --path game -- --bot veli --team inter --guess podolski --delay 12`. Tarayıcı notları: Godot web build'de ilk tıklama bazen canvas'a odak verir (ikinci tıklama gerekir); yazı kutusu web'de `grab_focus` ile her karede odakta tutulur.

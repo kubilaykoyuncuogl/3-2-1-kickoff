@@ -51,14 +51,14 @@ func _process(_dt: float) -> void:
 		var pen := maxi(0, lock_until - now)
 		if pen > 0: ac.set_locked(true, "Yanlış · %d" % ceili(pen / 1000.0))
 		elif ac.locked: ac.set_locked(false); ac.focus()
+		elif not ac.input.has_focus() and get_viewport().gui_get_focus_owner() == null: ac.focus()
 
 func _header(d: Dictionary) -> void:
 	var h := UI.hbox(8)
 	var left := UI.hbox(6); left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if mode == "ladder":
 		left.add_child(UI.eyebrow("Basamak %d" % (int(d.idx) + 1)))
-		var lives := ""; for i in 3: lives += "⚽" if i < int(d.lives) else "○"
-		left.add_child(UI.label(lives, 13, 600, "muted"))
+		left.add_child(UI.chip("Can %d" % int(d.lives), "no" if int(d.lives) <= 1 else "ok"))
 	else:
 		left.add_child(UI.eyebrow("Soru %d" % (int(d.idx) + 1)))
 		left.add_child(UI.chip("×%.1f" % float(d.combo), "ok"))
@@ -83,7 +83,7 @@ func _render_item(d: Dictionary) -> void:
 		body.add_child(ac); ac.call_deferred("focus")
 		strip = UI.label("", 12, 600, "muted"); body.add_child(strip)
 		var last: Dictionary = d.get("last", {})
-		if last.get("type", "") == "correct": strip.text = "%s ✓" % last.name
+		if last.get("type", "") == "correct": strip.text = "%s +1" % last.name
 		elif last.get("type", "") == "timeout": strip.text = "Süre doldu, 1 can gitti"
 		body.add_child(UI.label("Puan %d" % int(d.score), 13, 700))
 	else:

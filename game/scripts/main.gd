@@ -10,3 +10,5 @@ func _ready() -> void:
 	App.bind_root(self)
 	App.push(load("res://scripts/screens/menu.gd").new())
 	Game.error.connect(func(msg): print("[err] ", msg))
+	Net.connected.connect(func(): Game.c_hello())
+	Net.connect_to_server()

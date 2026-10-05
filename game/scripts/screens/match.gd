@@ -11,6 +11,8 @@ var countdown_label: Label
 var ac: Autocomplete
 var penalty_until := 0
 var strip: Label
+var opp_label: Label
+var pick_sig := ""
 
 func _ready() -> void:
 	body = UI.page(); add_child(body)
@@ -51,13 +53,14 @@ func _process(_dt: float) -> void:
 			var pen := maxi(0, penalty_until - now)
 			if pen > 0: ac.set_locked(true, "Yanlış · %d" % ceili(pen / 1000.0))
 			elif ac.locked: ac.set_locked(false); ac.focus()
+			elif not ac.input.has_focus() and get_viewport().gui_get_focus_owner() == null: ac.focus()
 	elif state == Game.State.COUNTDOWN and countdown_label:
 		countdown_label.text = str(maxi(1, ceili(rem / 1000.0)))
 
 # ---------- kurulum ----------
 func _render(d: Dictionary) -> void:
 	for ch in body.get_children(): ch.queue_free()
-	timer_label = null; timer_bar = null; countdown_label = null; ac = null; strip = null
+	timer_label = null; timer_bar = null; countdown_label = null; ac = null; strip = null; opp_label = null
 	match state:
 		Game.State.PICK_TEAMS: _render_pick(d)
 		Game.State.COUNTDOWN: _render_countdown(d)
@@ -68,12 +71,16 @@ func _render(d: Dictionary) -> void:
 
 func _update(d: Dictionary) -> void:
 	match state:
-		Game.State.PICK_TEAMS: _render(d)
+		Game.State.PICK_TEAMS:
+			var me := Game.me()
+			var sig := "%s|%s" % [me.get("team", 0), me.get("ready", false)]
+			if sig != pick_sig: _render(d)
+			elif opp_label: opp_label.text = _opp_pick_text(Game.opponent())
 		Game.State.ROUND:
 			var last: Dictionary = d.get("last", {})
 			if strip and last.get("type", "") == "wrong":
 				if int(last.pid) == multiplayer.get_unique_id(): strip.text = "Yanlış: %s" % last.name
-				else: strip.text = "Rakip: %s ✗  ⏳ %d" % [last.name, ceili(int(Game.opponent().get("penalty_ms", 0)) / 1000.0)]
+				else: strip.text = "Rakip: %s yanlış, %d sn kilitli" % [last.name, ceili(int(Game.opponent().get("penalty_ms", 0)) / 1000.0)]
 		Game.State.GAME_OVER: _render(d)
 
 func _side_panel(p: Dictionary, side: String, sub: Control = null) -> PanelContainer:
@@ -102,7 +109,7 @@ func _render_pick(d: Dictionary) -> void:
 	mv.add_child(UI.eyebrow("Sen · " + str(me.get("nick", "")), "violet_ink"))
 	if me.get("ready", false):
 		mv.add_child(UI.label(str(me.team_name), 24, 800, "violet_ink"))
-		var ch := UI.chip("Hazır ✓", "ok"); mv.add_child(ch)
+		var ch := UI.chip("Hazır", "ok"); mv.add_child(ch)
 		mv.add_child(UI.label("Rakip bekleniyor…", 12, 500, "violet_ink"))
 	else:
 		if me.get("team", 0) != 0:
@@ -120,12 +127,16 @@ func _render_pick(d: Dictionary) -> void:
 			ac.call_deferred("focus")
 	mine.add_child(mv); body.add_child(mine)
 	# alt: rakip
-	var opp_text := "Hazır ✓" if op.get("ready", false) else ("Seçti, hazır değil" if op.get("team", 0) != 0 else "Düşünüyor…")
+	var opp_text := "Hazır" if op.get("ready", false) else ("Seçti, hazır değil" if op.get("team", 0) != 0 else "Düşünüyor…")
 	var opp := UI.panel("amber"); var ov := UI.vbox(3)
 	ov.add_child(UI.eyebrow("Rakip · " + str(op.get("nick", "?")), "amber_ink"))
 	ov.add_child(UI.label(str(op.team_name) if op.get("ready", false) else opp_text, 22, 800, "amber_ink"))
 	opp.add_child(ov); body.add_child(opp)
 	strip = UI.label("", 12, 600, "no"); body.add_child(strip)
+
+func _opp_pick_text(op: Dictionary) -> String:
+	if op.get("ready", false): return str(op.get("team_name", "")) + "  ·  hazır"
+	return "Seçti, hazır değil" if op.get("team", 0) != 0 else "Düşünüyor…"
 
 func _show_picker() -> void:
 	pass  # pick_team(0) sunucudan boş takım döner → _update → _render
@@ -165,13 +176,13 @@ func _render_round_end(d: Dictionary) -> void:
 	var last: Dictionary = d.get("last", {})
 	var i_won: bool = last.get("type", "") == "correct" and int(last.get("pid", 0)) == multiplayer.get_unique_id()
 	var they_won: bool = last.get("type", "") == "correct" and not i_won
-	var mine_sub: Control = UI.chip("%s ✓ +1" % last.get("name", ""), "ok") if i_won else null
+	var mine_sub: Control = UI.chip("%s +1" % last.get("name", ""), "ok") if i_won else null
 	var top := _side_panel(me, "violet", mine_sub); top.size_flags_vertical = Control.SIZE_EXPAND_FILL; body.add_child(top)
 	body.add_child(_score_row(d))
 	var note: String
 	if last.get("no_common", false): note = "Bu iki takımın ortak oyuncusu yok"
 	elif last.get("type", "") == "timeout": note = "Kimse bilemedi"
-	elif they_won: note = "%s ✓" % last.get("name", "")
+	elif they_won: note = "%s bildi" % last.get("name", "")
 	else: note = ""
 	var ans: Array = d.get("answers", []); var total: int = d.get("answers_total", 0)
 	var ans_text := ""
@@ -202,6 +213,6 @@ func _render_over(d: Dictionary) -> void:
 	bv.add_child(UI.label("Rövanş istiyor" if op.get("rematch", false) else "İyi oyundu", 20, 800, "amber_ink"))
 	bot.add_child(bv); body.add_child(bot)
 	if last.get("type", "") != "left":
-		var rv := UI.button("Rövanş" + (" ✓" if me.get("rematch", false) else ""), "violet"); rv.disabled = me.get("rematch", false)
+		var rv := UI.button("Rövanş" + (" (bekliyor)" if me.get("rematch", false) else ""), "violet"); rv.disabled = me.get("rematch", false)
 		rv.pressed.connect(func(): Game.c_rematch()); body.add_child(rv)
 	var leave := UI.button("Ayrıl", "ghost"); leave.pressed.connect(func(): Game.c_leave(); App.pop()); body.add_child(leave)

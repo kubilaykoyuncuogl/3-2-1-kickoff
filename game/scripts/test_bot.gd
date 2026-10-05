@@ -2,12 +2,12 @@ extends Node
 ## Uçtan uca test botu: `godot --headless --path game -- --bot ali --team galatasaray --guess sneijder`
 ## Ara ile eşleşir, takım seçer, hazır der, turda tahmin eder. Durumları stdout'a yazar.
 var nick := "bot"; var team_q := "galatasaray"; var guess_q := "sneijder"
-var picked := false; var guessed := false; var single_mode := ""
+var picked := false; var guessed := false; var single_mode := ""; var delay := 0.0
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	print("[bot] start args=", args, " url=", Net.server_url)
-	nick = _arg(args, "--bot", nick); team_q = _arg(args, "--team", team_q); guess_q = _arg(args, "--guess", guess_q); single_mode = _arg(args, "--single", "")
+	nick = _arg(args, "--bot", nick); team_q = _arg(args, "--team", team_q); guess_q = _arg(args, "--guess", guess_q); single_mode = _arg(args, "--single", ""); delay = float(_arg(args, "--delay", "0"))
 	App.nickname = nick; App.device_id = "dev-" + nick
 	Game.room_changed.connect(_on_room); Game.suggestions.connect(_on_sugg); Game.error.connect(func(m): print("[%s] ERR %s" % [nick, m]))
 	Game.single_changed.connect(_on_single)
@@ -30,7 +30,9 @@ func _on_room(d: Dictionary) -> void:
 	elif st == Game.State.PICK_TEAMS and Game.me().get("team", 0) != 0 and not Game.me().get("ready", false):
 		Game.c_ready()
 	elif st == Game.State.ROUND and not guessed:
-		guessed = true; Game.c_suggest("player", guess_q)
+		guessed = true
+		if delay > 0: await get_tree().create_timer(delay).timeout
+		if int(Game.room.get("state", -1)) == Game.State.ROUND: Game.c_suggest("player", guess_q)
 	elif st == Game.State.ROUND_END:
 		picked = false; guessed = false
 		print("[%s] answers=%s total=%s" % [nick, d.get("answers", []), d.get("answers_total", 0)])

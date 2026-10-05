@@ -13,11 +13,16 @@ func _ready() -> void:
 	body = UI.vbox(12); body.size_flags_vertical = Control.SIZE_EXPAND_FILL; v.add_child(body)
 	Game.room_changed.connect(_on_room)
 	Game.error.connect(_on_error)
+	Game.profile_changed.connect(_on_profile)
 	Net.connected.connect(_on_connected); Net.connect_failed.connect(_on_failed); Net.disconnected.connect(_on_failed)
 	if not Net.is_connected_to_server(): Net.connect_to_server()
 	_render()
 
+func _on_profile(_d: Dictionary) -> void:
+	if mode == "menu": _render()
+
 func _exit_tree() -> void:
+	if Game.profile_changed.is_connected(_on_profile): Game.profile_changed.disconnect(_on_profile)
 	if Game.room_changed.is_connected(_on_room): Game.room_changed.disconnect(_on_room)
 	if Game.error.is_connected(_on_error): Game.error.disconnect(_on_error)
 
@@ -67,7 +72,7 @@ func _render_menu() -> void:
 	var e := UI.label(str(App.elo), 32, 800); h.add_child(n); h.add_child(e); cv.add_child(h)
 	cv.add_child(UI.label("Elo · satranç gibi, yalnızca Ara maçları işler", 11, 500, "muted"))
 	card.add_child(cv); body.add_child(card)
-	var ara := UI.button("Ara", "violet", "▸")
+	var ara := UI.button("Ara", "violet", ">")
 	ara.disabled = not Net.is_connected_to_server()
 	ara.pressed.connect(func(): _since = Time.get_ticks_msec(); Game.c_find_match())
 	body.add_child(ara)
@@ -105,7 +110,7 @@ func _render_room() -> void:
 	copy.pressed.connect(func(): DisplayServer.clipboard_set(str(d.get("code", ""))); copy.text = "KOPYALANDI")
 	h.add_child(copy); body.add_child(h)
 	body.add_child(UI.spacer())
-	var op := UI.panel("amber"); op.modulate.a = 0.65; var ov := UI.vbox(2); ov.add_child(UI.eyebrow("Rakip", "amber_ink")); ov.add_child(UI.label("● Bekleniyor…", 20, 800, "amber_ink")); op.add_child(ov)
+	var op := UI.panel("amber"); op.modulate.a = 0.65; var ov := UI.vbox(2); ov.add_child(UI.eyebrow("Rakip", "amber_ink")); ov.add_child(UI.label("Bekleniyor…", 20, 800, "amber_ink")); op.add_child(ov)
 	body.add_child(op)
 	status = UI.label("", 12, 600, "no"); body.add_child(status)
 

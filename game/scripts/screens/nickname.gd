@@ -22,7 +22,8 @@ func _ready() -> void:
 		if Net.is_connected_to_server(): Game.c_hello()
 		App.pop(); App.rebuild_top()
 	go.pressed.connect(submit)
-	inp.text_submitted.connect(func(_t): if not go.disabled: submit.call())
+	inp.text_submitted.connect(func(_t):
+		if not go.disabled: submit.call())
 	v.add_child(go)
 	v.add_child(UI.spacer())
 	inp.call_deferred("grab_focus")

@@ -16,7 +16,7 @@ func _ready() -> void:
 	nick.focus_exited.connect(func(): if Net.is_connected_to_server(): Game.c_hello())
 	body.add_child(_row("Takma ad", nick))
 	body.add_child(_section("Hesap"))
-	var acc: Control = UI.chip("Doğrulanmış ✓", "ok") if App.verified else UI.button("Bağla", "line")
+	var acc: Control = UI.chip("Doğrulanmış", "ok") if App.verified else UI.button("Bağla", "line")
 	if acc is Button: acc.custom_minimum_size = Vector2(110, 40); acc.pressed.connect(func(): Game.error.emit("Hesap bağlama v2'de"))
 	body.add_child(_row("Hesap" + ("" if App.verified else "\nBağlı değil"), acc))
 

@@ -5,7 +5,7 @@ const STEPS := [
 	["İki takım seçin", "Sen bir takım seçersin, rakibin de. İkiniz de Hazırım deyince başlar. Takım adı rakibe hazır deyince gider.", "Galatasaray", "Inter Milan"],
 	["3 · 2 · 1", "Paneller ortaya kayar, üç saniye geri sayılır. Sonra klavye açılır.", "", ""],
 	["15 saniyede bul", "İki takımda da oynamış bir futbolcu yaz. Öneriye dokunmak gönderir. Örnek: Sneijder, Icardi, Podolski.", "Snei", "Wesley Sneijder"],
-	["Yanlış dersen", "5 saniye yazamazsın. Rakibin yanlışını da görürsün, kimi elediğini bilirsin.", "Podolski ✗", "⏳ 5"],
+	["Yanlış dersen", "5 saniye yazamazsın. Rakibin yanlışını da görürsün, kimi elediğini bilirsin.", "Podolski yanlış", "5 sn kilit"],
 	["3 puan maçı alır", "Bir maçta bir takım bir kez söylenir. Ortak oyuncusu olmayan çift seçilirse tur boş geçer; art arda üçünde maç berabere biter.", "3 : 1", "Kazandın"],
 ]
 var i := 0

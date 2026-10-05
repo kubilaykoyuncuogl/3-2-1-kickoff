@@ -19,6 +19,7 @@ signal room_changed(d: Dictionary)
 signal suggestions(kind: String, list: Array)
 signal single_changed(d: Dictionary)
 signal error(msg: String)
+signal profile_changed(d: Dictionary)
 var room := {}          # son oda durumu
 var single := {}        # son tek oyunculu durumu
 var my_id := 0
@@ -242,7 +243,7 @@ func single_state(d: Dictionary) -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func profile_state(d: Dictionary) -> void:
-	App.elo = int(d.get("elo", App.elo)); App.save_settings()
+	App.elo = int(d.get("elo", App.elo)); App.save_settings(); profile_changed.emit(d)
 
 @rpc("authority", "call_remote", "reliable")
 func err(msg: String) -> void:

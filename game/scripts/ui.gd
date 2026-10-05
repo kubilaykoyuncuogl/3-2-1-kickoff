@@ -128,7 +128,7 @@ static func spacer(min_h := 0) -> Control:
 static func nav(title: String, on_back: Callable) -> HBoxContainer:
 	var h := hbox(8)
 	var back := Button.new()
-	back.text = "‹"; back.flat = true; back.custom_minimum_size = Vector2(44, 44)
+	back.text = "<"; back.flat = true; back.custom_minimum_size = Vector2(44, 44)
 	back.add_theme_font_override("font", font(600)); back.add_theme_font_size_override("font_size", 28)
 	back.add_theme_color_override("font_color", c("fg"))
 	back.pressed.connect(on_back)
@@ -139,11 +139,16 @@ static func nav(title: String, on_back: Callable) -> HBoxContainer:
 	return h
 
 ## Sayfa iskeleti: güvenli alan + 20 px kenar boşluğu + dikey kutu
+const MAX_COL := 560.0
 static func page() -> VBoxContainer:
 	var v := vbox(12)
-	v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var safe := DisplayServer.get_display_safe_area()
-	var win := DisplayServer.window_get_size()
-	var top := 20 + (safe.position.y if win.y > 0 else 0)
-	v.offset_left = 20; v.offset_right = -20; v.offset_top = top; v.offset_bottom = -20
+	v.set_anchors_preset(Control.PRESET_FULL_RECT)
+	v.tree_entered.connect(func(): _layout_page(v); v.get_viewport().size_changed.connect(func(): _layout_page(v)))
 	return v
+
+static func _layout_page(v: VBoxContainer) -> void:
+	if not v.is_inside_tree(): return
+	var w := v.get_viewport_rect().size.x
+	var half := minf(MAX_COL, w - 40.0) / 2.0
+	v.anchor_left = 0.5; v.anchor_right = 0.5; v.anchor_top = 0.0; v.anchor_bottom = 1.0
+	v.offset_left = -half; v.offset_right = half; v.offset_top = 20; v.offset_bottom = -20
