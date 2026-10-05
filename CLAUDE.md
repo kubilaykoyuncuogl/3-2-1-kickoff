@@ -36,6 +36,9 @@ godot --path game
 Godot 4.7.2 stable kurulu: `~/.local/bin/godot` (2026-10-05). Export template'leri henüz indirilmedi (Android/macOS/Web build için gerekir: Editor > Manage Export Templates).
 
 ## Notlar
+- **Dil paketleri** `game/lang/<kod>.json` (anahtar → metin). Kodda görünen metin yazma, `T.t("anahtar")` kullan (`game/scripts/t.gd`); yeni metin eklerken önce `tr.json` ve `en.json`'a anahtar ekle. Sunucu hata mesajı olarak `err.*` anahtarı gönderir, istemci çevirir. Kontrol: `python3 tools/check_lang.py`. Yeni dil = yeni json dosyası, Ayarlar > Dil'de kendiliğinden çıkar.
+- **Duman testi**: `godot --headless --path game -- --smoke` her ekranı her dilde ve iki temada kurar; arayüz değişikliğinden sonra çalıştır, çıktıda SCRIPT ERROR olmamalı (`--check-only` autoload'ları tanımadığı için hataları kaçırır).
+- Export preset'lerinde `include_filter="*.json, *.txt"` şart; yoksa dil dosyaları ve `assets/room_words.txt` pakete girmez.
 - Veriden mod fikirleri (kariyer yolu, kiralık/satış, ücret, sıralama): `docs/data.md` tablosu. Milli takım verisi transferlerde yok, milli takım modu bu veriyle yapılamaz.
 - Takım adı ve oyuncu adı normalizasyonu `tools/normalize.py` ve `game/scripts/normalize.gd`'de **aynı** olmalı (ş→s, ı→i, apostrof/nokta sil, lower).
 - Autocomplete sunucu tarafı (FTS5 prefix, <1 ms). Çalhanoğlu Galatasaray'da oynamadı; örneklerde GS–Inter için Sneijder/Icardi kullan.

@@ -49,7 +49,7 @@ func set_locked(v: bool, text := "") -> void:
 		input.placeholder_text = text
 		for ch in list.get_children(): ch.queue_free()
 	else:
-		input.placeholder_text = "Oyuncu adı yaz…" if kind == "player" else "Takım adı yaz…"
+		input.placeholder_text = T.t("ph.player") if kind == "player" else T.t("ph.team")
 
 func _on_text(t: String) -> void:
 	if locked: return
@@ -80,7 +80,7 @@ func _on_suggestions(k: String, q: String, items: Array) -> void:
 		b.add_theme_color_override("font_color", UI.c("muted") if used else UI.c("fg"))
 		b.add_theme_color_override("font_hover_color", UI.c("violet_ink")); b.add_theme_color_override("font_pressed_color", UI.c("violet_ink"))
 		b.disabled = used
-		if used: b.text += "  · kullanıldı" if it.get("used", false) else "  · kapsam dışı"
+		if used: b.text += T.t("ac.used") if it.get("used", false) else T.t("ac.out_of_scope")
 		var id := int(it.id); var name: String = it.name
 		b.pressed.connect(func(): picked.emit(id, name))
 		list.add_child(b)

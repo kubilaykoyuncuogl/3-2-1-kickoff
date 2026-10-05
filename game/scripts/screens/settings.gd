@@ -3,42 +3,44 @@ extends Control
 
 func _ready() -> void:
 	var v := UI.page(); add_child(v)
-	v.add_child(UI.nav("Ayarlar", App.pop))
+	v.add_child(UI.nav(T.t("menu.settings"), App.pop))
 	var scroll := ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var body := UI.vbox(4); body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(body); v.add_child(scroll)
 
-	body.add_child(_section("Profil"))
+	body.add_child(_section(T.t("set.profile")))
 	var nick := LineEdit.new(); nick.text = App.nickname; nick.max_length = 16
 	_style_input(nick)
 	nick.text_changed.connect(func(t): App.nickname = t.strip_edges(); App.save_settings())
 	nick.focus_exited.connect(func(): if Net.is_connected_to_server(): Game.c_hello())
-	body.add_child(_row("Takma ad", nick))
-	body.add_child(_section("Hesap"))
-	var acc: Control = UI.chip("Doğrulanmış", "ok") if App.verified else UI.button("Bağla", "line")
-	if acc is Button: acc.custom_minimum_size = Vector2(110, 40); acc.pressed.connect(func(): Game.error.emit("Hesap bağlama v2'de"))
-	body.add_child(_row("Hesap" + ("" if App.verified else "\nBağlı değil"), acc))
+	body.add_child(_row(T.t("set.nick"), nick))
+	body.add_child(_section(T.t("set.account")))
+	var acc: Control = UI.chip(T.t("verified"), "ok") if App.verified else UI.button(T.t("set.link"), "line")
+	if acc is Button: acc.custom_minimum_size = Vector2(110, 40); acc.pressed.connect(func(): Game.error.emit(T.t("set.link_soon")))
+	body.add_child(_row(T.t("set.account") + ("" if App.verified else "\n" + T.t("set.not_linked")), acc))
 
-	body.add_child(_section("Ses"))
+	body.add_child(_section(T.t("set.sound")))
 	var snd := _toggle(App.sound, func(on): App.sound = on; App.save_settings(); App.rebuild_top())
-	body.add_child(_row("Ses", snd))
+	body.add_child(_row(T.t("set.sound"), snd))
 	var music := _slider(App.music_vol, func(x): App.music_vol = x; App.save_settings()); music.editable = App.sound
-	body.add_child(_row("Oyun müziği", music, not App.sound))
+	body.add_child(_row(T.t("set.music"), music, not App.sound))
 	var sfx := _slider(App.sfx_vol, func(x): App.sfx_vol = x; App.save_settings()); sfx.editable = App.sound
-	body.add_child(_row("Oyun sesleri", sfx, not App.sound))
-	body.add_child(_row("Titreşim", _toggle(App.haptics, func(on): App.haptics = on; App.save_settings())))
+	body.add_child(_row(T.t("set.sfx"), sfx, not App.sound))
+	body.add_child(_row(T.t("set.haptics"), _toggle(App.haptics, func(on): App.haptics = on; App.save_settings())))
 
-	body.add_child(_section("Görünüm"))
-	body.add_child(_row("Tema", UI.segment(["system", "light", "dark"], ["Sistem", "Açık", "Koyu"], App.theme_mode,
+	body.add_child(_section(T.t("set.look")))
+	body.add_child(_row(T.t("set.theme"), UI.segment(["system", "light", "dark"], [T.t("theme.system"), T.t("theme.light"), T.t("theme.dark")], App.theme_mode,
 		func(val): App.theme_mode = val; App.save_settings(); App.apply_theme(); App.rebuild_all())))
-	body.add_child(_row("Animasyonları azalt", _toggle(App.reduce_motion, func(on): App.reduce_motion = on; App.save_settings())))
-	body.add_child(_section("Dil"))
-	body.add_child(_row("Dil", UI.segment(["tr", "en"], ["TR", "EN"], App.lang, func(val): App.lang = val; App.save_settings())))
-	body.add_child(_section("Diğer"))
-	var howto := UI.button("Nasıl oynanır", "ghost"); howto.pressed.connect(func(): App.push(load("res://scripts/screens/howto.gd").new()))
+	body.add_child(_row(T.t("set.reduce_motion"), _toggle(App.reduce_motion, func(on): App.reduce_motion = on; App.save_settings())))
+	body.add_child(_section(T.t("set.lang")))
+	var langs: Array = T.available()
+	body.add_child(_row(T.t("set.lang"), UI.segment(langs, langs.map(func(l): return str(l).to_upper()), App.lang,
+		func(val): App.lang = val; App.save_settings(); T.load_lang(val); App.rebuild_all())))
+	body.add_child(_section(T.t("set.other")))
+	var howto := UI.button(T.t("menu.howto"), "ghost"); howto.pressed.connect(func(): App.push(load("res://scripts/screens/howto.gd").new()))
 	body.add_child(howto)
-	body.add_child(UI.label("3-2-1 Kickoff v0.1 · cihaz " + App.device_id.substr(0, 8), 11, 500, "muted"))
+	body.add_child(UI.label(T.t("set.version") + App.device_id.substr(0, 8), 11, 500, "muted"))
 
 func _section(t: String) -> Control:
 	var l := UI.eyebrow(t); l.add_theme_constant_override("line_spacing", 0)

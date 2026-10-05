@@ -55,7 +55,7 @@ func _process(_dt: float) -> void:
 		timer_bar.add_theme_stylebox_override("fill", UI.box("no" if hot else "fg", "", 999, 0))
 		if ac:
 			var pen := maxi(0, penalty_until - now)
-			if pen > 0: ac.set_locked(true, "Yanlış · %d" % ceili(pen / 1000.0))
+			if pen > 0: ac.set_locked(true, T.t("locked_fmt") % ceili(pen / 1000.0))
 			elif ac.locked: ac.set_locked(false); ac.focus()
 			elif not ac.input.has_focus() and get_viewport().gui_get_focus_owner() == null: ac.focus()
 	elif state == Game.State.COUNTDOWN and countdown_label:
@@ -90,20 +90,20 @@ func _update(d: Dictionary) -> void:
 			var last: Dictionary = d.get("last", {})
 			if toast_slot and Game.opponent().get("away", false):
 				for ch in toast_slot.get_children(): ch.queue_free()
-				toast_slot.add_child(UI.toast("Rakibin bağlantısı koptu, 10 sn bekleniyor", "muted"))
+				toast_slot.add_child(UI.toast(T.t("match.opp_away"), "muted"))
 			if toast_slot and last.get("type", "") == "wrong":
 				for ch in toast_slot.get_children(): ch.queue_free()
 				if int(last.pid) == multiplayer.get_unique_id():
-					toast_slot.add_child(UI.toast("%s yanlış  ·  5 sn kilit" % last.name, "no"))
+					toast_slot.add_child(UI.toast(T.t("match.wrong_me") % last.name, "no"))
 					if ac: UI.shake(ac.input)
 				else:
-					toast_slot.add_child(UI.toast("Rakip: %s yanlış  ·  %d sn kilitli" % [last.name, ceili(int(Game.opponent().get("penalty_ms", 0)) / 1000.0)], "muted"))
+					toast_slot.add_child(UI.toast(T.t("match.wrong_opp") % [last.name, ceili(int(Game.opponent().get("penalty_ms", 0)) / 1000.0)], "muted"))
 		Game.State.GAME_OVER: _render(d)
 
 func _side_panel(p: Dictionary, side: String, sub: Control = null) -> PanelContainer:
 	var pan := UI.panel(side); var v := UI.vbox(3)
 	var ink := side + "_ink"
-	v.add_child(UI.eyebrow(("Sen" if side == "violet" else "Rakip") + " · " + str(p.get("nick", "")), ink))
+	v.add_child(UI.eyebrow((T.t("you") if side == "violet" else T.t("opponent")) + " · " + str(p.get("nick", "")), ink))
 	v.add_child(UI.label(str(p.get("team_name", "")) if p.get("team_name", "") != "" else "—", 26, 800, ink))
 	if sub: v.add_child(sub)
 	pan.add_child(v); return pan
@@ -118,7 +118,7 @@ func _score_row(d: Dictionary) -> HBoxContainer:
 
 func _render_pick(d: Dictionary) -> void:
 	var me := Game.me(); var op := Game.opponent()
-	var nav := UI.nav("Takım seçimi · %s · oda %s" % [UI.scope_label(str(d.get("scope", "all"))), d.get("code", "")], func(): Game.c_leave(); App.pop())
+	var nav := UI.nav(T.t("match.pick_title") % [UI.scope_label(str(d.get("scope", "all"))), d.get("code", "")], func(): Game.c_leave(); App.pop())
 	pick_timer = UI.label("45", 20, 800, "muted"); pick_timer.custom_minimum_size.x = 44; pick_timer.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	nav.get_child(2).queue_free(); nav.add_child(pick_timer)
 	body.add_child(nav)
@@ -126,22 +126,22 @@ func _render_pick(d: Dictionary) -> void:
 	# üst: sen
 	var mine := UI.panel("violet"); mine.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var mv := UI.vbox(8)
-	mv.add_child(UI.eyebrow("Sen · " + str(me.get("nick", "")), "violet_ink"))
+	mv.add_child(UI.eyebrow(T.t("you") + " · " + str(me.get("nick", "")), "violet_ink"))
 	if me.get("ready", false):
 		mv.add_child(UI.label(str(me.team_name), 26, 800, "violet_ink"))
-		var ch := UI.chip("Hazır", "ok"); mv.add_child(ch)
-		mv.add_child(UI.label("Rakip bekleniyor…", 12, 500, "violet_ink"))
+		var ch := UI.chip(T.t("ready"), "ok"); mv.add_child(ch)
+		mv.add_child(UI.label(T.t("match.waiting_opp"), 12, 500, "violet_ink"))
 	else:
 		if me.get("team", 0) != 0:
 			mv.add_child(UI.label(str(me.team_name), 26, 800, "violet_ink"))
 			var h := UI.hbox(8)
-			var change := UI.button("Değiştir", "line"); change.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			var change := UI.button(T.t("change"), "line"); change.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			change.pressed.connect(func(): Game.c_pick_team(0, ""); _show_picker())
-			var ready := UI.button("Hazırım", "violet"); ready.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			var ready := UI.button(T.t("ready_btn"), "violet"); ready.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			ready.pressed.connect(func(): Game.c_ready())
 			h.add_child(change); h.add_child(ready); mv.add_child(h)
 		else:
-			ac = Autocomplete.new("team", "Takım adı yaz…")
+			ac = Autocomplete.new("team", T.t("ph.team"))
 			ac.picked.connect(func(id, name): Game.c_pick_team(id, name))
 			mv.add_child(ac)
 			quick_slot = UI.vbox(6); mv.add_child(quick_slot)
@@ -150,21 +150,21 @@ func _render_pick(d: Dictionary) -> void:
 	# alt: rakip (takımı ikisi de hazır olana kadar gizli)
 	pick_sig = "%s|%s" % [me.get("team", 0), me.get("ready", false)]
 	var opp := UI.panel("amber"); var ov := UI.vbox(3)
-	ov.add_child(UI.eyebrow("Rakip · " + str(op.get("nick", "?")), "amber_ink"))
+	ov.add_child(UI.eyebrow(T.t("opponent") + " · " + str(op.get("nick", "?")), "amber_ink"))
 	opp_label = UI.label(_opp_pick_text(op), 24, 800, "amber_ink")
 	ov.add_child(opp_label)
 	opp.add_child(ov); body.add_child(opp)
 	strip = UI.label("", 12, 600, "no"); body.add_child(strip)
 
 func _opp_pick_text(op: Dictionary) -> String:
-	if op.get("away", false): return "Bağlantısı koptu, 10 sn bekleniyor…"
-	if op.get("ready", false): return "Hazır, seni bekliyor"
-	return "Takımını seçti" if op.get("picked", false) else "Düşünüyor…"
+	if op.get("away", false): return T.t("match.away_short")
+	if op.get("ready", false): return T.t("match.opp_ready")
+	return T.t("match.opp_picked") if op.get("picked", false) else T.t("match.opp_thinking")
 
 func _show_quick_picks(list: Array) -> void:
 	if quick_slot == null or list.is_empty(): return
 	for ch in quick_slot.get_children(): ch.queue_free()
-	quick_slot.add_child(UI.label("Karar veremedin mi? Hızlı seç:", 13, 600, "violet_ink"))
+	quick_slot.add_child(UI.label(T.t("match.quick"), 13, 600, "violet_ink"))
 	for it in list:
 		var b := UI.button(str(it.name), "line"); b.text = str(it.name); b.custom_minimum_size.y = 48
 		var id := int(it.id); var nm: String = str(it.name)
@@ -177,20 +177,20 @@ func _show_picker() -> void:
 func _render_countdown(d: Dictionary) -> void:
 	var me := Game.me(); var op := Game.opponent()
 	body.add_child(UI.spacer())
-	var top := UI.panel("violet"); var tv := UI.vbox(2); tv.add_child(UI.eyebrow("Sen · " + str(me.get("nick", "")), "violet_ink")); tv.add_child(UI.label("Hazır", 22, 800, "violet_ink")); top.add_child(tv); body.add_child(top)
+	var top := UI.panel("violet"); var tv := UI.vbox(2); tv.add_child(UI.eyebrow(T.t("you") + " · " + str(me.get("nick", "")), "violet_ink")); tv.add_child(UI.label(T.t("ready"), 22, 800, "violet_ink")); top.add_child(tv); body.add_child(top)
 	countdown_label = UI.label("3", 140, 800); countdown_label.add_theme_font_override("font", UI.font(800, true))
 	countdown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	body.add_child(countdown_label)
-	var bot := UI.panel("amber"); var bv := UI.vbox(2); bv.add_child(UI.eyebrow("Rakip · " + str(op.get("nick", "")), "amber_ink")); bv.add_child(UI.label("Hazır", 22, 800, "amber_ink")); bot.add_child(bv); body.add_child(bot)
+	var bot := UI.panel("amber"); var bv := UI.vbox(2); bv.add_child(UI.eyebrow(T.t("opponent") + " · " + str(op.get("nick", "")), "amber_ink")); bv.add_child(UI.label(T.t("ready"), 22, 800, "amber_ink")); bot.add_child(bv); body.add_child(bot)
 	body.add_child(UI.spacer())
 
 func _render_reveal(d: Dictionary) -> void:
 	var me := Game.me(); var op := Game.opponent()
 	body.add_child(UI.spacer())
-	var top := UI.panel("violet"); var tv := UI.vbox(4); tv.add_child(UI.eyebrow("Sen · " + str(me.get("nick", "")), "violet_ink"))
+	var top := UI.panel("violet"); var tv := UI.vbox(4); tv.add_child(UI.eyebrow(T.t("you") + " · " + str(me.get("nick", "")), "violet_ink"))
 	var t1 := UI.label(str(me.get("team_name", "")), 34, 800, "violet_ink"); t1.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; tv.add_child(t1); top.add_child(tv); body.add_child(top)
 	var x := UI.label("×", 56, 800, "muted"); x.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; body.add_child(x)
-	var bot := UI.panel("amber"); var bv := UI.vbox(4); bv.add_child(UI.eyebrow("Rakip · " + str(op.get("nick", "")), "amber_ink"))
+	var bot := UI.panel("amber"); var bv := UI.vbox(4); bv.add_child(UI.eyebrow(T.t("opponent") + " · " + str(op.get("nick", "")), "amber_ink"))
 	var t2 := UI.label(str(op.get("team_name", "")), 34, 800, "amber_ink"); t2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; bv.add_child(t2); bot.add_child(bv); body.add_child(bot)
 	body.add_child(UI.spacer())
 
@@ -206,7 +206,7 @@ func _render_round(d: Dictionary) -> void:
 	timer_bar.custom_minimum_size.y = 8
 	timer_bar.add_theme_stylebox_override("background", UI.box("line", "", 999, 0)); timer_bar.add_theme_stylebox_override("fill", UI.box("fg", "", 999, 0))
 	body.add_child(timer_bar)
-	ac = Autocomplete.new("player", "Oyuncu adı yaz…")
+	ac = Autocomplete.new("player", T.t("ph.player"))
 	ac.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	ac.picked.connect(func(id, name): Game.c_guess(id, name); ac.clear())
 	body.add_child(ac)
@@ -228,14 +228,14 @@ func _render_round_end(d: Dictionary) -> void:
 
 	var winner_sub := UI.vbox(8)
 	if t == "pick_timeout":
-		winner_sub.add_child(UI.toast("Rakip takım seçmedi  ·  +1" if i_won else "Takım seçmedin  ·  rakip +1", "ok" if i_won else "no"))
+		winner_sub.add_child(UI.toast(T.t("match.pick_to_win") if i_won else T.t("match.pick_to_lose"), "ok" if i_won else "no"))
 	elif t == "correct":
 		winner_sub.add_child(UI.toast("%s  +1" % answer_name, "ok" if i_won else "no"))
 	else:
-		var note := "Bu iki takımın ortak oyuncusu yok" if last.get("no_common", false) else "Kimse bilemedi"
+		var note := T.t("match.no_common") if last.get("no_common", false) else T.t("match.nobody")
 		winner_sub.add_child(UI.toast(note, "no"))
 	if not others.is_empty():
-		var ol := UI.label(("Diğerleri: " if t == "correct" else "Olası cevaplar: ") + ", ".join(others) + (" … +%d oyuncu daha" % rest if rest > 0 else ""), 14, 500, "fg")
+		var ol := UI.label((T.t("match.others") if t == "correct" else T.t("match.possible")) + ", ".join(others) + (T.t("match.more") % rest if rest > 0 else ""), 14, 500, "fg")
 		ol.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; winner_sub.add_child(ol)
 
 	# kazanan taraf büyür, diğerine doğru basar
@@ -251,8 +251,8 @@ func _render_over(d: Dictionary) -> void:
 	var me := Game.me(); var op := Game.opponent()
 	var last: Dictionary = d.get("last", {})
 	var winner: int = int(d.get("winner", 0)); var my := multiplayer.get_unique_id()
-	var title := "Berabere" if winner == 0 else ("Kazandın" if winner == my else "Kaybettin")
-	if last.get("type", "") == "left": title = "Rakip ayrıldı"
+	var title := T.t("draw") if winner == 0 else (T.t("won") if winner == my else T.t("lost"))
+	if last.get("type", "") == "left": title = T.t("match.opp_left")
 	var top := UI.panel("violet"); top.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var tv := UI.vbox(4); tv.alignment = BoxContainer.ALIGNMENT_CENTER
 	var t := UI.eyebrow(title, "violet_ink"); t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; tv.add_child(t)
@@ -263,9 +263,9 @@ func _render_over(d: Dictionary) -> void:
 	top.add_child(tv); body.add_child(top)
 	var bot := UI.panel("amber"); bot.modulate.a = 0.8; var bv := UI.vbox(2)
 	bv.add_child(UI.eyebrow(str(op.get("nick", "")) + " · " + str(op.get("elo", "")), "amber_ink"))
-	bv.add_child(UI.label("Rövanş istiyor" if op.get("rematch", false) else "İyi oyundu", 20, 800, "amber_ink"))
+	bv.add_child(UI.label(T.t("match.wants_rematch") if op.get("rematch", false) else T.t("match.gg"), 20, 800, "amber_ink"))
 	bot.add_child(bv); body.add_child(bot)
 	if last.get("type", "") != "left":
-		var rv := UI.button("Rövanş" + (" (bekliyor)" if me.get("rematch", false) else ""), "violet"); rv.disabled = me.get("rematch", false)
+		var rv := UI.button(T.t("rematch") + (T.t("match.waiting_paren") if me.get("rematch", false) else ""), "violet"); rv.disabled = me.get("rematch", false)
 		rv.pressed.connect(func(): Game.c_rematch()); body.add_child(rv)
-	var leave := UI.button("Ayrıl", "ghost"); leave.pressed.connect(func(): Game.c_leave(); App.pop()); body.add_child(leave)
+	var leave := UI.button(T.t("leave"), "ghost"); leave.pressed.connect(func(): Game.c_leave(); App.pop()); body.add_child(leave)

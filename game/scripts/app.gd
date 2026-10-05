@@ -18,7 +18,6 @@ var device_id := ""
 var best := {"ladder": 0, "blitz": 0}   # cihazdaki en iyi tek oyunculu skorlar
 var scope := "all"                      # kulüp kapsamı: all | top | big5
 const SCOPES := ["all", "top", "big5"]
-const SCOPE_LABELS := ["Tümü", "Üst ligler", "5 büyük lig"]
 
 var _root: Control
 var _stack: Array[Control] = []
@@ -58,6 +57,7 @@ func load_settings() -> void:
 	device_id = cf.get_value("online", "device", "")
 	best = cf.get_value("single", "best", {"ladder": 0, "blitz": 0})
 	scope = cf.get_value("single", "scope", "all")
+	T.load_lang(lang)
 
 func ensure_device_id() -> void:
 	if device_id == "":

@@ -91,8 +91,8 @@ func join_room(code: String) -> void:
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
 	code = Normalize.norm(code).replace(" ", "")
-	if not rooms.has(code): err.rpc_id(pid, "Oda bulunamadı"); return
-	if rooms[code].players.size() >= 2: err.rpc_id(pid, "Oda dolu"); return
+	if not rooms.has(code): err.rpc_id(pid, "err.room_not_found"); return
+	if rooms[code].players.size() >= 2: err.rpc_id(pid, "err.room_full"); return
 	_leave_everything(pid)
 	_join(code, pid)
 
@@ -128,12 +128,12 @@ func pick_team(team_id: int, team_name: String) -> void:
 	if r == null or r.state != State.PICK_TEAMS or r.ready.get(pid, false): return
 	if team_id == 0:
 		r.teams.erase(pid); r.team_names.erase(pid); _broadcast(r); return
-	if r.used_teams.has(team_id): err.rpc_id(pid, "Bu takım bu maçta kullanıldı"); return
+	if r.used_teams.has(team_id): err.rpc_id(pid, "err.team_used"); return
 	for other in r.teams:
-		if other != pid and r.teams[other] == team_id: err.rpc_id(pid, "Rakip bu takımı seçti, başka seç"); return
+		if other != pid and r.teams[other] == team_id: err.rpc_id(pid, "err.team_taken"); return
 	if r.scope != "all":
 		var ok: bool = await IndexAPI.club_in_scope(team_id, r.scope)
-		if not ok: err.rpc_id(pid, "Bu takım seçili kapsamın dışında"); return
+		if not ok: err.rpc_id(pid, "err.out_of_scope"); return
 		if r.state != State.PICK_TEAMS or r.ready.get(pid, false): return
 	r.teams[pid] = team_id; r.team_names[pid] = team_name
 	_broadcast(r)
@@ -209,7 +209,7 @@ func single_start(mode: String, scope: String) -> void:
 	var items: Array
 	if mode == "ladder": items = await IndexAPI.ladder(seed, _scope_ok(scope))
 	else: items = await IndexAPI.blitz_pack(seed, _scope_ok(scope))
-	if items.is_empty(): err.rpc_id(pid, "Paket yüklenemedi"); return
+	if items.is_empty(): err.rpc_id(pid, "err.pack_failed"); return
 	singles[pid] = {"mode": mode, "seed": seed, "items": items, "idx": 0, "lives": 3 if mode == "ladder" else 1,
 		"score": 0, "combo": 1.0, "deadline": 0, "lock_until": 0, "over": false, "best_combo": 1.0, "gen": 0}
 	_single_next(pid, true)
@@ -275,7 +275,7 @@ func profile_state(d: Dictionary) -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func err(msg: String) -> void:
-	error.emit(msg)
+	error.emit(T.t(msg))   # sunucu anahtar gönderir (err.*), istemci kendi dilinde gösterir
 
 # ============================================================ sunucu iç mantık
 func _scope_ok(s: String) -> String:

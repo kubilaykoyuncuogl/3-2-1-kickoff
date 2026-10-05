@@ -167,11 +167,24 @@ static func segment(vals: Array, labels: Array, current: String, cb: Callable) -
 		h.add_child(b)
 	return h
 
-const SCOPE_INFO := {
-	"all": ["Tümü", "Bütün kulüpler, köy takımlarına kadar", "res://assets/icons/globe.svg"],
-	"top": ["Üst ligler", "Yalnızca ülkelerin en üst ligleri", "res://assets/icons/crown.svg"],
-	"big5": ["5 büyük lig", "İngiltere, İspanya, İtalya, Almanya, Fransa", "res://assets/icons/five.svg"],
+const SCOPE_INFO := {   # [başlık anahtarı, açıklama anahtarı, ikon: svg yolu ya da "text:<glif>" (Sora ExtraBold)]
+	"all": ["scope.all.title", "scope.all.sub", "res://assets/icons/globe.svg"],
+	"top": ["scope.top.title", "scope.top.sub", "res://assets/icons/crown.svg"],
+	"big5": ["scope.big5.title", "scope.big5.sub", "text:5"],
 }
+
+static func _scope_icon(src: String, ink: String, compact: bool) -> Control:
+	var sz := 28.0 if compact else 40.0
+	if src.begins_with("text:"):
+		var l := label(src.substr(5), int(sz * 1.25), 800, ink)
+		l.custom_minimum_size = Vector2(sz, sz)
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		return l
+	var ic := TextureRect.new(); ic.texture = load(src); ic.custom_minimum_size = Vector2(sz, sz)
+	ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	ic.self_modulate = c(ink); ic.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	return ic
 
 ## İkonlu kapsam düğmesi. compact: tek satır (Online), değilse açıklamalı (Tek oyna)
 static func scope_button(scope: String, selected: bool, on_press: Callable, compact := false) -> Button:
@@ -185,15 +198,13 @@ static func scope_button(scope: String, selected: bool, on_press: Callable, comp
 	var ink := "violet_ink" if selected else "fg"
 	var h := hbox(12); h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	h.offset_left = 14; h.offset_right = -14; h.offset_top = 8 if compact else 12; h.offset_bottom = -8 if compact else -12
-	var ic := TextureRect.new(); ic.texture = load(info[2]); ic.custom_minimum_size = Vector2(28, 28) if compact else Vector2(40, 40)
-	ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	ic.self_modulate = c(ink); ic.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var ic := _scope_icon(info[2], ink, compact)
 	h.add_child(ic)
 	var tv := vbox(2); tv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; tv.alignment = BoxContainer.ALIGNMENT_CENTER
-	tv.add_child(label(info[0], 16 if compact else 18, 800, ink))
-	var s := label(info[1], 12, 500, "violet_ink" if selected else "muted"); s.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; tv.add_child(s)
+	tv.add_child(label(T.t(info[0]), 16 if compact else 18, 800, ink))
+	var s := label(T.t(info[1]), 12, 500, "violet_ink" if selected else "muted"); s.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; tv.add_child(s)
 	h.add_child(tv)
-	var tail := label("seçili" if (selected and compact) else (">" if not compact else ""), 13 if compact else 22, 700, "violet_ink" if selected else "muted")
+	var tail := label(T.t("selected") if (selected and compact) else (">" if not compact else ""), 13 if compact else 22, 700, "violet_ink" if selected else "muted")
 	tail.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(tail)
 	for n in [h, ic, tv, tail] + tv.get_children(): n.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(h)
@@ -203,15 +214,14 @@ static func scope_button(scope: String, selected: bool, on_press: Callable, comp
 ## Kulüp kapsamı seçici: alt alta üç ikonlu düğme; App.scope'a yazar
 static func scope_picker(on_change: Callable) -> VBoxContainer:
 	var v := vbox(6)
-	v.add_child(eyebrow("Kulüp kapsamı"))
+	v.add_child(eyebrow(T.t("scope.header")))
 	for sc in App.SCOPES:
 		v.add_child(scope_button(sc, App.scope == sc, func(val):
 			App.scope = val; App.save_settings(); on_change.call(val), true))
 	return v
 
 static func scope_label(s: String) -> String:
-	var i := App.SCOPES.find(s)
-	return App.SCOPE_LABELS[i] if i >= 0 else "Tümü"
+	return T.t("scope.%s.title" % (s if s in App.SCOPES else "all"))
 
 static func vbox(sep := 10) -> VBoxContainer:
 	var v := VBoxContainer.new(); v.add_theme_constant_override("separation", sep); return v
