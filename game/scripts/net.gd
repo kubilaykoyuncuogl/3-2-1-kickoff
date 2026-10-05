@@ -6,6 +6,7 @@ signal disconnected
 signal connect_failed
 
 var is_server := false
+const PROD_URL := "wss://kickoff.grandecorpo.com/ws"   # mobil uygulama ve masaüstü export'ları buraya bağlanır
 var server_url := "ws://127.0.0.1:9080"
 
 func _ready() -> void:
@@ -20,6 +21,8 @@ func _ready() -> void:
 			var host: String = JavaScriptBridge.eval("location.hostname") if OS.has_feature("web") else "127.0.0.1"
 			var https: bool = JavaScriptBridge.eval("location.protocol") == "https:"
 			server_url = ("wss://%s/ws" % host) if https else ("ws://%s:%d" % [host, DEFAULT_PORT])
+		elif not OS.has_feature("editor"):
+			server_url = PROD_URL          # export edilmiş yerel uygulama (Android / iOS): canlı sunucu
 		var i := args.find("--connect")
 		if i >= 0 and i + 1 < args.size(): server_url = args[i + 1]
 
