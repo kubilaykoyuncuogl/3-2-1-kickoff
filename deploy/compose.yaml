@@ -9,5 +9,13 @@ services:
     volumes:
       - ../data/index/index.enc:/app/data/index/index.enc:ro
       - kickoff-state:/app/.local   # Godot user:// (accounts.json)
+    networks:
+      default:
+        ipv4_address: 172.18.0.2   # dış proxy köprüsü bu adrese bağlı; yeniden build'de değişmesin
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
 volumes:
   kickoff-state:
