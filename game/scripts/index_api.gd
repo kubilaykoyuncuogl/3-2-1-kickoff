@@ -33,6 +33,10 @@ func suggest_players(q: String) -> Array:
 	var r = await get_json("/players/suggest", {"q": q})
 	return r if r is Array else []
 
+func quick_picks(scope: String, exclude: Array) -> Array:
+	var r = await get_json("/quick_picks", {"scope": scope, "n": 5, "exclude": ",".join(exclude.map(func(x): return str(x)))})
+	return r if r is Array else []
+
 func club_in_scope(club_id: int, scope: String) -> bool:
 	var r = await get_json("/club/%d" % club_id, {"scope": scope})
 	return r is Dictionary and r.get("in_scope", false)

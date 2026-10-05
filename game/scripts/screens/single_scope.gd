@@ -4,7 +4,7 @@ var mode := "ladder"
 
 func _ready() -> void:
 	var v := UI.page(); add_child(v)
-	v.add_child(UI.nav("Klasik merdiven" if mode == "ladder" else "Blitz", App.pop))
+	v.add_child(UI.nav("Klasik merdiven" if mode == "ladder" else "Beşte Bir", App.pop))
 	v.add_child(UI.label("Hangi kulüpler?", 22, 800))
 	v.add_child(UI.label("En iyin: %d" % int(App.best.get(mode, 0)), 13, 500, "muted"))
 	for sc in App.SCOPES:

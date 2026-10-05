@@ -14,6 +14,9 @@ var strip: Label
 var opp_label: Label
 var pick_sig := ""
 var toast_slot: VBoxContainer
+var pick_timer: Label
+var quick_slot: VBoxContainer
+var quick_shown := false
 
 func _ready() -> void:
 	body = UI.page(); add_child(body)
@@ -57,14 +60,20 @@ func _process(_dt: float) -> void:
 			elif not ac.input.has_focus() and get_viewport().gui_get_focus_owner() == null: ac.focus()
 	elif state == Game.State.COUNTDOWN and countdown_label:
 		countdown_label.text = str(maxi(1, ceili(rem / 1000.0)))
+	elif state == Game.State.PICK_TEAMS:
+		if pick_timer: pick_timer.text = "%d" % ceili(rem / 1000.0); pick_timer.add_theme_color_override("font_color", UI.c("no" if rem <= 10000 else "muted"))
+		if quick_slot and not quick_shown and rem <= Game.PICK_MS - Game.QUICK_AT_MS and Game.me().get("team", 0) == 0:
+			quick_shown = true; _show_quick_picks(Game.room.get("quick_picks", []))
 
 # ---------- kurulum ----------
 func _render(d: Dictionary) -> void:
 	for ch in body.get_children(): ch.queue_free()
 	timer_label = null; timer_bar = null; countdown_label = null; ac = null; strip = null; opp_label = null; toast_slot = null
+	pick_timer = null; quick_slot = null; quick_shown = false
 	match state:
 		Game.State.PICK_TEAMS: _render_pick(d)
 		Game.State.COUNTDOWN: _render_countdown(d)
+		Game.State.REVEAL: _render_reveal(d)
 		Game.State.ROUND: _render_round(d)
 		Game.State.ROUND_END: _render_round_end(d)
 		Game.State.GAME_OVER: _render_over(d)
@@ -95,7 +104,7 @@ func _side_panel(p: Dictionary, side: String, sub: Control = null) -> PanelConta
 	var pan := UI.panel(side); var v := UI.vbox(3)
 	var ink := side + "_ink"
 	v.add_child(UI.eyebrow(("Sen" if side == "violet" else "Rakip") + " · " + str(p.get("nick", "")), ink))
-	v.add_child(UI.label(str(p.get("team_name", "")) if p.get("team_name", "") != "" else "—", 22, 800, ink))
+	v.add_child(UI.label(str(p.get("team_name", "")) if p.get("team_name", "") != "" else "—", 26, 800, ink))
 	if sub: v.add_child(sub)
 	pan.add_child(v); return pan
 
@@ -103,25 +112,28 @@ func _score_row(d: Dictionary) -> HBoxContainer:
 	var me := Game.me(); var op := Game.opponent()
 	var h := UI.hbox(8); h.alignment = BoxContainer.ALIGNMENT_CENTER
 	h.add_child(UI.chip(str(me.get("nick", "")), "violet"))
-	h.add_child(UI.label("%d : %d" % [me.get("score", 0), op.get("score", 0)], 28, 800))
+	h.add_child(UI.label("%d : %d" % [me.get("score", 0), op.get("score", 0)], 40, 800))
 	h.add_child(UI.chip(str(op.get("nick", "")), "amber"))
 	return h
 
 func _render_pick(d: Dictionary) -> void:
 	var me := Game.me(); var op := Game.opponent()
-	body.add_child(UI.nav("Takım seçimi · %s · oda %s" % [UI.scope_label(str(d.get("scope", "all"))), d.get("code", "")], func(): Game.c_leave(); App.pop()))
+	var nav := UI.nav("Takım seçimi · %s · oda %s" % [UI.scope_label(str(d.get("scope", "all"))), d.get("code", "")], func(): Game.c_leave(); App.pop())
+	pick_timer = UI.label("45", 20, 800, "muted"); pick_timer.custom_minimum_size.x = 44; pick_timer.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	nav.get_child(2).queue_free(); nav.add_child(pick_timer)
+	body.add_child(nav)
 	body.add_child(_score_row(d))
 	# üst: sen
 	var mine := UI.panel("violet"); mine.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var mv := UI.vbox(8)
 	mv.add_child(UI.eyebrow("Sen · " + str(me.get("nick", "")), "violet_ink"))
 	if me.get("ready", false):
-		mv.add_child(UI.label(str(me.team_name), 24, 800, "violet_ink"))
+		mv.add_child(UI.label(str(me.team_name), 26, 800, "violet_ink"))
 		var ch := UI.chip("Hazır", "ok"); mv.add_child(ch)
 		mv.add_child(UI.label("Rakip bekleniyor…", 12, 500, "violet_ink"))
 	else:
 		if me.get("team", 0) != 0:
-			mv.add_child(UI.label(str(me.team_name), 24, 800, "violet_ink"))
+			mv.add_child(UI.label(str(me.team_name), 26, 800, "violet_ink"))
 			var h := UI.hbox(8)
 			var change := UI.button("Değiştir", "line"); change.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			change.pressed.connect(func(): Game.c_pick_team(0, ""); _show_picker())
@@ -132,20 +144,32 @@ func _render_pick(d: Dictionary) -> void:
 			ac = Autocomplete.new("team", "Takım adı yaz…")
 			ac.picked.connect(func(id, name): Game.c_pick_team(id, name))
 			mv.add_child(ac)
+			quick_slot = UI.vbox(6); mv.add_child(quick_slot)
 			ac.call_deferred("focus")
 	mine.add_child(mv); body.add_child(mine)
-	# alt: rakip
-	var opp_text := "Hazır" if op.get("ready", false) else ("Seçti, hazır değil" if op.get("team", 0) != 0 else "Düşünüyor…")
+	# alt: rakip (takımı ikisi de hazır olana kadar gizli)
+	pick_sig = "%s|%s" % [me.get("team", 0), me.get("ready", false)]
 	var opp := UI.panel("amber"); var ov := UI.vbox(3)
 	ov.add_child(UI.eyebrow("Rakip · " + str(op.get("nick", "?")), "amber_ink"))
-	ov.add_child(UI.label(str(op.team_name) if op.get("ready", false) else opp_text, 22, 800, "amber_ink"))
+	opp_label = UI.label(_opp_pick_text(op), 24, 800, "amber_ink")
+	ov.add_child(opp_label)
 	opp.add_child(ov); body.add_child(opp)
 	strip = UI.label("", 12, 600, "no"); body.add_child(strip)
 
 func _opp_pick_text(op: Dictionary) -> String:
 	if op.get("away", false): return "Bağlantısı koptu, 10 sn bekleniyor…"
-	if op.get("ready", false): return str(op.get("team_name", "")) + "  ·  hazır"
-	return "Seçti, hazır değil" if op.get("team", 0) != 0 else "Düşünüyor…"
+	if op.get("ready", false): return "Hazır, seni bekliyor"
+	return "Takımını seçti" if op.get("picked", false) else "Düşünüyor…"
+
+func _show_quick_picks(list: Array) -> void:
+	if quick_slot == null or list.is_empty(): return
+	for ch in quick_slot.get_children(): ch.queue_free()
+	quick_slot.add_child(UI.label("Karar veremedin mi? Hızlı seç:", 13, 600, "violet_ink"))
+	for it in list:
+		var b := UI.button(str(it.name), "line"); b.text = str(it.name); b.custom_minimum_size.y = 48
+		var id := int(it.id); var nm: String = str(it.name)
+		b.pressed.connect(func(): Game.c_pick_team(id, nm))
+		quick_slot.add_child(b)
 
 func _show_picker() -> void:
 	pass  # pick_team(0) sunucudan boş takım döner → _update → _render
@@ -153,11 +177,21 @@ func _show_picker() -> void:
 func _render_countdown(d: Dictionary) -> void:
 	var me := Game.me(); var op := Game.opponent()
 	body.add_child(UI.spacer())
-	var top := _side_panel(me, "violet"); body.add_child(top)
-	countdown_label = UI.label("3", 120, 800); countdown_label.add_theme_font_override("font", UI.font(800, true))
+	var top := UI.panel("violet"); var tv := UI.vbox(2); tv.add_child(UI.eyebrow("Sen · " + str(me.get("nick", "")), "violet_ink")); tv.add_child(UI.label("Hazır", 22, 800, "violet_ink")); top.add_child(tv); body.add_child(top)
+	countdown_label = UI.label("3", 140, 800); countdown_label.add_theme_font_override("font", UI.font(800, true))
 	countdown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	body.add_child(countdown_label)
-	var bot := _side_panel(op, "amber"); body.add_child(bot)
+	var bot := UI.panel("amber"); var bv := UI.vbox(2); bv.add_child(UI.eyebrow("Rakip · " + str(op.get("nick", "")), "amber_ink")); bv.add_child(UI.label("Hazır", 22, 800, "amber_ink")); bot.add_child(bv); body.add_child(bot)
+	body.add_child(UI.spacer())
+
+func _render_reveal(d: Dictionary) -> void:
+	var me := Game.me(); var op := Game.opponent()
+	body.add_child(UI.spacer())
+	var top := UI.panel("violet"); var tv := UI.vbox(4); tv.add_child(UI.eyebrow("Sen · " + str(me.get("nick", "")), "violet_ink"))
+	var t1 := UI.label(str(me.get("team_name", "")), 34, 800, "violet_ink"); t1.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; tv.add_child(t1); top.add_child(tv); body.add_child(top)
+	var x := UI.label("×", 56, 800, "muted"); x.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; body.add_child(x)
+	var bot := UI.panel("amber"); var bv := UI.vbox(4); bv.add_child(UI.eyebrow("Rakip · " + str(op.get("nick", "")), "amber_ink"))
+	var t2 := UI.label(str(op.get("team_name", "")), 34, 800, "amber_ink"); t2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; bv.add_child(t2); bot.add_child(bv); body.add_child(bot)
 	body.add_child(UI.spacer())
 
 func _render_round(d: Dictionary) -> void:
@@ -183,26 +217,35 @@ func _render_round(d: Dictionary) -> void:
 func _render_round_end(d: Dictionary) -> void:
 	var me := Game.me(); var op := Game.opponent()
 	var last: Dictionary = d.get("last", {})
-	var i_won: bool = last.get("type", "") == "correct" and int(last.get("pid", 0)) == multiplayer.get_unique_id()
-	var they_won: bool = last.get("type", "") == "correct" and not i_won
-	var mine_sub: Control = UI.toast("%s  +1" % last.get("name", ""), "ok") if i_won else null
-	var top := _side_panel(me, "violet", mine_sub); top.size_flags_vertical = Control.SIZE_EXPAND_FILL; body.add_child(top)
+	var my := multiplayer.get_unique_id()
+	var t: String = last.get("type", "")
+	var i_won: bool = (t == "correct" and int(last.get("pid", 0)) == my) or (t == "pick_timeout" and int(last.get("pid", 0)) != my)
+	var they_won: bool = (t == "correct" and int(last.get("pid", 0)) != my) or (t == "pick_timeout" and int(last.get("pid", 0)) == my)
+	var ans: Array = d.get("answers", []); var total: int = int(d.get("answers_total", 0))
+	var answer_name: String = str(last.get("name", ""))
+	var others: Array = ans.filter(func(n): return n != answer_name).slice(0, 7)
+	var rest := maxi(0, total - others.size() - (1 if answer_name != "" else 0))
+
+	var winner_sub := UI.vbox(8)
+	if t == "pick_timeout":
+		winner_sub.add_child(UI.toast("Rakip takım seçmedi  ·  +1" if i_won else "Takım seçmedin  ·  rakip +1", "ok" if i_won else "no"))
+	elif t == "correct":
+		winner_sub.add_child(UI.toast("%s  +1" % answer_name, "ok" if i_won else "no"))
+	else:
+		var note := "Bu iki takımın ortak oyuncusu yok" if last.get("no_common", false) else "Kimse bilemedi"
+		winner_sub.add_child(UI.toast(note, "no"))
+	if not others.is_empty():
+		var ol := UI.label(("Diğerleri: " if t == "correct" else "Olası cevaplar: ") + ", ".join(others) + (" … +%d oyuncu daha" % rest if rest > 0 else ""), 14, 500, "fg")
+		ol.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; winner_sub.add_child(ol)
+
+	# kazanan taraf büyür, diğerine doğru basar
+	var top_weight := 1.6 if i_won else (0.6 if they_won else 1.0)
+	var bot_weight := 1.6 if they_won else (0.6 if i_won else 1.0)
+	var top := _side_panel(me, "violet", winner_sub if (i_won or (not they_won)) else null)
+	top.size_flags_vertical = Control.SIZE_EXPAND_FILL; top.size_flags_stretch_ratio = top_weight; body.add_child(top)
 	body.add_child(_score_row(d))
-	var note: String
-	if last.get("no_common", false): note = "Bu iki takımın ortak oyuncusu yok"
-	elif last.get("type", "") == "timeout": note = "Kimse bilemedi"
-	elif they_won: note = "%s bildi" % last.get("name", "")
-	else: note = ""
-	var ans: Array = d.get("answers", []); var total: int = d.get("answers_total", 0)
-	var ans_text := ""
-	if total > 0:
-		ans_text = "Olası: " + ", ".join(ans.slice(0, 4)) + (" … +%d" % (total - 4) if total > 4 else "")
-	var sub := UI.vbox(6)
-	if they_won: sub.add_child(UI.toast("%s bildi  ·  rakip +1" % last.get("name", ""), "no"))
-	elif note != "": sub.add_child(UI.toast(note, "no" if last.get("type", "") == "timeout" or last.get("no_common", false) else "muted"))
-	if ans_text != "":
-		var l := UI.label(ans_text, 12, 500, "amber_ink"); l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; sub.add_child(l)
-	var bot := _side_panel(op, "amber", sub); bot.size_flags_vertical = Control.SIZE_EXPAND_FILL; body.add_child(bot)
+	var bot := _side_panel(op, "amber", winner_sub if they_won else null)
+	bot.size_flags_vertical = Control.SIZE_EXPAND_FILL; bot.size_flags_stretch_ratio = bot_weight; body.add_child(bot)
 
 func _render_over(d: Dictionary) -> void:
 	var me := Game.me(); var op := Game.opponent()

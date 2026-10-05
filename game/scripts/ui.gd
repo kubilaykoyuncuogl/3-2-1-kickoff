@@ -22,7 +22,7 @@ static func c(token: String) -> Color:
 	return Palette.c(token)
 
 # ---------- metin ----------
-static func label(text: String, size := 16, weight := 500, color := "fg") -> Label:
+static func label(text: String, size := 17, weight := 500, color := "fg") -> Label:
 	var l := Label.new()
 	l.text = text
 	l.add_theme_font_override("font", font(weight))
@@ -31,7 +31,7 @@ static func label(text: String, size := 16, weight := 500, color := "fg") -> Lab
 	return l
 
 static func eyebrow(text: String, color := "muted") -> Label:
-	var l := label(text.to_upper(), 11, 700, color)
+	var l := label(text.to_upper(), 12, 700, color)
 	l.add_theme_constant_override("line_spacing", 0)
 	return l
 
@@ -65,7 +65,7 @@ static func button(text: String, kind := "violet", right_text := "") -> Button:
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT if right_text != "" else HORIZONTAL_ALIGNMENT_CENTER
 	b.custom_minimum_size = Vector2(0, 56 if kind != "ghost" else 44)
 	b.add_theme_font_override("font", font(800 if kind != "ghost" else 600))
-	b.add_theme_font_size_override("font_size", 16)
+	b.add_theme_font_size_override("font_size", 17)
 	var normal: StyleBoxFlat; var fg: String
 	match kind:
 		"violet": normal = box("violet_fill", "", RADIUS, 0, "violet_shade"); fg = "violet_on"
@@ -110,7 +110,7 @@ static func chip(text: String, kind := "violet") -> PanelContainer:
 	var st := box(bg, "line" if kind == "line" else "", 999, BORDER if kind == "line" else 0)
 	st.content_margin_left = 10; st.content_margin_right = 10; st.content_margin_top = 4; st.content_margin_bottom = 4
 	p.add_theme_stylebox_override("panel", st)
-	p.add_child(label(text, 13, 600, fg))
+	p.add_child(label(text, 14, 600, fg))
 	return p
 
 ## Büyük renkli bildirim şeridi. kind: "ok" | "no" | "muted"
@@ -121,7 +121,7 @@ static func toast(text: String, kind := "ok") -> PanelContainer:
 	var st := box(bg, fg, 12, 2)
 	st.content_margin_top = 12; st.content_margin_bottom = 12
 	p.add_theme_stylebox_override("panel", st)
-	var l := label(text, 16, 800, fg)
+	var l := label(text, 18, 800, fg)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	p.add_child(l)

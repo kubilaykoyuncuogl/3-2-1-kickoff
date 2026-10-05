@@ -291,6 +291,17 @@ def career(player_id: int):
     if not rows: raise HTTPException(404)
     return [{"seq": a, "club": b, "date": c, "kind": d, "fee": e, "mv": f, "age": g} for a, b, c, d, e, f, g in rows]
 
+@app.get("/quick_picks")
+def quick_picks(scope: str = "all", n: int = 5, exclude: str = ""):
+    """Takım seçiminde geç kalan oyuncuya önerilecek popüler kulüpler (T1-T3, kapsam içi, kullanılmamış)."""
+    sc = scope if scope in SCOPES else "all"
+    ex = {int(x) for x in exclude.split(",") if x.strip().isdigit()}
+    pool = [c for t in (1, 2, 3) for c in tiers[sc][t] if c not in ex]
+    rng = random.Random()
+    pick = rng.sample(pool, min(n, len(pool))) if pool else []
+    names = dict(db.execute(f"SELECT id, name FROM clubs WHERE id IN ({','.join(map(str, pick)) or '0'})").fetchall())
+    return [{"id": c, "name": names[c]} for c in pick]
+
 @app.get("/tiers")
 def tiers_list(tier: int = 1, limit: int = 30):
     ids = [c for c, t in club_tier.items() if t == tier]

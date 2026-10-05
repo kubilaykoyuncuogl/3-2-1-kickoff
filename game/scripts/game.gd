@@ -4,9 +4,12 @@ extends Node
 ##  - istemcide: sunucudan gelen durumun aynası + sinyaller
 ## Oyuncu→kulüp ilişkisi yalnızca Index servisinde; buradan istemciye ad listesi, sonuç ve tur sonu cevapları gider.
 
-enum State { LOBBY, PICK_TEAMS, COUNTDOWN, ROUND, ROUND_END, GAME_OVER }
+enum State { LOBBY, PICK_TEAMS, COUNTDOWN, REVEAL, ROUND, ROUND_END, GAME_OVER }
 const ROUND_MS := 15000
 const COUNTDOWN_MS := 3000
+const REVEAL_MS := 1800
+const PICK_MS := 45000          # takım seçimi süresi; dolunca seçmeyen turu kaybeder
+const QUICK_AT_MS := 20000      # bu kadar geçince istemci hızlı seçenekleri gösterir
 const PENALTY_MS := 5000
 const ROUND_END_MS := 4000
 const WIN_SCORE := 3
@@ -193,7 +196,7 @@ func rematch() -> void:
 	if r == null or r.state != State.GAME_OVER: return
 	r.rematch[pid] = true
 	if r.players.size() == 2 and r.rematch.size() == 2:
-		_reset_match(r); r.state = State.PICK_TEAMS
+		_reset_match(r); _start_pick(r); return
 	_broadcast(r)
 
 # ---------- tek oyunculu ----------
@@ -286,7 +289,7 @@ func _new_room(code: String, ranked: bool, scope := "all") -> Dictionary:
 func _reset_match(r: Dictionary) -> void:
 	r.teams = {}; r.team_names = {}; r.ready = {}; r.score = {}; r.penalty_until = {}; r.used_teams = {}
 	r.invalid_streak = 0; r.phase_end = 0; r.answers = []; r.answers_total = 0; r.winner = 0; r.rematch = {}; r.last = {}
-	r.elo_delta = {}; r.away = {}; r.gen += 1
+	r.elo_delta = {}; r.away = {}; r.quick_picks = []; r.gen += 1
 
 func _new_code() -> String:
 	if words.size() > 0:
@@ -309,7 +312,7 @@ func _join(code: String, pid: int) -> void:
 	var r: Dictionary = rooms[code]
 	r.players.append(pid); pid_room[pid] = code
 	if r.players.size() == 2:
-		r.state = State.PICK_TEAMS
+		_start_pick(r); return
 	_broadcast(r)
 
 func _leave_everything(pid: int) -> void:
@@ -320,7 +323,7 @@ func _leave_everything(pid: int) -> void:
 	if r.players.is_empty():
 		rooms.erase(r.code); return
 	# rakip gitti: maç ortasındaysa kalan kazanır
-	if r.state in [State.PICK_TEAMS, State.COUNTDOWN, State.ROUND, State.ROUND_END]:
+	if r.state in [State.PICK_TEAMS, State.COUNTDOWN, State.REVEAL, State.ROUND, State.ROUND_END]:
 		r.gen += 1
 		r.state = State.GAME_OVER; r.winner = r.players[0]; r.last = {"type": "left"}
 		if r.ranked: _apply_elo(r, r.players[0], pid)
@@ -331,7 +334,7 @@ func _leave_everything(pid: int) -> void:
 func _on_leave(pid: int) -> void:
 	var r = _room_of(pid)
 	var dev: String = profiles.get(pid, {}).get("device", "")
-	if r != null and dev != "" and r.players.size() == 2 and r.state in [State.PICK_TEAMS, State.COUNTDOWN, State.ROUND, State.ROUND_END]:
+	if r != null and dev != "" and r.players.size() == 2 and r.state in [State.PICK_TEAMS, State.COUNTDOWN, State.REVEAL, State.ROUND, State.ROUND_END]:
 		# 10 sn içinde aynı cihaz geri gelirse maç devam eder
 		pending_rc[dev] = {"code": r.code, "pid": pid, "until": Time.get_ticks_msec() + RECONNECT_MS}
 		r.away[pid] = true; _broadcast(r)
@@ -357,16 +360,54 @@ func _rebind(r: Dictionary, old: int, new: int) -> void:
 
 func _start_countdown(r: Dictionary) -> void:
 	for t in r.teams.values(): r.used_teams[t] = true
+	r.gen += 1
 	r.state = State.COUNTDOWN; r.phase_end = Time.get_ticks_msec() + COUNTDOWN_MS; r.last = {}
 	_broadcast(r)
 	var gen: int = r.gen
 	await get_tree().create_timer(COUNTDOWN_MS / 1000.0).timeout
 	if r.gen != gen or r.state != State.COUNTDOWN: return
+	r.state = State.REVEAL; r.phase_end = Time.get_ticks_msec() + REVEAL_MS
+	_broadcast(r)
+	await get_tree().create_timer(REVEAL_MS / 1000.0).timeout
+	if r.gen != gen or r.state != State.REVEAL: return
 	r.state = State.ROUND; r.phase_end = Time.get_ticks_msec() + ROUND_MS
 	_broadcast(r)
 	await get_tree().create_timer(ROUND_MS / 1000.0).timeout
 	if r.gen != gen or r.state != State.ROUND: return
 	_end_round(r, {"type": "timeout"})
+
+func _start_pick(r: Dictionary) -> void:
+	r.gen += 1
+	var gen: int = r.gen
+	r.state = State.PICK_TEAMS; r.phase_end = Time.get_ticks_msec() + PICK_MS
+	r.quick_picks = []
+	_broadcast(r)
+	var qp: Array = await IndexAPI.quick_picks(r.scope, r.used_teams.keys())
+	if r.gen == gen and r.state == State.PICK_TEAMS:
+		r.quick_picks = qp; _broadcast(r)
+	await get_tree().create_timer(PICK_MS / 1000.0).timeout
+	if r.gen != gen or r.state != State.PICK_TEAMS or r.players.size() < 2: return
+	var ready_players: Array = r.players.filter(func(p): return r.ready.get(p, false))
+	if ready_players.size() == 1:
+		var winner: int = ready_players[0]
+		var slow: int = r.players[0] if r.players[1] == winner else r.players[1]
+		r.score[winner] = r.score.get(winner, 0) + 1
+		r.gen += 1
+		r.answers = []; r.answers_total = 0; r.last = {"type": "pick_timeout", "pid": slow}
+		for p in r.players:
+			if r.score.get(p, 0) >= WIN_SCORE:
+				r.state = State.GAME_OVER; r.winner = p
+				if r.ranked: _apply_elo(r, p, slow)
+				_broadcast(r); return
+		r.state = State.ROUND_END; r.phase_end = Time.get_ticks_msec() + ROUND_END_MS
+		_broadcast(r)
+		var g2: int = r.gen
+		await get_tree().create_timer(ROUND_END_MS / 1000.0).timeout
+		if r.gen != g2 or r.state != State.ROUND_END: return
+		r.teams = {}; r.team_names = {}; r.ready = {}; r.penalty_until = {}; r.last = {}
+		_start_pick(r)
+	else:
+		_start_pick(r)   # ikisi de seçmedi: süre yenilenir
 
 func _end_round(r: Dictionary, last: Dictionary) -> void:
 	r.gen += 1
@@ -393,22 +434,25 @@ func _end_round(r: Dictionary, last: Dictionary) -> void:
 	await get_tree().create_timer(ROUND_END_MS / 1000.0).timeout
 	if r.gen != gen or r.state != State.ROUND_END: return
 	r.teams = {}; r.team_names = {}; r.ready = {}; r.penalty_until = {}; r.last = {}; r.answers = []
-	r.state = State.PICK_TEAMS
-	_broadcast(r)
+	_start_pick(r)
 
 func _broadcast(r: Dictionary) -> void:
 	var now := Time.get_ticks_msec()
-	var players := []
-	for pid in r.players:
-		var p: Dictionary = profiles.get(pid, {"nick": "?", "elo": 1000})
-		players.append({"pid": pid, "nick": p.nick, "elo": p.elo, "team": r.teams.get(pid, 0), "team_name": r.team_names.get(pid, ""),
-			"ready": r.ready.get(pid, false), "score": r.score.get(pid, 0), "penalty_ms": maxi(0, r.penalty_until.get(pid, 0) - now),
-			"rematch": r.rematch.get(pid, false), "elo_delta": r.elo_delta.get(pid, 0), "away": r.away.get(pid, false)})
-	var d := {"code": r.code, "ranked": r.ranked, "scope": r.scope, "state": r.state, "players": players, "phase_ms": maxi(0, r.phase_end - now),
-		"last": r.last, "answers": r.answers, "answers_total": r.answers_total, "winner": r.winner, "used_teams": r.used_teams.keys()}
 	var peers := multiplayer.get_peers()
-	for pid in r.players:
-		if pid in peers: room_state.rpc_id(pid, d)
+	for viewer in r.players:
+		if viewer not in peers: continue
+		var players := []
+		for pid in r.players:
+			var p: Dictionary = profiles.get(pid, {"nick": "?", "elo": 1000})
+			var hide: bool = r.state == State.PICK_TEAMS and pid != viewer   # rakibin seçimi ikisi de hazır olana kadar gizli
+			players.append({"pid": pid, "nick": p.nick, "elo": p.elo, "team": 0 if hide else r.teams.get(pid, 0),
+				"team_name": "" if hide else r.team_names.get(pid, ""), "picked": r.teams.get(pid, 0) != 0,
+				"ready": r.ready.get(pid, false), "score": r.score.get(pid, 0), "penalty_ms": maxi(0, r.penalty_until.get(pid, 0) - now),
+				"rematch": r.rematch.get(pid, false), "elo_delta": r.elo_delta.get(pid, 0), "away": r.away.get(pid, false)})
+		var d := {"code": r.code, "ranked": r.ranked, "scope": r.scope, "state": r.state, "players": players, "phase_ms": maxi(0, r.phase_end - now),
+			"last": r.last, "answers": r.answers, "answers_total": r.answers_total, "winner": r.winner, "used_teams": r.used_teams.keys(),
+			"quick_picks": r.get("quick_picks", [])}
+		room_state.rpc_id(viewer, d)
 
 func _send_queue(pid: int) -> void:
 	var waited: int = Time.get_ticks_msec() - int(queue_since.get(pid, Time.get_ticks_msec()))

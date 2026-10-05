@@ -17,6 +17,7 @@ case "${1:-}" in
     ls -la build/web | head; exit 0;;
 esac
 set -a; . ./.env; set +a
+: > data/server.log   # her başlatmada temiz log
 pgrep -f "uvicorn server.index_service" >/dev/null || (nohup .venv/bin/uvicorn server.index_service:app --host 127.0.0.1 --port 9081 > data/service.log 2>&1 &)
 for i in $(seq 1 60); do curl -sf localhost:9081/health >/dev/null && break; sleep 1; done
 # oyun sunucusu: düşerse 2 sn sonra yeniden başlar (watchdog)

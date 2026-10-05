@@ -7,6 +7,8 @@ var picked := false; var guessed := false; var single_mode := ""; var delay := 0
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	print("[bot] start args=", args, " url=", Net.server_url)
+	var secs := float(_arg(args, "--seconds", "0"))
+	if secs > 0: get_tree().create_timer(secs).timeout.connect(func(): print("[%s] time up" % nick); get_tree().quit())
 	nick = _arg(args, "--bot", nick); team_q = _arg(args, "--team", team_q); guess_q = _arg(args, "--guess", guess_q); single_mode = _arg(args, "--single", ""); delay = float(_arg(args, "--delay", "0"))
 	App.nickname = nick; App.device_id = "dev-" + nick
 	Game.room_changed.connect(_on_room); Game.suggestions.connect(_on_sugg); Game.error.connect(func(m): print("[%s] ERR %s" % [nick, m]))

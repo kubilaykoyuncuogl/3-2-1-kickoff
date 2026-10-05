@@ -14,12 +14,17 @@ var over_shown := false
 var toast_slot: VBoxContainer
 var opt_buttons: Array[Button] = []
 var prev_score := 0
+var history: Array = []   # Klasik: bilinen oyuncular, en yeni başta: {name, gained, bonus}
+
+func _mode_title() -> String:
+	return "Klasik merdiven" if mode == "ladder" else "Beşte Bir"
+
 
 func _ready() -> void:
 	body = UI.page(); add_child(body)
 	Game.single_changed.connect(_on_state)
 	Game.error.connect(_on_error)
-	body.add_child(UI.nav("Klasik merdiven" if mode == "ladder" else "Blitz", _quit))
+	body.add_child(UI.nav(_mode_title(), _quit))
 	body.add_child(UI.label("Yükleniyor…", 14, 600, "muted"))
 	_loading_watch()
 
@@ -27,12 +32,12 @@ func _loading_watch() -> void:
 	await get_tree().create_timer(8.0).timeout
 	if not is_inside_tree() or last_idx >= 0 or over_shown: return
 	for ch in body.get_children(): ch.queue_free()
-	body.add_child(UI.nav("Klasik merdiven" if mode == "ladder" else "Blitz", _quit))
+	body.add_child(UI.nav(_mode_title(), _quit))
 	body.add_child(UI.toast("Sunucudan cevap gelmedi" if Net.is_connected_to_server() else "Sunucuya bağlanılamadı", "no"))
 	var retry := UI.button("Tekrar dene", "violet")
 	retry.pressed.connect(func():
 		for ch in body.get_children(): ch.queue_free()
-		body.add_child(UI.nav("Klasik merdiven" if mode == "ladder" else "Blitz", _quit))
+		body.add_child(UI.nav(_mode_title(), _quit))
 		body.add_child(UI.label("Yükleniyor…", 14, 600, "muted"))
 		if not Net.is_connected_to_server(): Net.connect_to_server(); await Net.connected; Game.c_hello()
 		Game.c_single_start(mode); _loading_watch())
@@ -99,9 +104,12 @@ func _header(d: Dictionary) -> void:
 	bar = ProgressBar.new(); bar.max_value = per_ms; bar.value = per_ms; bar.show_percentage = false; bar.custom_minimum_size.y = 8
 	bar.add_theme_stylebox_override("background", UI.box("line", "", 999, 0)); bar.add_theme_stylebox_override("fill", UI.box("fg", "", 999, 0))
 	body.add_child(bar)
-	var chips := UI.hbox(6); chips.alignment = BoxContainer.ALIGNMENT_CENTER
-	chips.add_child(UI.chip(str(d.item.a_name), "violet")); chips.add_child(UI.chip(str(d.item.b_name), "amber"))
-	body.add_child(chips)
+	var pair := UI.vbox(0)
+	var a := UI.label(str(d.item.a_name), 26, 800, "violet_ink"); a.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; a.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var x := UI.label("×", 16, 700, "muted"); x.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var b := UI.label(str(d.item.b_name), 26, 800, "amber_ink"); b.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	pair.add_child(a); pair.add_child(x); pair.add_child(b)
+	body.add_child(pair)
 	toast_slot = UI.vbox(0); body.add_child(toast_slot)
 	_show_toast(d)
 
@@ -113,8 +121,12 @@ func _show_toast(d: Dictionary) -> void:
 	var gained := int(d.score) - prev_score
 	match t:
 		"correct":
+			var bonus := maxi(0, gained - 100)
 			var txt := "%s  +%d" % [last.get("name", "Doğru"), gained] if mode == "ladder" else "Doğru  +%d  ·  kombo ×%.1f" % [gained, float(d.combo)]
+			if mode == "ladder" and bonus > 0: txt += "  ·  hız bonusu +%d" % bonus
 			toast_slot.add_child(UI.toast(txt, "ok"))
+			if mode == "ladder" and gained > 0 and (history.is_empty() or history[0].get("idx", -1) != int(d.idx) - 1):
+				history.push_front({"name": str(last.get("name", "")), "gained": gained, "bonus": bonus, "idx": int(d.idx) - 1})
 		"wrong":
 			toast_slot.add_child(UI.toast("%s yanlış  ·  1 can gitti" % last.get("name", ""), "no"))
 			if ac: UI.shake(ac.input)
@@ -145,6 +157,16 @@ func _render_item(d: Dictionary) -> void:
 		ac.picked.connect(func(id, name): Game.c_single_guess(id, name); ac.clear())
 		body.add_child(ac); ac.call_deferred("focus")
 		strip = UI.label("", 12, 600, "muted"); body.add_child(strip)
+		if not history.is_empty():
+			var hv := UI.vbox(4)
+			hv.add_child(UI.eyebrow("Bildiklerin"))
+			for i in mini(history.size(), 8):
+				var h: Dictionary = history[i]
+				var row := UI.hbox(8)
+				var n := UI.label("%d. %s" % [int(h.idx) + 1, h.name], 15, 700 if i == 0 else 500, "fg" if i == 0 else "muted"); n.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				var pts := UI.label("+%d" % int(h.gained) + ("  (hız +%d)" % int(h.bonus) if int(h.bonus) > 0 else ""), 14, 700 if i == 0 else 500, "ok" if i == 0 else "muted")
+				row.add_child(n); row.add_child(pts); hv.add_child(row)
+			body.add_child(hv)
 		body.add_child(UI.label("Puan %d" % int(d.score), 15, 800))
 	else:
 		var opts := UI.vbox(8); opts.size_flags_vertical = Control.SIZE_EXPAND_FILL; opts.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -175,7 +197,7 @@ func _render_over(d: Dictionary) -> void:
 	var top := UI.panel("violet"); var tv := UI.vbox(2); tv.alignment = BoxContainer.ALIGNMENT_CENTER
 	var score := int(d.score); var record: bool = score > int(App.best.get(mode, 0))
 	if record: App.best[mode] = score; App.save_settings()
-	var ey := UI.eyebrow(("Blitz" if mode == "blitz" else "Klasik") + (" · yeni rekor" if record else " · en iyin %d" % int(App.best.get(mode, 0))), "ok" if record else "violet_ink"); ey.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; tv.add_child(ey)
+	var ey := UI.eyebrow(("Beşte Bir" if mode == "blitz" else "Klasik") + (" · yeni rekor" if record else " · en iyin %d" % int(App.best.get(mode, 0))), "ok" if record else "violet_ink"); ey.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; tv.add_child(ey)
 	var big := UI.label(str(int(d.score)), 64, 800, "violet_ink"); big.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; tv.add_child(big)
 	var sub := "%d basamak" % int(d.idx) if mode == "ladder" else "%d soru · en iyi kombo ×%.1f" % [int(d.idx), float(d.best_combo)]
 	var sl := UI.label(sub, 13, 600, "violet_ink"); sl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; tv.add_child(sl)
@@ -185,10 +207,10 @@ func _render_over(d: Dictionary) -> void:
 	top.add_child(tv); body.add_child(top)
 	body.add_child(UI.spacer())
 	var again := UI.button("Tekrar", "amber")
-	again.pressed.connect(func(): over_shown = false; last_idx = -1; prev_score = 0; opt_buttons = []; Game.c_single_start(mode))
+	again.pressed.connect(func(): over_shown = false; last_idx = -1; prev_score = 0; opt_buttons = []; history = []; Game.c_single_start(mode))
 	body.add_child(again)
 	var share := UI.button("Paylaş", "ghost")
 	share.pressed.connect(func():
-		DisplayServer.clipboard_set("3-2-1 Kickoff · %s · %d puan" % ["Blitz" if mode == "blitz" else "Klasik", int(d.score)])
+		DisplayServer.clipboard_set("3-2-1 Kickoff · %s · %d puan" % ["Beşte Bir" if mode == "blitz" else "Klasik", int(d.score)])
 		share.text = "Kopyalandı")
 	body.add_child(share)

@@ -6,7 +6,7 @@ func _ready() -> void:
 	v.add_child(UI.nav("Tek oyna", App.pop))
 	v.add_child(UI.label("Önce mod, sonra kulüp kapsamı. Her koşu farklı; en iyin cihazında kalır.", 13, 500, "muted"))
 	v.add_child(_mode_card("Klasik merdiven", "İki kulüp, oyuncuyu yaz · 3 can · basamak 20 sn", "ladder"))
-	v.add_child(_mode_card("Blitz", "5 isim, doğruya dokun · tek can · hızlanır", "blitz"))
+	v.add_child(_mode_card("Beşte Bir", "5 isim, iki kulüpte de oynayana dokun · tek can · hızlanır", "blitz"))
 	v.add_child(UI.spacer())
 	if not Net.is_connected_to_server(): Net.connect_to_server()
 
