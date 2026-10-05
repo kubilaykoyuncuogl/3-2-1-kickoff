@@ -63,7 +63,7 @@ func _on_suggestions(k: String, items: Array) -> void:
 		var b := Button.new()
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		var nm: String = it.name
-		if kind == "player" and it.get("born"): nm += "  ·  %s" % it.born
+		if kind == "player" and it.get("born"): nm += "  ·  %d" % int(it.born)
 		b.text = nm
 		b.custom_minimum_size.y = 44
 		b.add_theme_font_override("font", UI.font(600)); b.add_theme_font_size_override("font_size", 15)

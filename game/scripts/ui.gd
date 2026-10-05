@@ -129,9 +129,10 @@ static func toast(text: String, kind := "ok") -> PanelContainer:
 
 ## Can göstergesi: dolu daireler kalan, boş daireler giden
 static func lives(n: int, total := 3) -> HBoxContainer:
-	var h := hbox(6)
+	var h := hbox(6); h.alignment = BoxContainer.ALIGNMENT_CENTER
 	for i in total:
-		var d := Panel.new(); d.custom_minimum_size = Vector2(18, 18)
+		var d := Panel.new(); d.custom_minimum_size = Vector2(16, 16)
+		d.size_flags_vertical = Control.SIZE_SHRINK_CENTER; d.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		var alive := i < n
 		var st := StyleBoxFlat.new(); st.set_corner_radius_all(999)
 		if alive:
