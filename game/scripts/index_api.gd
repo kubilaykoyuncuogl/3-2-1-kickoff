@@ -46,10 +46,10 @@ func answers(a: int, b: int) -> Dictionary:
 	return r if r is Dictionary else {"names": [], "total": 0}
 
 func ladder(seed: String, scope := "all") -> Array:
-	var r = await get_json("/ladder", {"seed": seed, "steps": 30, "scope": scope})
+	var r = await get_json("/ladder", {"steps": 30, "scope": scope})   # seed yok → hazır havuzdan
 	return r.get("steps", []) if r is Dictionary else []
 
 func blitz_pack(seed: String, scope := "all") -> Array:
 	## reveal=1: soru başına "_answer" (doğru şık indeksi) gelir; yalnızca sunucu bellekte tutar.
-	var r = await get_json("/blitz/pack", {"seed": seed, "n": 40, "reveal": 1, "scope": scope})
+	var r = await get_json("/blitz/pack", {"n": 40, "reveal": 1, "scope": scope})   # seed yok → hazır havuzdan
 	return r.get("questions", []) if r is Dictionary else []

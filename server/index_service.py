@@ -8,7 +8,7 @@ Oyuncu→kulüp ilişkisi hiçbir uç noktadan toplu olarak dışarı çıkmaz:
 Başlatma:
   KICKOFF_INDEX_KEY=... uvicorn server.index_service:app --host 127.0.0.1 --port 9081
 """
-import hashlib, os, random, sqlite3, sys, pathlib
+import hashlib, os, random, sqlite3, sys, pathlib, threading, time, functools
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "tools"))
 from fastapi import FastAPI, HTTPException, Query
 from encrypt_index import decrypt_bytes, key_from_env
@@ -80,22 +80,31 @@ def _load():
     db = sqlite3.connect(":memory:", check_same_thread=False)
     db.deserialize(decrypt_bytes(INDEX, key_from_env()))   # diske düz kopya yazılmaz
     db.execute("CREATE INDEX IF NOT EXISTS ix_pair_b ON pair_counts(club_b)")   # bellekte; club_b aramaları tam tarama yapmasın
+    db.execute("CREATE VIRTUAL TABLE IF NOT EXISTS team_names USING fts5(club_id UNINDEXED, text, tokenize='unicode61')")
+    if db.execute("SELECT COUNT(*) FROM team_names").fetchone()[0] == 0:
+        db.execute("INSERT INTO team_names(club_id, text) SELECT id, norm FROM clubs WHERE national=0")
     db.execute("PRAGMA query_only=1")
     _build_scopes()
+    threading.Thread(target=_pool_worker, daemon=True).start()
 
 def fts_prefix(q: str) -> str:
     toks = [t for t in normalize(q).split() if t]
     if not toks: return ""
     return " ".join(f'"{t}"*' for t in toks)
 
-@app.get("/teams/suggest")
-def teams_suggest(q: str = Query(min_length=2), limit: int = 8, scope: str = "all"):
-    n = normalize(q); sc = scope if scope in SCOPES else "all"
-    rows = db.execute("SELECT id, name FROM clubs WHERE national=0 AND (norm LIKE ? OR norm LIKE ?) ORDER BY fame DESC LIMIT 40",
-                      (n + "%", "% " + n + "%")).fetchall()
+@functools.lru_cache(maxsize=50000)
+def _teams_suggest(n: str, sc: str, limit: int):
+    m = fts_prefix(n)
+    if not m: return []
+    rows = db.execute("""SELECT c.id, c.name FROM team_names t JOIN clubs c ON c.id = t.club_id
+                         WHERE team_names MATCH ? ORDER BY c.fame DESC LIMIT 40""", (m,)).fetchall()
     out = [{"id": i, "name": nm, "in_scope": sc == "all" or i in scope_clubs[sc]} for i, nm in rows]
     out.sort(key=lambda x: not x["in_scope"])
     return out[:limit]
+
+@app.get("/teams/suggest")
+def teams_suggest(q: str = Query(min_length=2), limit: int = 8, scope: str = "all"):
+    return _teams_suggest(normalize(q), scope if scope in SCOPES else "all", limit)
 
 @app.get("/club/{club_id}")
 def club(club_id: int, scope: str = "all"):
@@ -106,13 +115,17 @@ def club(club_id: int, scope: str = "all"):
     return {"id": row[0], "name": row[1], "competition": row[2], "top": top, "big5": big5,
             "in_scope": sc == "all" or row[0] in scope_clubs[sc], "tier": tier_of["all"].get(row[0], 4)}
 
-@app.get("/players/suggest")
-def players_suggest(q: str = Query(min_length=2), limit: int = 8):
-    m = fts_prefix(q)
+@functools.lru_cache(maxsize=100000)
+def _players_suggest(n: str, limit: int):
+    m = fts_prefix(n)
     if not m: return []
     rows = db.execute("""SELECT p.id, p.name, p.birth_year FROM names n JOIN players p ON p.id = n.player_id
                          WHERE names MATCH ? ORDER BY p.fame DESC LIMIT ?""", (m, limit)).fetchall()
     return [{"id": i, "name": nm, "born": by} for i, nm, by in rows]
+
+@app.get("/players/suggest")
+def players_suggest(q: str = Query(min_length=2), limit: int = 8):
+    return _players_suggest(normalize(q), limit)
 
 @app.get("/check")
 def check(player_id: int, club_a: int, club_b: int):
@@ -130,11 +143,40 @@ def pair_answers(club_a: int, club_b: int, limit: int = 12):
 def _seeded(day: str, salt: str) -> random.Random:
     return random.Random(hashlib.sha256(f"{day}:{salt}:{os.environ.get('KICKOFF_DAILY_SALT','')}".encode()).digest())
 
+POOL_SIZE = 20
+pools = {("ladder", sc): [] for sc in SCOPES} | {("blitz", sc): [] for sc in SCOPES}
+pool_lock = threading.Lock()
+
+def _pool_worker():
+    """Her kapsam için hazır paket havuzu; istek anında üretim beklenmez."""
+    rnd = random.Random()
+    while True:
+        try:
+            for (kind, sc), lst in list(pools.items()):
+                while len(lst) < POOL_SIZE:
+                    seed = f"pool-{time.time_ns()}-{rnd.random()}"
+                    pack = _ladder(seed, 30, sc) if kind == "ladder" else _blitz(seed, 40, sc)
+                    with pool_lock: lst.append(pack)
+        except Exception as e:
+            print("pool error", e)
+        time.sleep(0.5)
+
+def _pool_take(kind: str, sc: str):
+    with pool_lock:
+        lst = pools[(kind, sc)]
+        return lst.pop() if lst else None
+
 @app.get("/ladder")
 def ladder(day: str = "", steps: int = 30, seed: str = "", scope: str = "all"):
-    """Klasik merdiven: basamak tipi T1×T1 → T1×T2 → T2×T2 → … → T4×T4 (her tip 3 basamak). Kulüp koşuda bir kez."""
     sc = scope if scope in SCOPES else "all"
-    rng = _seeded(seed or day, "ladder:" + sc)
+    if not seed and not day and steps == 30:
+        got = _pool_take("ladder", sc)
+        if got: return got
+    return _ladder(seed or day, steps, sc)
+
+def _ladder(seed: str, steps: int, sc: str):
+    """Klasik merdiven: basamak tipi T1×T1 → T1×T2 → T2×T2 → … → T4×T4 (her tip 3 basamak). Kulüp koşuda bir kez."""
+    rng = _seeded(seed, "ladder:" + sc)
     out, used = [], set()
     for i in range(steps):
         ta, tb = tier_pair_for(i, 3, sc)
@@ -146,13 +188,21 @@ def ladder(day: str = "", steps: int = 30, seed: str = "", scope: str = "all"):
         out.append({"a": a, "b": b, "n": n, "tiers": [ta, tb]})
     names = dict(db.execute(f"SELECT id, name FROM clubs WHERE id IN ({','.join(str(c) for c in used) or '0'})").fetchall())
     for st in out: st["a_name"], st["b_name"] = names[st["a"]], names[st["b"]]
-    return {"day": day, "scope": sc, "steps": out}
+    return {"seed": seed, "scope": sc, "steps": out}
 
 @app.get("/blitz/pack")
 def blitz_pack(day: str = "", n: int = 40, reveal: int = 0, seed: str = "", scope: str = "all"):
-    """5 isim: 2 yalnız A, 2 yalnız B, 1 ikisi. Çift tier ilerleyişiyle seçilir; çeldiriciler ≥3 kulüplü ünlü oyunculardan."""
     sc = scope if scope in SCOPES else "all"
-    rng = _seeded(seed or day, "blitz:" + sc)
+    qs = None
+    if not seed and not day and n == 40:
+        qs = _pool_take("blitz", sc)
+    if qs is None: qs = _blitz(seed or day, n, sc)
+    # reveal=1 yalnızca oyun sunucusu için (localhost); cevap indeksi istemciye asla iletilmez
+    return {"scope": sc, "questions": [{k: v for k, v in q.items() if not k.startswith("_") or (reveal and k == "_answer")} for q in qs]}
+
+def _blitz(seed: str, n: int, sc: str):
+    """5 isim: 2 yalnız A, 2 yalnız B, 1 ikisi. Çift tier ilerleyişiyle seçilir; çeldiriciler ≥3 kulüplü ünlü oyunculardan."""
+    rng = _seeded(seed, "blitz:" + sc)
     qs, used = [], set()
     only_sql = """SELECT p.id, p.name FROM player_clubs x JOIN players p ON p.id=x.player_id
                   WHERE x.club_id=? AND p.n_clubs>=3 AND NOT EXISTS(SELECT 1 FROM player_clubs y WHERE y.player_id=x.player_id AND y.club_id=?)
@@ -171,13 +221,12 @@ def blitz_pack(day: str = "", n: int = 40, reveal: int = 0, seed: str = "", scop
             used.update((ca, cb)); continue
         used.update((ca, cb))
         ans = rng.choice(both); opts = [ans] + rng.sample(oa, 2) + rng.sample(ob, 2); rng.shuffle(opts)
-        qid = f"{seed or day}-{len(qs)}"
+        qid = f"{seed}-{len(qs)}"
         qs.append({"id": qid, "a": ca, "b": cb, "options": [o[1] for o in opts], "tiers": [ta, tb],
                    "answer_hash": hashlib.sha256(f"{qid}:{ans[0]}".encode()).hexdigest(), "_answer_id": ans[0], "_answer": opts.index(ans)})
     names = dict(db.execute(f"SELECT id, name FROM clubs WHERE id IN ({','.join(str(c) for c in used) or '0'})").fetchall())
     for q in qs: q["a_name"], q["b_name"] = names[q["a"]], names[q["b"]]
-    # reveal=1 yalnızca oyun sunucusu için (localhost); cevap indeksi istemciye asla iletilmez
-    return {"day": day, "scope": sc, "questions": [{k: v for k, v in q.items() if not k.startswith("_") or (reveal and k == "_answer")} for q in qs]}
+    return qs
 
 @app.get("/player/{player_id}/career")
 def career(player_id: int):
