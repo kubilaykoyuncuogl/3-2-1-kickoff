@@ -79,6 +79,9 @@ func _update(d: Dictionary) -> void:
 			elif opp_label: opp_label.text = _opp_pick_text(Game.opponent())
 		Game.State.ROUND:
 			var last: Dictionary = d.get("last", {})
+			if toast_slot and Game.opponent().get("away", false):
+				for ch in toast_slot.get_children(): ch.queue_free()
+				toast_slot.add_child(UI.toast("Rakibin bağlantısı koptu, 10 sn bekleniyor", "muted"))
 			if toast_slot and last.get("type", "") == "wrong":
 				for ch in toast_slot.get_children(): ch.queue_free()
 				if int(last.pid) == multiplayer.get_unique_id():
@@ -140,6 +143,7 @@ func _render_pick(d: Dictionary) -> void:
 	strip = UI.label("", 12, 600, "no"); body.add_child(strip)
 
 func _opp_pick_text(op: Dictionary) -> String:
+	if op.get("away", false): return "Bağlantısı koptu, 10 sn bekleniyor…"
 	if op.get("ready", false): return str(op.get("team_name", "")) + "  ·  hazır"
 	return "Seçti, hazır değil" if op.get("team", 0) != 0 else "Düşünüyor…"
 

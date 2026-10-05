@@ -13,6 +13,13 @@ const WIN_SCORE := 3
 const MAX_INVALID_PAIRS := 3
 const ELO_K := 32
 const ELO_K_NEW := 40
+const BAND_START := 75
+const BAND_STEP := 50          # her BAND_STEP_MS'de
+const BAND_STEP_MS := 20000
+const BAND_MAX := 500
+const CROSS_SCOPE_MS := 45000   # bu kadar bekleyenler kapsam fark etmeksizin eşleşir
+const RECONNECT_MS := 10000
+const SCOPE_ORDER := ["big5", "top", "all"]   # dar → geniş
 
 # ---------- istemci tarafı ----------
 signal room_changed(d: Dictionary)
@@ -34,6 +41,8 @@ var singles := {}       # pid -> session
 var packs := {}         # (kullanılmıyor: her oturum yeni paket)
 var rate := {}          # pid -> Array[msec]
 var _accounts := {}     # device -> {elo, games}
+var words: PackedStringArray = []   # oda kodu kelimeleri (efsane soyadları)
+var pending_rc := {}    # device -> {code, pid, until}  (kopan oyuncunun geri dönüş hakkı)
 
 func _ready() -> void:
 	my_id = 0
@@ -41,6 +50,8 @@ func _ready() -> void:
 		multiplayer.peer_disconnected.connect(_on_leave)
 		multiplayer.peer_connected.connect(func(pid): profiles[pid] = {"nick": "misafir", "device": "", "elo": 1000, "games": 0})
 		_load_accounts()
+		var f := FileAccess.open("res://assets/room_words.txt", FileAccess.READ)
+		if f: words = f.get_as_text().split("\n", false)
 		set_process(true)
 	else:
 		set_process(false)
@@ -56,8 +67,12 @@ func hello(nick: String, device: String) -> void:
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
 	var acc: Dictionary = _accounts.get(device, {"elo": 1000, "games": 0})
-	profiles[pid] = {"nick": nick.strip_edges().substr(0, 16), "device": device, "elo": acc.elo, "games": acc.games}
+	profiles[pid] = {"nick": nick.strip_edges().substr(0, 16), "device": device, "elo": acc.elo, "games": acc.games, "last_opp": acc.get("last_opp", "")}
 	_send_profile(pid)
+	if device != "" and pending_rc.has(device):
+		var prc: Dictionary = pending_rc[device]; pending_rc.erase(device)
+		var r = rooms.get(prc.code)
+		if r != null and prc.pid in r.players: _rebind(r, prc.pid, pid)
 
 @rpc("any_peer", "call_remote", "reliable")
 func create_room(scope: String) -> void:
@@ -72,7 +87,7 @@ func create_room(scope: String) -> void:
 func join_room(code: String) -> void:
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
-	code = code.strip_edges()
+	code = Normalize.norm(code).replace(" ", "")
 	if not rooms.has(code): err.rpc_id(pid, "Oda bulunamadı"); return
 	if rooms[code].players.size() >= 2: err.rpc_id(pid, "Oda dolu"); return
 	_leave_everything(pid)
@@ -269,9 +284,16 @@ func _new_room(code: String, ranked: bool, scope := "all") -> Dictionary:
 func _reset_match(r: Dictionary) -> void:
 	r.teams = {}; r.team_names = {}; r.ready = {}; r.score = {}; r.penalty_until = {}; r.used_teams = {}
 	r.invalid_streak = 0; r.phase_end = 0; r.answers = []; r.answers_total = 0; r.winner = 0; r.rematch = {}; r.last = {}
-	r.elo_delta = {}; r.gen += 1
+	r.elo_delta = {}; r.away = {}; r.gen += 1
 
 func _new_code() -> String:
+	if words.size() > 0:
+		for i in 20:
+			var w := String(words[randi() % words.size()])
+			if not rooms.has(w): return w
+		for i in 50:
+			var w2 := "%s%d" % [words[randi() % words.size()], randi() % 90 + 10]
+			if not rooms.has(w2): return w2
 	while true:
 		var code := "%04d" % (randi() % 10000)
 		if not rooms.has(code): return code
@@ -305,7 +327,31 @@ func _leave_everything(pid: int) -> void:
 	_broadcast(r)
 
 func _on_leave(pid: int) -> void:
+	var r = _room_of(pid)
+	var dev: String = profiles.get(pid, {}).get("device", "")
+	if r != null and dev != "" and r.players.size() == 2 and r.state in [State.PICK_TEAMS, State.COUNTDOWN, State.ROUND, State.ROUND_END]:
+		# 10 sn içinde aynı cihaz geri gelirse maç devam eder
+		pending_rc[dev] = {"code": r.code, "pid": pid, "until": Time.get_ticks_msec() + RECONNECT_MS}
+		r.away[pid] = true; _broadcast(r)
+		queue.erase(pid); queue_since.erase(pid); singles.erase(pid)
+		var saved: Dictionary = profiles[pid]
+		await get_tree().create_timer(RECONNECT_MS / 1000.0).timeout
+		if pending_rc.get(dev, {}).get("pid", -1) == pid:
+			pending_rc.erase(dev); profiles[pid] = saved
+			_leave_everything(pid); profiles.erase(pid)
+		rate.erase("%d:guess" % pid); rate.erase("%d:suggest" % pid)
+		return
 	_leave_everything(pid); profiles.erase(pid); rate.erase("%d:guess" % pid); rate.erase("%d:suggest" % pid)
+
+func _rebind(r: Dictionary, old: int, new: int) -> void:
+	var i: int = r.players.find(old)
+	if i >= 0: r.players[i] = new
+	for key in ["teams", "team_names", "ready", "score", "penalty_until", "rematch", "elo_delta", "away"]:
+		var d: Dictionary = r[key]
+		if d.has(old): d[new] = d[old]; d.erase(old)
+	r.away.erase(new)
+	pid_room.erase(old); pid_room[new] = r.code
+	_broadcast(r)
 
 func _start_countdown(r: Dictionary) -> void:
 	for t in r.teams.values(): r.used_teams[t] = true
@@ -355,7 +401,7 @@ func _broadcast(r: Dictionary) -> void:
 		var p: Dictionary = profiles.get(pid, {"nick": "?", "elo": 1000})
 		players.append({"pid": pid, "nick": p.nick, "elo": p.elo, "team": r.teams.get(pid, 0), "team_name": r.team_names.get(pid, ""),
 			"ready": r.ready.get(pid, false), "score": r.score.get(pid, 0), "penalty_ms": maxi(0, r.penalty_until.get(pid, 0) - now),
-			"rematch": r.rematch.get(pid, false), "elo_delta": r.elo_delta.get(pid, 0)})
+			"rematch": r.rematch.get(pid, false), "elo_delta": r.elo_delta.get(pid, 0), "away": r.away.get(pid, false)})
 	var d := {"code": r.code, "ranked": r.ranked, "scope": r.scope, "state": r.state, "players": players, "phase_ms": maxi(0, r.phase_end - now),
 		"last": r.last, "answers": r.answers, "answers_total": r.answers_total, "winner": r.winner, "used_teams": r.used_teams.keys()}
 	var peers := multiplayer.get_peers()
@@ -363,12 +409,16 @@ func _broadcast(r: Dictionary) -> void:
 		if pid in peers: room_state.rpc_id(pid, d)
 
 func _send_queue(pid: int) -> void:
-	var band := _band(pid)
-	room_state.rpc_id(pid, {"state": State.LOBBY, "searching": true, "band": band, "elo": profiles[pid].elo})
+	var waited: int = Time.get_ticks_msec() - int(queue_since.get(pid, Time.get_ticks_msec()))
+	room_state.rpc_id(pid, {"state": State.LOBBY, "searching": true, "band": _band(pid), "elo": profiles[pid].elo,
+		"waiting": queue.size(), "cross_in_ms": maxi(0, CROSS_SCOPE_MS - waited)})
 
 func _band(pid: int) -> int:
 	var waited: int = Time.get_ticks_msec() - int(queue_since.get(pid, Time.get_ticks_msec()))
-	return 100 + 100 * int(waited / 10000)
+	return mini(BAND_MAX, BAND_START + BAND_STEP * int(waited / BAND_STEP_MS))
+
+func _waited(pid: int) -> int:
+	return Time.get_ticks_msec() - int(queue_since.get(pid, Time.get_ticks_msec()))
 
 var _queue_tick := 0
 func _tick_queue() -> void:
@@ -382,10 +432,17 @@ func _tick_queue() -> void:
 			var b: int = queue[j]
 			var pa: Dictionary = profiles[a]; var pb: Dictionary = profiles[b]
 			if pa.get("verified", false) != pb.get("verified", false): continue
-			if pa.get("scope", "all") != pb.get("scope", "all"): continue   # aynı kulüp kapsamı
+			var cross := _waited(a) >= CROSS_SCOPE_MS and _waited(b) >= CROSS_SCOPE_MS
+			if pa.get("scope", "all") != pb.get("scope", "all") and not cross: continue   # aynı kapsam; 45 sn sonra serbest
+			var same_last: bool = pa.get("last_opp", "") == pb.get("device", "") and pb.get("device", "") != ""
+			if same_last and (_waited(a) < 20000 or _waited(b) < 20000): continue      # az önceki rakip, 20 sn bekle
 			if absi(int(pa.elo) - int(pb.elo)) <= mini(_band(a), _band(b)):
 				queue.erase(b); queue.erase(a); queue_since.erase(a); queue_since.erase(b)
-				var code := _new_code(); rooms[code] = _new_room(code, true, pa.get("scope", "all"))
+				var scope_idx := maxi(SCOPE_ORDER.find(pa.get("scope", "all")), SCOPE_ORDER.find(pb.get("scope", "all")))
+				pa["last_opp"] = pb.get("device", ""); pb["last_opp"] = pa.get("device", "")
+				for dp in [pa, pb]:
+					if dp.device != "": _accounts[dp.device] = {"elo": dp.elo, "games": dp.games, "last_opp": dp.last_opp}
+				var code := _new_code(); rooms[code] = _new_room(code, true, SCOPE_ORDER[scope_idx])
 				_join(code, a); _join(code, b); matched = true; break
 		if not matched:
 			_send_queue(a); i += 1
@@ -401,7 +458,7 @@ func _apply_elo(r: Dictionary, winner: int, loser: int) -> void:
 	r.elo_delta = {winner: dw, loser: dl}
 	for pid in [winner, loser]:
 		var p: Dictionary = profiles[pid]
-		if p.device != "": _accounts[p.device] = {"elo": p.elo, "games": p.games}
+		if p.device != "": _accounts[p.device] = {"elo": p.elo, "games": p.games, "last_opp": p.get("last_opp", "")}
 		_send_profile(pid)
 	_save_accounts()
 

@@ -54,8 +54,11 @@ func _on_room(d: Dictionary) -> void:
 func _process(_dt: float) -> void:
 	if mode == "searching" and status:
 		var d := Game.room
-		var band: int = d.get("band", 100); var elo: int = d.get("elo", App.elo)
-		status.text = "%d – %d  ·  %d sn" % [elo - band, elo + band, (Time.get_ticks_msec() - _since) / 1000]
+		var band: int = d.get("band", 75); var elo: int = d.get("elo", App.elo)
+		var waiting: int = d.get("waiting", 1); var cross: int = int(d.get("cross_in_ms", 0) / 1000.0)
+		var line := "Elo %d – %d  ·  %d sn  ·  %d kişi arıyor" % [elo - band, elo + band, (Time.get_ticks_msec() - _since) / 1000, waiting]
+		if App.scope != "all": line += "\n" + ("%d sn sonra kapsam genişler" % cross if cross > 0 else "kapsam genişledi")
+		status.text = line
 
 func _render() -> void:
 	for ch in body.get_children(): ch.queue_free()
@@ -106,34 +109,46 @@ func _render_room() -> void:
 	body.add_child(me)
 	body.add_child(UI.spacer())
 	var ey := UI.eyebrow("Oda kodu"); ey.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; body.add_child(ey)
-	var code := UI.label(str(d.get("code", "----")), 56, 800); code.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var code := UI.label(str(d.get("code", "----")), 44, 800); code.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	code.add_theme_constant_override("outline_size", 0); body.add_child(code)
+	var link := _room_link(str(d.get("code", "")))
+	var ll := UI.label(link, 12, 500, "muted"); ll.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; ll.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY; body.add_child(ll)
 	var sc := UI.chip(UI.scope_label(str(d.get("scope", "all"))), "violet"); sc.size_flags_horizontal = Control.SIZE_SHRINK_CENTER; body.add_child(sc)
 	var h := UI.hbox(8); h.alignment = BoxContainer.ALIGNMENT_CENTER
-	var copy := UI.button("Kopyala", "line"); copy.custom_minimum_size.x = 140
+	var copy := UI.button("Kodu kopyala", "line"); copy.custom_minimum_size.x = 150
 	copy.pressed.connect(func(): DisplayServer.clipboard_set(str(d.get("code", ""))); copy.text = "KOPYALANDI")
-	h.add_child(copy); body.add_child(h)
+	var share := UI.button("Linki paylaş", "violet"); share.custom_minimum_size.x = 150
+	share.pressed.connect(func():
+		var l := _room_link(str(d.get("code", "")))
+		if OS.has_feature("web"): JavaScriptBridge.eval("(navigator.share?navigator.share({title:'3-2-1 Kickoff',text:'Odama gel: ',url:%s}):navigator.clipboard.writeText(%s))" % [JSON.stringify(l), JSON.stringify(l)])
+		else: DisplayServer.clipboard_set(l)
+		share.text = "PAYLAŞILDI")
+	h.add_child(copy); h.add_child(share); body.add_child(h)
 	body.add_child(UI.spacer())
 	var op := UI.panel("amber"); op.modulate.a = 0.65; var ov := UI.vbox(2); ov.add_child(UI.eyebrow("Rakip", "amber_ink")); ov.add_child(UI.label("Bekleniyor…", 20, 800, "amber_ink")); op.add_child(ov)
 	body.add_child(op)
 	status = UI.label("", 12, 600, "no"); body.add_child(status)
 
+func _room_link(code: String) -> String:
+	if OS.has_feature("web"):
+		var origin: String = str(JavaScriptBridge.eval("location.origin + location.pathname"))
+		return "%s?oda=%s" % [origin, code]
+	return "https://kickoff.grandecorpo.com/?oda=%s" % code
+
 func _render_join() -> void:
 	# üstte: klavye açılınca görünür kalsın
 	var ey := UI.eyebrow("Arkadaşının kodu"); ey.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; body.add_child(ey)
-	var inp := LineEdit.new(); inp.max_length = 4; inp.placeholder_text = "0000"; inp.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	inp.custom_minimum_size.y = 72; inp.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER
-	inp.add_theme_font_override("font", UI.font(800)); inp.add_theme_font_size_override("font_size", 40)
+	var inp := LineEdit.new(); inp.max_length = 14; inp.placeholder_text = "zidane"; inp.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	inp.custom_minimum_size.y = 64
+	inp.add_theme_font_override("font", UI.font(800)); inp.add_theme_font_size_override("font_size", 28)
 	inp.add_theme_color_override("font_color", UI.c("fg")); inp.add_theme_color_override("font_placeholder_color", UI.c("line_strong"))
 	var st := UI.box("surface", "violet_fill", 14); inp.add_theme_stylebox_override("normal", st); inp.add_theme_stylebox_override("focus", st)
 	body.add_child(inp)
-	status = UI.label("4 hane, otomatik katılır", 12, 600, "muted"); status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; body.add_child(status)
+	status = UI.label("Oda kodu bir efsanenin soyadı, ör. zidane", 12, 600, "muted"); status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; body.add_child(status)
 	var go := UI.button("Katıl", "violet")
-	go.pressed.connect(func(): if inp.text.length() == 4: Game.c_join_room(inp.text))
+	go.pressed.connect(func(): if inp.text.strip_edges().length() >= 3: Game.c_join_room(inp.text))
 	body.add_child(go)
-	inp.text_changed.connect(func(t):
-		if t.length() == 4: Game.c_join_room(t))
 	inp.text_submitted.connect(func(t):
-		if t.length() == 4: Game.c_join_room(t))
+		if t.strip_edges().length() >= 3: Game.c_join_room(t))
 	body.add_child(UI.spacer())
 	inp.call_deferred("grab_focus")
