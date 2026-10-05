@@ -5,7 +5,7 @@ services:
     image: kickoff:latest
     restart: unless-stopped
     env_file: ../.env            # KICKOFF_INDEX_KEY, KICKOFF_DAILY_SALT
-    ports: ["127.0.0.1:8080:8080"]
+    ports: ["8080:8080"]   # rootless Docker: 127.0.0.1 bağlaması yönlendirmiyor; dış erişimi güvenlik duvarıyla kapat
     volumes:
       - ../data/index/index.enc:/app/data/index/index.enc:ro
       - kickoff-state:/app/.local   # Godot user:// (accounts.json)
