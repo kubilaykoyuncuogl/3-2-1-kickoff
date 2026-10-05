@@ -113,6 +113,43 @@ static func chip(text: String, kind := "violet") -> PanelContainer:
 	p.add_child(label(text, 12, 600, fg))
 	return p
 
+## Büyük renkli bildirim şeridi. kind: "ok" | "no" | "muted"
+static func toast(text: String, kind := "ok") -> PanelContainer:
+	var p := PanelContainer.new()
+	var bg: String = {"ok": "ok_soft", "no": "no_soft", "muted": "surface"}[kind]
+	var fg: String = {"ok": "ok", "no": "no", "muted": "muted"}[kind]
+	var st := box(bg, fg, 12, 2)
+	st.content_margin_top = 12; st.content_margin_bottom = 12
+	p.add_theme_stylebox_override("panel", st)
+	var l := label(text, 16, 800, fg)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	p.add_child(l)
+	return p
+
+## Can göstergesi: dolu daireler kalan, boş daireler giden
+static func lives(n: int, total := 3) -> HBoxContainer:
+	var h := hbox(6)
+	for i in total:
+		var d := Panel.new(); d.custom_minimum_size = Vector2(18, 18)
+		var alive := i < n
+		var st := StyleBoxFlat.new(); st.set_corner_radius_all(999)
+		if alive:
+			st.bg_color = c("ok") if n >= 2 else c("no")
+		else:
+			st.bg_color = Color.TRANSPARENT; st.set_border_width_all(2); st.border_color = c("line_strong")
+		d.add_theme_stylebox_override("panel", st)
+		h.add_child(d)
+	return h
+
+## Yanlışta yatay sallanma
+static func shake(node: Control) -> void:
+	if node == null or not node.is_inside_tree(): return
+	var x := node.position.x
+	var tw := node.create_tween()
+	for dx in [10, -10, 7, -7, 0]:
+		tw.tween_property(node, "position:x", x + dx, 0.045)
+
 static func vbox(sep := 10) -> VBoxContainer:
 	var v := VBoxContainer.new(); v.add_theme_constant_override("separation", sep); return v
 

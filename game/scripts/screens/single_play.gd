@@ -11,6 +11,9 @@ var lock_until := 0
 var strip: Label
 var last_idx := -1
 var over_shown := false
+var toast_slot: VBoxContainer
+var opt_buttons: Array[Button] = []
+var prev_score := 0
 
 func _ready() -> void:
 	body = UI.page(); add_child(body)
@@ -32,10 +35,22 @@ func _on_error(msg: String) -> void:
 func _on_state(d: Dictionary) -> void:
 	var now := Time.get_ticks_msec()
 	deadline = now + int(d.remaining_ms); per_ms = maxi(1, int(d.per_ms)); lock_until = now + int(d.lock_ms)
+	var last: Dictionary = d.get("last", {})
 	if d.over:
-		if not over_shown: over_shown = true; _render_over(d)
+		if over_shown: return
+		over_shown = true
+		if mode == "blitz" and last.get("type", "") == "wrong" and opt_buttons.size() == 5:
+			_flash_options(int(last.get("option", -1)), int(last.get("answer", -1)))
+			await get_tree().create_timer(1.3).timeout
+		elif mode == "blitz" and last.get("type", "") == "timeout" and opt_buttons.size() == 5:
+			_flash_options(-1, -1)
+			await get_tree().create_timer(1.0).timeout
+		_render_over(d)
 		return
 	if int(d.idx) != last_idx:
+		if mode == "blitz" and last.get("type", "") == "correct" and opt_buttons.size() == 5 and last_idx >= 0:
+			_flash_options(int(last.get("option", -1)), int(last.get("option", -1)))
+			await get_tree().create_timer(0.35).timeout
 		last_idx = int(d.idx); _render_item(d)
 	else:
 		_update(d)
@@ -58,7 +73,7 @@ func _header(d: Dictionary) -> void:
 	var left := UI.hbox(6); left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if mode == "ladder":
 		left.add_child(UI.eyebrow("Basamak %d" % (int(d.idx) + 1)))
-		left.add_child(UI.chip("Can %d" % int(d.lives), "no" if int(d.lives) <= 1 else "ok"))
+		left.add_child(UI.lives(int(d.lives)))
 	else:
 		left.add_child(UI.eyebrow("Soru %d" % (int(d.idx) + 1)))
 		left.add_child(UI.chip("×%.1f" % float(d.combo), "ok"))
@@ -71,10 +86,42 @@ func _header(d: Dictionary) -> void:
 	var chips := UI.hbox(6); chips.alignment = BoxContainer.ALIGNMENT_CENTER
 	chips.add_child(UI.chip(str(d.item.a_name), "violet")); chips.add_child(UI.chip(str(d.item.b_name), "amber"))
 	body.add_child(chips)
+	toast_slot = UI.vbox(0); body.add_child(toast_slot)
+	_show_toast(d)
+
+func _show_toast(d: Dictionary) -> void:
+	if toast_slot == null: return
+	for ch in toast_slot.get_children(): ch.queue_free()
+	var last: Dictionary = d.get("last", {})
+	var t: String = last.get("type", "")
+	var gained := int(d.score) - prev_score
+	match t:
+		"correct":
+			var txt := "%s  +%d" % [last.get("name", "Doğru"), gained] if mode == "ladder" else "Doğru  +%d  ·  kombo ×%.1f" % [gained, float(d.combo)]
+			toast_slot.add_child(UI.toast(txt, "ok"))
+		"wrong":
+			toast_slot.add_child(UI.toast("%s yanlış  ·  1 can gitti  ·  3 sn kilit" % last.get("name", ""), "no"))
+			if ac: UI.shake(ac.input)
+		"timeout":
+			toast_slot.add_child(UI.toast("Süre doldu  ·  1 can gitti", "no"))
+	prev_score = int(d.score)
+
+func _flash_options(pressed: int, answer: int) -> void:
+	for i in opt_buttons.size():
+		var b := opt_buttons[i]
+		if not is_instance_valid(b): continue
+		if i == answer:
+			b.add_theme_stylebox_override("normal", UI.box("ok_soft", "ok", 12)); b.add_theme_stylebox_override("disabled", UI.box("ok_soft", "ok", 12))
+			b.add_theme_color_override("font_color", UI.c("ok")); b.add_theme_color_override("font_disabled_color", UI.c("ok"))
+		elif i == pressed:
+			b.add_theme_stylebox_override("normal", UI.box("no_soft", "no", 12)); b.add_theme_stylebox_override("disabled", UI.box("no_soft", "no", 12))
+			b.add_theme_color_override("font_color", UI.c("no")); b.add_theme_color_override("font_disabled_color", UI.c("no"))
+			UI.shake(b)
+		b.disabled = true
 
 func _render_item(d: Dictionary) -> void:
 	for ch in body.get_children(): ch.queue_free()
-	ac = null
+	ac = null; opt_buttons = []
 	body.add_child(UI.nav("Klasik merdiven" if mode == "ladder" else "Blitz", _quit))
 	_header(d)
 	if mode == "ladder":
@@ -82,23 +129,28 @@ func _render_item(d: Dictionary) -> void:
 		ac.picked.connect(func(id, name): Game.c_single_guess(id, name); ac.clear())
 		body.add_child(ac); ac.call_deferred("focus")
 		strip = UI.label("", 12, 600, "muted"); body.add_child(strip)
-		var last: Dictionary = d.get("last", {})
-		if last.get("type", "") == "correct": strip.text = "%s +1" % last.name
-		elif last.get("type", "") == "timeout": strip.text = "Süre doldu, 1 can gitti"
-		body.add_child(UI.label("Puan %d" % int(d.score), 13, 700))
+		body.add_child(UI.label("Puan %d" % int(d.score), 15, 800))
 	else:
 		var opts := UI.vbox(8); opts.size_flags_vertical = Control.SIZE_EXPAND_FILL; opts.alignment = BoxContainer.ALIGNMENT_CENTER
 		for i in d.item.options.size():
 			var b := UI.button(str(d.item.options[i]), "line"); b.text = str(d.item.options[i]); b.custom_minimum_size.y = 60
 			var idx: int = i
-			b.pressed.connect(func(): Game.c_single_answer(idx))
-			opts.add_child(b)
+			b.pressed.connect(func():
+				for ob in opt_buttons: ob.disabled = true
+				Game.c_single_answer(idx))
+			opts.add_child(b); opt_buttons.append(b)
 		body.add_child(opts)
-		body.add_child(UI.label("Puan %d" % int(d.score), 13, 700))
+		body.add_child(UI.label("Puan %d" % int(d.score), 15, 800))
 
 func _update(d: Dictionary) -> void:
+	# aynı basamak, yeni olay (yanlış tahmin): başlıktaki canları ve şeridi tazele
 	var last: Dictionary = d.get("last", {})
-	if strip and last.get("type", "") == "wrong": strip.text = "%s yanlış · 1 can gitti" % last.get("name", "")
+	if last.get("type", "") == "wrong":
+		_show_toast(d)
+		var hdr := body.get_child(1) if body.get_child_count() > 1 else null
+		if hdr is HBoxContainer and hdr.get_child(0).get_child_count() > 1 and mode == "ladder":
+			var left: HBoxContainer = hdr.get_child(0)
+			left.get_child(1).queue_free(); left.add_child(UI.lives(int(d.lives)))
 
 func _render_over(d: Dictionary) -> void:
 	for ch in body.get_children(): ch.queue_free()
@@ -125,7 +177,7 @@ func _render_over(d: Dictionary) -> void:
 		body.add_child(lb)
 	body.add_child(UI.spacer())
 	var again := UI.button("Tekrar", "amber")
-	again.pressed.connect(func(): over_shown = false; last_idx = -1; Game.c_single_start(mode, d.practice))
+	again.pressed.connect(func(): over_shown = false; last_idx = -1; prev_score = 0; opt_buttons = []; Game.c_single_start(mode, d.practice))
 	body.add_child(again)
 	var share := UI.button("Paylaş", "ghost")
 	share.pressed.connect(func():

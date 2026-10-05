@@ -13,6 +13,7 @@ var penalty_until := 0
 var strip: Label
 var opp_label: Label
 var pick_sig := ""
+var toast_slot: VBoxContainer
 
 func _ready() -> void:
 	body = UI.page(); add_child(body)
@@ -60,7 +61,7 @@ func _process(_dt: float) -> void:
 # ---------- kurulum ----------
 func _render(d: Dictionary) -> void:
 	for ch in body.get_children(): ch.queue_free()
-	timer_label = null; timer_bar = null; countdown_label = null; ac = null; strip = null; opp_label = null
+	timer_label = null; timer_bar = null; countdown_label = null; ac = null; strip = null; opp_label = null; toast_slot = null
 	match state:
 		Game.State.PICK_TEAMS: _render_pick(d)
 		Game.State.COUNTDOWN: _render_countdown(d)
@@ -78,9 +79,13 @@ func _update(d: Dictionary) -> void:
 			elif opp_label: opp_label.text = _opp_pick_text(Game.opponent())
 		Game.State.ROUND:
 			var last: Dictionary = d.get("last", {})
-			if strip and last.get("type", "") == "wrong":
-				if int(last.pid) == multiplayer.get_unique_id(): strip.text = "Yanlış: %s" % last.name
-				else: strip.text = "Rakip: %s yanlış, %d sn kilitli" % [last.name, ceili(int(Game.opponent().get("penalty_ms", 0)) / 1000.0)]
+			if toast_slot and last.get("type", "") == "wrong":
+				for ch in toast_slot.get_children(): ch.queue_free()
+				if int(last.pid) == multiplayer.get_unique_id():
+					toast_slot.add_child(UI.toast("%s yanlış  ·  5 sn kilit" % last.name, "no"))
+					if ac: UI.shake(ac.input)
+				else:
+					toast_slot.add_child(UI.toast("Rakip: %s yanlış  ·  %d sn kilitli" % [last.name, ceili(int(Game.opponent().get("penalty_ms", 0)) / 1000.0)], "muted"))
 		Game.State.GAME_OVER: _render(d)
 
 func _side_panel(p: Dictionary, side: String, sub: Control = null) -> PanelContainer:
@@ -167,7 +172,7 @@ func _render_round(d: Dictionary) -> void:
 	ac.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	ac.picked.connect(func(id, name): Game.c_guess(id, name); ac.clear())
 	body.add_child(ac)
-	strip = UI.label("", 12, 600, "muted"); body.add_child(strip)
+	toast_slot = UI.vbox(0); body.add_child(toast_slot)
 	var sc := _score_row(d); body.add_child(sc)
 	ac.call_deferred("focus")
 
@@ -176,7 +181,7 @@ func _render_round_end(d: Dictionary) -> void:
 	var last: Dictionary = d.get("last", {})
 	var i_won: bool = last.get("type", "") == "correct" and int(last.get("pid", 0)) == multiplayer.get_unique_id()
 	var they_won: bool = last.get("type", "") == "correct" and not i_won
-	var mine_sub: Control = UI.chip("%s +1" % last.get("name", ""), "ok") if i_won else null
+	var mine_sub: Control = UI.toast("%s  +1" % last.get("name", ""), "ok") if i_won else null
 	var top := _side_panel(me, "violet", mine_sub); top.size_flags_vertical = Control.SIZE_EXPAND_FILL; body.add_child(top)
 	body.add_child(_score_row(d))
 	var note: String
@@ -188,8 +193,9 @@ func _render_round_end(d: Dictionary) -> void:
 	var ans_text := ""
 	if total > 0:
 		ans_text = "Olası: " + ", ".join(ans.slice(0, 4)) + (" … +%d" % (total - 4) if total > 4 else "")
-	var sub := UI.vbox(2)
-	if note != "": sub.add_child(UI.label(note, 14, 700, "amber_ink"))
+	var sub := UI.vbox(6)
+	if they_won: sub.add_child(UI.toast("%s bildi  ·  rakip +1" % last.get("name", ""), "no"))
+	elif note != "": sub.add_child(UI.toast(note, "no" if last.get("type", "") == "timeout" or last.get("no_common", false) else "muted"))
 	if ans_text != "":
 		var l := UI.label(ans_text, 12, 500, "amber_ink"); l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; sub.add_child(l)
 	var bot := _side_panel(op, "amber", sub); bot.size_flags_vertical = Control.SIZE_EXPAND_FILL; body.add_child(bot)
