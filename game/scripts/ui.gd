@@ -183,6 +183,35 @@ static func row(index: String, title: String, sub := "", right: Control = null, 
 	p.add_child(h)
 	return p
 
+## Başlıklı sade liste kartı: satırlar ince çizgiyle ayrılır, altta isteğe bağlı not ("+5 oyuncu daha")
+static func list_card(title: String, items: Array, footer := "") -> PanelContainer:
+	var p := PanelContainer.new()
+	var st := box("surface", "line", 12, 2); st.content_margin_left = 0; st.content_margin_right = 0; st.content_margin_top = 6; st.content_margin_bottom = 6
+	p.add_theme_stylebox_override("panel", st)
+	var v := vbox(0)
+	var pad := func(c: Control, top := 6, bottom := 6) -> MarginContainer:
+		var m := MarginContainer.new()
+		m.add_theme_constant_override("margin_left", 12); m.add_theme_constant_override("margin_right", 12)
+		m.add_theme_constant_override("margin_top", top); m.add_theme_constant_override("margin_bottom", bottom)
+		m.add_child(c); return m
+	if title != "": v.add_child(pad.call(label(title.to_upper(), 11, 700, "muted"), 4, 4))
+	for i in items.size():
+		var line := Panel.new(); line.custom_minimum_size.y = 2
+		var ls := StyleBoxFlat.new(); ls.bg_color = c("line"); line.add_theme_stylebox_override("panel", ls)
+		v.add_child(line)
+		var h := hbox(10)
+		h.add_child(badge(str(i + 1), "muted"))
+		var t := label(str(items[i]), 15, 600, "fg"); t.size_flags_horizontal = Control.SIZE_EXPAND_FILL; t.clip_text = true; t.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		t.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		h.add_child(t); v.add_child(pad.call(h, 5, 5))
+	if footer != "":
+		var line2 := Panel.new(); line2.custom_minimum_size.y = 2
+		var ls2 := StyleBoxFlat.new(); ls2.bg_color = c("line"); line2.add_theme_stylebox_override("panel", ls2)
+		v.add_child(line2)
+		v.add_child(pad.call(label(footer, 13, 600, "muted"), 6, 2))
+	p.add_child(v)
+	return p
+
 ## İpucu karosu: küçük başlık + değer
 static func kv(key: String, value: String, kind := "violet") -> PanelContainer:
 	var p := PanelContainer.new()

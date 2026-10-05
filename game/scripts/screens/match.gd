@@ -224,7 +224,7 @@ func _render_round_end(d: Dictionary) -> void:
 	var they_won: bool = (t == "correct" and int(last.get("pid", 0)) != my) or (t == "pick_timeout" and int(last.get("pid", 0)) == my)
 	var ans: Array = d.get("answers", []); var total: int = int(d.get("answers_total", 0))
 	var answer_name: String = str(last.get("name", ""))
-	var others: Array = ans.filter(func(n): return n != answer_name).slice(0, 7)
+	var others: Array = ans.filter(func(n): return n != answer_name).slice(0, 6)
 	var rest := maxi(0, total - others.size() - (1 if answer_name != "" else 0))
 
 	var winner_sub := UI.vbox(8)
@@ -236,8 +236,9 @@ func _render_round_end(d: Dictionary) -> void:
 		var note := T.t("match.no_common") if last.get("no_common", false) else T.t("match.nobody")
 		winner_sub.add_child(UI.toast(note, "no"))
 	if not others.is_empty():
-		var ol := UI.label((T.t("match.others") if t == "correct" else T.t("match.possible")) + ", ".join(others) + (T.t("match.more") % rest if rest > 0 else ""), 14, 500, "fg")
-		ol.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; winner_sub.add_child(ol)
+		var head := (T.t("match.others") if t == "correct" else T.t("match.possible")).strip_edges().trim_suffix(":")
+		var foot := (T.t("match.more") % rest).strip_edges().trim_prefix("…").strip_edges() if rest > 0 else ""
+		winner_sub.add_child(UI.list_card(head, others, foot))
 
 	# kazanan taraf büyür, diğerine doğru basar
 	var top_weight := 1.6 if i_won else (0.6 if they_won else 1.0)
@@ -260,7 +261,7 @@ func _render_over(d: Dictionary) -> void:
 	var sc := UI.label("%d : %d" % [me.get("score", 0), op.get("score", 0)], 64, 800, "violet_ink"); sc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; tv.add_child(sc)
 	if d.get("ranked", false) and int(me.get("elo_delta", 0)) != 0:
 		var de: int = int(me.elo_delta)
-		var el := UI.label("Elo %d → %d (%s%d)" % [App.elo - de, App.elo, "+" if de > 0 else "", de], 13, 600, "violet_ink"); el.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; tv.add_child(el)
+		var el := UI.label("Elo %d  (%s%d)" % [App.elo, "+" if de > 0 else "", de], 13, 600, "violet_ink"); el.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; tv.add_child(el)
 	top.add_child(tv); body.add_child(top)
 	var bot := UI.panel("amber"); bot.modulate.a = 0.8; var bv := UI.vbox(2)
 	bv.add_child(UI.eyebrow(str(op.get("nick", "")) + " · " + str(op.get("elo", "")), "amber_ink"))
