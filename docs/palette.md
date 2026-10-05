@@ -37,3 +37,6 @@ Kaynak: `game/scripts/palette.gd`. Buradaki değerler oradakiyle aynı tutulur.
 Önizleme: `docs/palette-preview.html` (tarayıcıda aç) · https://claude.ai/artifact/KBPRJPtGvdWx8Y1fbzdRPV
 
 Kontrast: yazı rolleri zemin üstünde ≥4.5 (AA), fill üstü yazılar ≥5.5. Hesap: `tools/contrast.py`.
+
+## Karar notu (2026-10-05)
+Orkide (sıcak mor) alternatifi denendi, Kubilay mor + amber ikilisini tercih etti. Mavi-sarı okunma riski kabul edildi; gerekçe: mor amber'dan net ayrışıyor ve taraf ayrımı ayrıca konum (sol/sağ) ve "Sen / Rakip" etiketiyle de taşınıyor. Renk körlüğü için bu konum/etiket kuralı zorunlu.
