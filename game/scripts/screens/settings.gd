@@ -31,7 +31,7 @@ func _ready() -> void:
 
 	body.add_child(_section("Görünüm"))
 	body.add_child(_row("Tema", _segment(["system", "light", "dark"], ["Sistem", "Açık", "Koyu"], App.theme_mode,
-		func(val): App.theme_mode = val; App.save_settings(); App.apply_theme(); App.rebuild_top())))
+		func(val): App.theme_mode = val; App.save_settings(); App.apply_theme(); App.rebuild_all())))
 	body.add_child(_row("Animasyonları azalt", _toggle(App.reduce_motion, func(on): App.reduce_motion = on; App.save_settings())))
 	body.add_child(_section("Dil"))
 	body.add_child(_row("Dil", _segment(["tr", "en"], ["TR", "EN"], App.lang, func(val): App.lang = val; App.save_settings())))

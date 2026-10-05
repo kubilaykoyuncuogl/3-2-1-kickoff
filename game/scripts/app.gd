@@ -101,6 +101,21 @@ func rebuild_top() -> void:
 	_stack.append(fresh); _root.add_child(fresh)
 	fresh.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
+## Tema değişiminde: yığındaki her sayfayı aynı script'ten yeniden kurar (görünürlük ve sıra korunur)
+func rebuild_all() -> void:
+	var fresh: Array[Control] = []
+	for i in _stack.size():
+		var old: Control = _stack[i]
+		var n: Control = old.get_script().new()
+		for prop in ["mode"]:
+			if prop in old and prop in n: n.set(prop, old.get(prop))
+		_root.add_child(n)
+		n.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		n.visible = i == _stack.size() - 1
+		old.queue_free()
+		fresh.append(n)
+	_stack = fresh
+
 func reset_to(screen: Control) -> void:
 	for s in _stack: s.queue_free()
 	_stack.clear()
