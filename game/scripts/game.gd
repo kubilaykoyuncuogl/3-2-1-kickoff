@@ -5,6 +5,7 @@ const ROUND_SECONDS := 15.0
 const COUNTDOWN_SECONDS := 3.0
 const PENALTY_SECONDS := 5.0
 const WIN_SCORE := 3
+const MAX_INVALID_PAIRS := 3   # art arda bu kadar ortak oyuncusuz çift → berabere
 
 signal state_changed(state: State, payload: Dictionary)
 
@@ -15,6 +16,8 @@ var ready_set := {}                      # peer id -> bool
 var score := {}                          # peer id -> int
 var penalty_until := {}                  # peer id -> msec
 var round_end_msec := 0
+var used_teams := {}                     # team id -> true (maç boyunca bir takım bir kez)
+var invalid_streak := 0
 
 # ---------- istemci -> sunucu ----------
 @rpc("any_peer", "call_remote", "reliable")
@@ -22,7 +25,7 @@ func pick_team(team_id: int) -> void:
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
 	if state != State.PICK_TEAMS: return
-	if teams.values().has(team_id): return   # aynı takım iki kez seçilemez
+	if teams.values().has(team_id) or used_teams.has(team_id): return   # maçta bir takım bir kez
 	teams[pid] = team_id
 	_broadcast()
 
@@ -47,10 +50,11 @@ func guess(name: String) -> void:
 		_end_round({"winner": pid, "answer": name})
 	else:
 		penalty_until[pid] = now + int(PENALTY_SECONDS * 1000)
-		_broadcast({"penalty": pid})
+		_broadcast({"penalty": pid, "wrong_guess": name})   # rakibe isimle gösterilir
 
 # ---------- sunucu iç akış ----------
 func _start_countdown() -> void:
+	for t in teams.values(): used_teams[t] = true
 	state = State.COUNTDOWN; _broadcast()
 	await get_tree().create_timer(COUNTDOWN_SECONDS).timeout
 	state = State.ROUND
@@ -62,6 +66,14 @@ func _start_countdown() -> void:
 func _end_round(payload: Dictionary) -> void:
 	var t := teams.values()
 	payload["answers"] = Index.common_players(t[0], t[1])
+	if payload["answers"].is_empty():
+		invalid_streak += 1
+		payload["no_common"] = true
+		if invalid_streak >= MAX_INVALID_PAIRS:
+			payload["draw"] = true
+			state = State.GAME_OVER; _broadcast(payload); return
+	else:
+		invalid_streak = 0
 	for pid in players:
 		if score.get(pid, 0) >= WIN_SCORE:
 			state = State.GAME_OVER; _broadcast(payload); return

@@ -4,8 +4,8 @@
 
 Portre kilitli. Masaüstü/web'de aynı düzen, sadece klavye yok.
 
-## 0. Giriş / Lobi
-- Oda kur (4 haneli kod) · Koda katıl · (sonra) Rastgele eşleş.
+## 0. Ana menü / Lobi
+- Ana menü: **Çok oyunculu** (Oda kur · Koda katıl · sonra Rastgele eşleş), **Tek oyunculu** modlar (ayrı doküman, gelecek), Ayarlar.
 - Takma ad girişi (bir kez, cihazda saklanır).
 - Rakip gelince → Takım seçimi.
 
@@ -21,9 +21,10 @@ Portre kilitli. Masaüstü/web'de aynı düzen, sadece klavye yok.
 └──────────────────────────┘
 ```
 - Listeden seçince kendi panelinde takım kilitlenir, "Hazırım" butonu çıkar. Hazır deyince "Hazır ✓" rakibe gider; takım adı rakibe **hazır olunca** gider (önce gitmez, taktik sızmasın).
-- Aynı takım iki kez seçilemez: sunucu reddeder, uyarı: "Rakip bu takımı seçti, başka seç".
-- Ortak oyuncusu olmayan çift seçilirse (set kesişimi boş) sunucu "Bu iki takımın ortak oyuncusu yok" der, ikinci seçen yeniden seçer.
-- Kısayollar (akışı hızlandırmak için): **Rastgele takım**, **Aynı takımlar** (önceki turun çiftiyle), son 5 seçim.
+- **Bir maçta bir takım bir kez söylenir** (iki oyuncu için ortak liste). Kullanılmış takım listede soluk görünür, seçilemez. Oyuncular (futbolcular) tekrar tekrar söylenebilir.
+- Ortak oyuncusu olmayan çift **reddedilmez**; tur normal oynanır, kimse bilemez, tur sonunda "Bu iki takımın ortak oyuncusu yok" gösterilir. Art arda 3 geçersiz çift → maç bozulur, **berabere** (kasıtlı kilitleme önlemi; sayaç geçerli çiftte sıfırlanır).
+- Takım seçiminde süre yok. Videoda da düşünme payı var, takım hemen akla gelmiyor.
+- Kolaylaştırıcılar: panelin üstünde **Favoriler** (oyuncunun en çok seçtiği takımlar, cihazda tutulur), **Rastgele takım**.
 
 ## 2. Geri sayım (3 sn)
 - İki panel üstten ve alttan **ortaya çekilir**, birleştikleri çizgide "3 · 2 · 1" büyük (Sora 800, eğik).
@@ -45,7 +46,7 @@ Portre kilitli. Masaüstü/web'de aynı düzen, sadece klavye yok.
 ├─ klavye ─────────────────┤
 ```
 - **Gönder = öneriye dokunmak.** Ayrı "Bildi" butonu yok; 15 sn'de her dokunuş değerli. Yanlış dokunmanın bedeli zaten 5 sn ceza. Serbest metin kabul edilmez, sadece listeden seçim (yazım hatası tartışması biter).
-- Yanlış: kutu kırmızı soft'a döner, içinde "Yanlış · 5" geri sayar, klavye kapanmaz ama giriş kilitli. Rakibe de "Rakip yanlış dedi ⏳5" gider (gerilim).
+- Yanlış: kutu kırmızı soft'a döner, içinde "Yanlış · 5" geri sayar, klavye kapanmaz ama giriş kilitli. Rakibe de **isimle** gider: "Rakip: Podolski ✗ ⏳5". Rakibin elediği ismi görmek bilgi de verir, gerilim de.
 - Rakip bildiğinde: kendi klavyen kapanır, 4. ekrana geçilir.
 - Zaman biterse: puan yok, 4. ekran "Kimse bilemedi" ile.
 
