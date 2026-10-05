@@ -59,6 +59,28 @@ Portre kilitli. Masaüstü/web'de aynı düzen, sadece klavye yok.
 - Kazanan büyük, skor, tur özeti (hangi çiftte kim bildi).
 - **Rövanş** (aynı odada), **Ayrıl**. Paylaş (sonra).
 
+## Geçişler (hareket dili)
+Tek metafor: **iki panel**. Senin panelin üstten, rakibinki alttan gelir; buluştukları yerde olan biten (geri sayım, skor) yazılır. Her geçiş bu iki panelin hareketidir, başka geçiş efekti yok.
+
+| Geçiş | Hareket | Süre |
+|---|---|---|
+| Menü → Lobi → Takım seçimi | sayfa sağdan kayar (push) | 220 ms ease-out |
+| Rakip odaya girdi | alt panel ekran dışından yukarı kayar | 300 ms ease-out |
+| İkisi hazır → Geri sayım | iki panel ortaya kayar, birleşme çizgisinde 3·2·1; her rakam 1 sn, scale 1.2→1 pop | 320 ms kayma + 3 × 1000 ms |
+| "1" bitti → Tur | paneller küçülüp üstte tek satır chip olur, tahmin kutusu yukarı çıkar, klavye açılır | 260 ms |
+| Bilindi / süre bitti → Tur sonu | klavye kapanır, chip'ler açılıp panele döner, ortada skor sayarak güncellenir | 300 ms + skor 400 ms |
+| Tur sonu → Takım seçimi | paneller tam konumuna kayar, içerik değişir | 300 ms |
+| 3 puan → Maç sonu | kazanan panel büyür (%60), kaybeden küçülür, konfeti yok, tek düdük | 400 ms |
+| Yanlış tahmin | tahmin kutusu 2 kez yatay sallanır (8 px), kırmızıya döner | 240 ms |
+| Son 5 sn | zaman çubuğu kırmızı, her saniye hafif nabız | — |
+
+`prefers_reduced_motion` / Ayarlar > Animasyonları azalt: tüm kaymalar 120 ms çapraz geçişe iner, sallanma kapanır.
+
+## Tek oyunculu ekranlar
+- **Klasik basamak:** üstte "BASAMAK 7" + 3 can (top ikonu), zaman çubuğu, iki kulüp chip, tahmin kutusu + öneriler. Multi tur ekranıyla aynı iskelet, rakip şeridi yerine can/basamak satırı.
+- **Blitz sorusu:** üstte soru sayısı + kombo çarpanı, hızlı zaman çubuğu, iki kulüp chip, altta 5 isim büyük dokunma hedefi (min 56 px yükseklik). Doğru: yeşil flaş, sonraki soru 150 ms'de gelir. Yanlış: kırmızı flaş, doğru olan yeşil işaretlenir, 1 sn sonra koşu sonu.
+- **Koşu sonu:** büyük skor, basamak/soru sayısı, günlük sıralama, "Tekrar" + "Paylaş" (emoji dizisi), altta ilk 10 tablo.
+
 ## Kenar durumlar
 - Rakip koptu: 10 sn "Bağlantı bekleniyor…", dönmezse maç bitti, kalan kazanır.
 - Arka plana alma (telefon): tur devam eder, sunucu saati otorite; geri dönünce kalan süre sunucudan.
