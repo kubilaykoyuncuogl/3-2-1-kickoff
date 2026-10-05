@@ -23,7 +23,7 @@
 2|6195|SSC Napoli
 2|189|CA Boca Juniors
 2|209|CA River Plate
-3|114|Beşiktaş JK
+2|114|Beşiktaş JK
 3|336|Sporting CP
 3|244|Olympique Marseille
 3|1041|Olympique Lyon
