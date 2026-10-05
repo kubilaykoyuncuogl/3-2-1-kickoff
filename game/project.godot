@@ -2,9 +2,12 @@
 config_version=5
 
 [application]
-config/name="Üç İki Bir"
+config/name="3-2-1 Kickoff"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.3", "Mobile")
+
+[export]
+; hedefler: Android, macOS, Web (bkz. CLAUDE.md web export notu)
 config/icon="res://icon.svg"
 
 [autoload]
