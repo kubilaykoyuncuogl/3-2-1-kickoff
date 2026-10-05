@@ -47,6 +47,7 @@ Dört madde, başka bir şey yok:
 │ Skor tablosu ▸           │
 └──────────────────────────┘
 ```
+- **Kulüp kapsamı** seçici (Tümü · Üst ligler · 5 büyük lig) Elo kartının altında; Ara yalnızca aynı kapsamı seçenleri eşler, oda kuranın kapsamı odaya işlenir, arama ve oda ekranında chip olarak görünür.
 - **Elo** satranç gibi: başlangıç 1000, K = 32 (ilk 20 maçta 40). Yalnızca **Ara** ile eşleşen maçlar işlenir; oda maçları dostluk, Elo'ya dokunmaz.
 - **Ara:** ±100 Elo bandı, her 10 sn'de ±100 genişler, 60 sn'de bulamazsa "Oda kur" önerir. Arama ekranı: nabız + "Rakip aranıyor · 1140–1340" + İptal.
 - **Doğrulanmış (verified):** Ayarlar'dan hesap bağlayan oyuncu doğrulanmış sayılır ve **yalnızca doğrulanmışlarla eşleşir**. Doğrulanmış maçların Elo'su da tutulur ama tabloda doğrulanmış etiketi gösterilmez (tek tablo, tek Elo). Varsayım: Kubilay'ın cümlesi böyle okundu; alternatif okuma "tabloda yalnızca doğrulanmışlar görünür" ise tek satır değişiklik.

@@ -151,6 +151,36 @@ static func shake(node: Control) -> void:
 	for dx in [10, -10, 7, -7, 0]:
 		tw.tween_property(node, "position:x", x + dx, 0.045)
 
+## Segment seçici (Sistem / Açık / Koyu gibi)
+static func segment(vals: Array, labels: Array, current: String, cb: Callable) -> HBoxContainer:
+	var h := hbox(4)
+	for i in vals.size():
+		var b := Button.new(); b.text = labels[i]; b.toggle_mode = true; b.button_pressed = vals[i] == current
+		b.custom_minimum_size = Vector2(0, 36)
+		b.add_theme_font_override("font", font(600)); b.add_theme_font_size_override("font_size", 12)
+		var on := box("fg", "", 8, 0); on.content_margin_left = 10; on.content_margin_right = 10; on.content_margin_top = 4; on.content_margin_bottom = 4
+		var off := box("", "line_strong", 8); off.content_margin_left = 10; off.content_margin_right = 10; off.content_margin_top = 4; off.content_margin_bottom = 4
+		b.add_theme_stylebox_override("normal", off); b.add_theme_stylebox_override("hover", off); b.add_theme_stylebox_override("pressed", on); b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+		b.add_theme_color_override("font_color", c("fg")); b.add_theme_color_override("font_pressed_color", c("bg")); b.add_theme_color_override("font_hover_color", c("fg"))
+		var val: String = vals[i]
+		b.pressed.connect(func(): cb.call(val))
+		h.add_child(b)
+	return h
+
+## Kulüp kapsamı seçici (Tümü / Üst ligler / 5 büyük lig); App.scope'a yazar
+static func scope_picker(on_change: Callable) -> VBoxContainer:
+	var v := vbox(4)
+	v.add_child(eyebrow("Kulüp kapsamı"))
+	var seg := segment(App.SCOPES, App.SCOPE_LABELS, App.scope, func(val):
+		App.scope = val; App.save_settings(); on_change.call(val))
+	seg.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	v.add_child(seg)
+	return v
+
+static func scope_label(s: String) -> String:
+	var i := App.SCOPES.find(s)
+	return App.SCOPE_LABELS[i] if i >= 0 else "Tümü"
+
 static func vbox(sep := 10) -> VBoxContainer:
 	var v := VBoxContainer.new(); v.add_theme_constant_override("separation", sep); return v
 

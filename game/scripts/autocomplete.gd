@@ -72,7 +72,7 @@ func _on_suggestions(k: String, q: String, items: Array) -> void:
 		b.text = nm
 		b.custom_minimum_size.y = 44
 		b.add_theme_font_override("font", UI.font(600)); b.add_theme_font_size_override("font_size", 15)
-		var used: bool = it.get("used", false)
+		var used: bool = it.get("used", false) or not it.get("in_scope", true)
 		var st := UI.box("bg", "", 10, 0); st.content_margin_top = 8; st.content_margin_bottom = 8
 		b.add_theme_stylebox_override("normal", st)
 		var hv := UI.box("violet_soft", "violet_fill", 10); hv.content_margin_top = 8; hv.content_margin_bottom = 8
@@ -80,7 +80,7 @@ func _on_suggestions(k: String, q: String, items: Array) -> void:
 		b.add_theme_color_override("font_color", UI.c("muted") if used else UI.c("fg"))
 		b.add_theme_color_override("font_hover_color", UI.c("violet_ink")); b.add_theme_color_override("font_pressed_color", UI.c("violet_ink"))
 		b.disabled = used
-		if used: b.text += "  · kullanıldı"
+		if used: b.text += "  · kullanıldı" if it.get("used", false) else "  · kapsam dışı"
 		var id := int(it.id); var name: String = it.name
 		b.pressed.connect(func(): picked.emit(id, name))
 		list.add_child(b)

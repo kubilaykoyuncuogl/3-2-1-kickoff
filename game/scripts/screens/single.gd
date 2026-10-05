@@ -5,6 +5,7 @@ func _ready() -> void:
 	var v := UI.page(); add_child(v)
 	v.add_child(UI.nav("Tek oyna", App.pop))
 	v.add_child(UI.label("Her koşu farklı. Puanın ve en iyin cihazında kalır.", 13, 500, "muted"))
+	v.add_child(UI.scope_picker(func(_v): pass))
 	v.add_child(_mode_card("Klasik merdiven", "İki kulüp, oyuncuyu yaz · 3 can · basamak 20 sn", "ladder"))
 	v.add_child(_mode_card("Blitz", "5 isim, doğruya dokun · tek can · hızlanır", "blitz"))
 	v.add_child(UI.spacer())

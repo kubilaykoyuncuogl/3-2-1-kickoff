@@ -52,3 +52,8 @@ KICKOFF_INDEX_KEY=... uvicorn server.index_service:app --port 9081
 
 ## Yerel test (2026-10-05)
 `./run_local.sh` → index servisi + Godot sunucu + web (http://localhost:8080). Bot rakip: `godot --headless --path game -- --bot veli --team inter --guess podolski --delay 12`. Tarayıcı notları: Godot web build'de ilk tıklama bazen canvas'a odak verir (ikinci tıklama gerekir); yazı kutusu web'de `grab_focus` ile her karede odakta tutulur.
+
+## Kulüp kapsamı ve tier (2026-10-05 gece)
+- **Kapsam** (`scope`): `all` (ilk 3000 kulüp ün sırasıyla), `top` (üst lig: lig kodu `^[A-Z]{1,4}1[A-Z]?$` ya da ARGC/MEXA/URUC/QSL/CLPD), `big5` (GB1 ES1 IT1 L1 FR1). Lig bilgisi olmayan 56 bin kulüp `top`/`big5`'te dışarıda. Altyapı/rezerv zaten index'e girmez.
+- Kapsam oyun ayarı: Online'da aynı kapsamı seçenler eşleşir; oda kuranın kapsamı geçerli; takım seçiminde kapsam dışı kulüp reddedilir (öneride soluk, "kapsam dışı"). Tek oyunculuda merdiven/Blitz aynı kapsamla üretilir.
+- **Tier**: kapsam içindeki kulüpler ün sırasına göre T1 (40) · T2 (120) · T3 (400) · T4 (gerisi); dar kapsamda (big5) oranlı. Merdiven basamak tipi her 3 basamakta ilerler: T1×T1 → T1×T2 → T2×T2 → T2×T3 → T3×T3 → T3×T4 → T4×T4; Blitz'te her 6 soruda. Ortak oyuncu ≥ 2 (T4'te ≥ 1), kulüp koşuda bir kez. Uç noktalar: `/ladder?seed&scope`, `/blitz/pack?seed&scope&n=40`, `/teams/suggest?q&scope`, `/club/{id}?scope`.

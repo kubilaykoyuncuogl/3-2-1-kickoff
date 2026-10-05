@@ -16,6 +16,9 @@ var elo := 1000
 var verified := false
 var device_id := ""
 var best := {"ladder": 0, "blitz": 0}   # cihazdaki en iyi tek oyunculu skorlar
+var scope := "all"                      # kulüp kapsamı: all | top | big5
+const SCOPES := ["all", "top", "big5"]
+const SCOPE_LABELS := ["Tümü", "Üst ligler", "5 büyük lig"]
 
 var _root: Control
 var _stack: Array[Control] = []
@@ -40,6 +43,7 @@ func load_settings() -> void:
 	elo = cf.get_value("online", "elo", 1000)
 	device_id = cf.get_value("online", "device", "")
 	best = cf.get_value("single", "best", {"ladder": 0, "blitz": 0})
+	scope = cf.get_value("single", "scope", "all")
 
 func ensure_device_id() -> void:
 	if device_id == "":
@@ -53,7 +57,7 @@ func save_settings() -> void:
 	cf.set_value("look", "theme", theme_mode); cf.set_value("look", "reduce_motion", reduce_motion); cf.set_value("look", "lang", lang)
 	cf.set_value("sound", "on", sound); cf.set_value("sound", "music", music_vol); cf.set_value("sound", "sfx", sfx_vol); cf.set_value("sound", "haptics", haptics)
 	cf.set_value("online", "elo", elo); cf.set_value("online", "device", device_id)
-	cf.set_value("single", "best", best)
+	cf.set_value("single", "best", best); cf.set_value("single", "scope", scope)
 	cf.save(SETTINGS_PATH)
 
 func apply_theme() -> void:

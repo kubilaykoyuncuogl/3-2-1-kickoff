@@ -60,12 +60,12 @@ func hello(nick: String, device: String) -> void:
 	_send_profile(pid)
 
 @rpc("any_peer", "call_remote", "reliable")
-func create_room() -> void:
+func create_room(scope: String) -> void:
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
 	_leave_everything(pid)
 	var code := _new_code()
-	rooms[code] = _new_room(code, false)
+	rooms[code] = _new_room(code, false, _scope_ok(scope))
 	_join(code, pid)
 
 @rpc("any_peer", "call_remote", "reliable")
@@ -79,10 +79,11 @@ func join_room(code: String) -> void:
 	_join(code, pid)
 
 @rpc("any_peer", "call_remote", "reliable")
-func find_match() -> void:
+func find_match(scope: String) -> void:
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
 	_leave_everything(pid)
+	profiles[pid]["scope"] = _scope_ok(scope)
 	if pid not in queue:
 		queue.append(pid); queue_since[pid] = Time.get_ticks_msec()
 	_send_queue(pid)
@@ -112,6 +113,10 @@ func pick_team(team_id: int, team_name: String) -> void:
 	if r.used_teams.has(team_id): err.rpc_id(pid, "Bu takım bu maçta kullanıldı"); return
 	for other in r.teams:
 		if other != pid and r.teams[other] == team_id: err.rpc_id(pid, "Rakip bu takımı seçti, başka seç"); return
+	if r.scope != "all":
+		var ok: bool = await IndexAPI.club_in_scope(team_id, r.scope)
+		if not ok: err.rpc_id(pid, "Bu takım seçili kapsamın dışında"); return
+		if r.state != State.PICK_TEAMS or r.ready.get(pid, false): return
 	r.teams[pid] = team_id; r.team_names[pid] = team_name
 	_broadcast(r)
 
@@ -152,7 +157,9 @@ func suggest(kind: String, q: String) -> void:
 	var pid := multiplayer.get_remote_sender_id()
 	if q.length() < 2 or not _allow(pid, 12, 1000): return
 	var list: Array
-	if kind == "team": list = await IndexAPI.suggest_teams(q)
+	if kind == "team":
+		var r0 = _room_of(pid)
+		list = await IndexAPI.suggest_teams(q, r0.scope if r0 != null else "all")
 	else: list = await IndexAPI.suggest_players(q)
 	if kind == "team":
 		var r = _room_of(pid)
@@ -174,14 +181,14 @@ func rematch() -> void:
 
 # ---------- tek oyunculu ----------
 @rpc("any_peer", "call_remote", "reliable")
-func single_start(mode: String) -> void:
+func single_start(mode: String, scope: String) -> void:
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
 	_leave_everything(pid)
 	var seed := "%d-%d" % [Time.get_ticks_usec(), randi()]   # her oturum farklı merdiven / soru seti
 	var items: Array
-	if mode == "ladder": items = await IndexAPI.ladder(seed)
-	else: items = await IndexAPI.blitz_pack(seed)
+	if mode == "ladder": items = await IndexAPI.ladder(seed, _scope_ok(scope))
+	else: items = await IndexAPI.blitz_pack(seed, _scope_ok(scope))
 	if items.is_empty(): err.rpc_id(pid, "Paket yüklenemedi"); return
 	singles[pid] = {"mode": mode, "seed": seed, "items": items, "idx": 0, "lives": 3 if mode == "ladder" else 1,
 		"score": 0, "combo": 1.0, "deadline": 0, "lock_until": 0, "over": false, "best_combo": 1.0, "gen": 0}
@@ -251,8 +258,11 @@ func err(msg: String) -> void:
 	error.emit(msg)
 
 # ============================================================ sunucu iç mantık
-func _new_room(code: String, ranked: bool) -> Dictionary:
-	var r := {"code": code, "ranked": ranked, "players": [], "state": State.LOBBY, "gen": 0, "rematch": {}, "last": {}}
+func _scope_ok(s: String) -> String:
+	return s if s in ["all", "top", "big5"] else "all"
+
+func _new_room(code: String, ranked: bool, scope := "all") -> Dictionary:
+	var r := {"code": code, "ranked": ranked, "scope": scope, "players": [], "state": State.LOBBY, "gen": 0, "rematch": {}, "last": {}}
 	_reset_match(r)
 	return r
 
@@ -346,7 +356,7 @@ func _broadcast(r: Dictionary) -> void:
 		players.append({"pid": pid, "nick": p.nick, "elo": p.elo, "team": r.teams.get(pid, 0), "team_name": r.team_names.get(pid, ""),
 			"ready": r.ready.get(pid, false), "score": r.score.get(pid, 0), "penalty_ms": maxi(0, r.penalty_until.get(pid, 0) - now),
 			"rematch": r.rematch.get(pid, false), "elo_delta": r.elo_delta.get(pid, 0)})
-	var d := {"code": r.code, "ranked": r.ranked, "state": r.state, "players": players, "phase_ms": maxi(0, r.phase_end - now),
+	var d := {"code": r.code, "ranked": r.ranked, "scope": r.scope, "state": r.state, "players": players, "phase_ms": maxi(0, r.phase_end - now),
 		"last": r.last, "answers": r.answers, "answers_total": r.answers_total, "winner": r.winner, "used_teams": r.used_teams.keys()}
 	var peers := multiplayer.get_peers()
 	for pid in r.players:
@@ -372,9 +382,10 @@ func _tick_queue() -> void:
 			var b: int = queue[j]
 			var pa: Dictionary = profiles[a]; var pb: Dictionary = profiles[b]
 			if pa.get("verified", false) != pb.get("verified", false): continue
+			if pa.get("scope", "all") != pb.get("scope", "all"): continue   # aynı kulüp kapsamı
 			if absi(int(pa.elo) - int(pb.elo)) <= mini(_band(a), _band(b)):
 				queue.erase(b); queue.erase(a); queue_since.erase(a); queue_since.erase(b)
-				var code := _new_code(); rooms[code] = _new_room(code, true)
+				var code := _new_code(); rooms[code] = _new_room(code, true, pa.get("scope", "all"))
 				_join(code, a); _join(code, b); matched = true; break
 		if not matched:
 			_send_queue(a); i += 1
@@ -459,9 +470,9 @@ func _save_accounts() -> void:
 
 # ============================================================ istemci yardımcıları
 func c_hello() -> void: hello.rpc_id(1, App.nickname, App.device_id)
-func c_create_room() -> void: create_room.rpc_id(1)
+func c_create_room() -> void: create_room.rpc_id(1, App.scope)
 func c_join_room(code: String) -> void: join_room.rpc_id(1, code)
-func c_find_match() -> void: find_match.rpc_id(1)
+func c_find_match() -> void: find_match.rpc_id(1, App.scope)
 func c_cancel_find() -> void: cancel_find.rpc_id(1)
 func c_leave() -> void: leave_room.rpc_id(1)
 func c_pick_team(id: int, name: String) -> void: pick_team.rpc_id(1, id, name)
@@ -469,7 +480,7 @@ func c_ready() -> void: set_ready.rpc_id(1)
 func c_guess(id: int, name: String) -> void: guess.rpc_id(1, id, name)
 func c_suggest(kind: String, q: String) -> void: suggest.rpc_id(1, kind, q)
 func c_rematch() -> void: rematch.rpc_id(1)
-func c_single_start(mode: String) -> void: single_start.rpc_id(1, mode)
+func c_single_start(mode: String) -> void: single_start.rpc_id(1, mode, App.scope)
 func c_single_guess(id: int, name: String) -> void: single_guess.rpc_id(1, id, name)
 func c_single_answer(i: int) -> void: single_answer.rpc_id(1, i)
 func c_single_quit() -> void: single_quit.rpc_id(1)

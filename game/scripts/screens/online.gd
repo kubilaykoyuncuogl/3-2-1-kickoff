@@ -72,6 +72,7 @@ func _render_menu() -> void:
 	var e := UI.label(str(App.elo), 32, 800); h.add_child(n); h.add_child(e); cv.add_child(h)
 	cv.add_child(UI.label("Elo · satranç gibi, yalnızca Ara maçları işler", 11, 500, "muted"))
 	card.add_child(cv); body.add_child(card)
+	body.add_child(UI.scope_picker(func(_v): pass))
 	var ara := UI.button("Ara", "violet", ">")
 	ara.disabled = not Net.is_connected_to_server()
 	ara.pressed.connect(func(): _since = Time.get_ticks_msec(); Game.c_find_match())
@@ -92,8 +93,10 @@ func _render_searching() -> void:
 	body.add_child(UI.spacer())
 	var t := UI.label("Rakip aranıyor", 22, 800); t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; body.add_child(t)
 	status = UI.label("", 13, 600, "muted"); status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; body.add_child(status)
-	var c := UI.chip("Doğrulanmış havuz" if App.verified else "Genel havuz", "ok" if App.verified else "line")
-	c.size_flags_horizontal = Control.SIZE_SHRINK_CENTER; body.add_child(c)
+	var row := UI.hbox(6); row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_child(UI.chip("Doğrulanmış havuz" if App.verified else "Genel havuz", "ok" if App.verified else "line"))
+	row.add_child(UI.chip(UI.scope_label(App.scope), "violet"))
+	body.add_child(row)
 	body.add_child(UI.spacer())
 	var cancel := UI.button("İptal", "ghost"); cancel.pressed.connect(_back); body.add_child(cancel)
 
@@ -105,6 +108,7 @@ func _render_room() -> void:
 	var ey := UI.eyebrow("Oda kodu"); ey.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; body.add_child(ey)
 	var code := UI.label(str(d.get("code", "----")), 56, 800); code.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	code.add_theme_constant_override("outline_size", 0); body.add_child(code)
+	var sc := UI.chip(UI.scope_label(str(d.get("scope", "all"))), "violet"); sc.size_flags_horizontal = Control.SIZE_SHRINK_CENTER; body.add_child(sc)
 	var h := UI.hbox(8); h.alignment = BoxContainer.ALIGNMENT_CENTER
 	var copy := UI.button("Kopyala", "line"); copy.custom_minimum_size.x = 140
 	copy.pressed.connect(func(): DisplayServer.clipboard_set(str(d.get("code", ""))); copy.text = "KOPYALANDI")

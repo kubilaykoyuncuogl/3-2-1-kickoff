@@ -106,7 +106,7 @@ func _score_row(d: Dictionary) -> HBoxContainer:
 
 func _render_pick(d: Dictionary) -> void:
 	var me := Game.me(); var op := Game.opponent()
-	body.add_child(UI.nav("Takım seçimi · oda %s" % d.get("code", ""), func(): Game.c_leave(); App.pop()))
+	body.add_child(UI.nav("Takım seçimi · %s · oda %s" % [UI.scope_label(str(d.get("scope", "all"))), d.get("code", "")], func(): Game.c_leave(); App.pop()))
 	body.add_child(_score_row(d))
 	# üst: sen
 	var mine := UI.panel("violet"); mine.size_flags_vertical = Control.SIZE_EXPAND_FILL

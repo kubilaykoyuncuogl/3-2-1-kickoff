@@ -25,13 +25,17 @@ func get_json(path: String, params := {}) -> Variant:
 		push_warning("index %s → %s" % [url, res[1]]); return null
 	return JSON.parse_string(res[3].get_string_from_utf8())
 
-func suggest_teams(q: String) -> Array:
-	var r = await get_json("/teams/suggest", {"q": q})
+func suggest_teams(q: String, scope := "all") -> Array:
+	var r = await get_json("/teams/suggest", {"q": q, "scope": scope})
 	return r if r is Array else []
 
 func suggest_players(q: String) -> Array:
 	var r = await get_json("/players/suggest", {"q": q})
 	return r if r is Array else []
+
+func club_in_scope(club_id: int, scope: String) -> bool:
+	var r = await get_json("/club/%d" % club_id, {"scope": scope})
+	return r is Dictionary and r.get("in_scope", false)
 
 func check(player_id: int, a: int, b: int) -> bool:
 	var r = await get_json("/check", {"player_id": player_id, "club_a": a, "club_b": b})
@@ -41,11 +45,11 @@ func answers(a: int, b: int) -> Dictionary:
 	var r = await get_json("/pair/answers", {"club_a": a, "club_b": b})
 	return r if r is Dictionary else {"names": [], "total": 0}
 
-func ladder(seed: String) -> Array:
-	var r = await get_json("/ladder", {"seed": seed, "steps": 30})
+func ladder(seed: String, scope := "all") -> Array:
+	var r = await get_json("/ladder", {"seed": seed, "steps": 30, "scope": scope})
 	return r.get("steps", []) if r is Dictionary else []
 
-func blitz_pack(seed: String) -> Array:
+func blitz_pack(seed: String, scope := "all") -> Array:
 	## reveal=1: soru başına "_answer" (doğru şık indeksi) gelir; yalnızca sunucu bellekte tutar.
-	var r = await get_json("/blitz/pack", {"seed": seed, "n": 60, "reveal": 1})
+	var r = await get_json("/blitz/pack", {"seed": seed, "n": 40, "reveal": 1, "scope": scope})
 	return r.get("questions", []) if r is Dictionary else []

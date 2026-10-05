@@ -30,11 +30,11 @@ func _ready() -> void:
 	body.add_child(_row("Titreşim", _toggle(App.haptics, func(on): App.haptics = on; App.save_settings())))
 
 	body.add_child(_section("Görünüm"))
-	body.add_child(_row("Tema", _segment(["system", "light", "dark"], ["Sistem", "Açık", "Koyu"], App.theme_mode,
+	body.add_child(_row("Tema", UI.segment(["system", "light", "dark"], ["Sistem", "Açık", "Koyu"], App.theme_mode,
 		func(val): App.theme_mode = val; App.save_settings(); App.apply_theme(); App.rebuild_all())))
 	body.add_child(_row("Animasyonları azalt", _toggle(App.reduce_motion, func(on): App.reduce_motion = on; App.save_settings())))
 	body.add_child(_section("Dil"))
-	body.add_child(_row("Dil", _segment(["tr", "en"], ["TR", "EN"], App.lang, func(val): App.lang = val; App.save_settings())))
+	body.add_child(_row("Dil", UI.segment(["tr", "en"], ["TR", "EN"], App.lang, func(val): App.lang = val; App.save_settings())))
 	body.add_child(_section("Diğer"))
 	var howto := UI.button("Nasıl oynanır", "ghost"); howto.pressed.connect(func(): App.push(load("res://scripts/screens/howto.gd").new()))
 	body.add_child(howto)
@@ -66,21 +66,6 @@ func _slider(v: float, cb: Callable) -> HSlider:
 	s.custom_minimum_size = Vector2(140, 24)
 	s.value_changed.connect(cb)
 	return s
-
-func _segment(vals: Array, labels: Array, current: String, cb: Callable) -> HBoxContainer:
-	var h := UI.hbox(4)
-	for i in vals.size():
-		var b := Button.new(); b.text = labels[i]; b.toggle_mode = true; b.button_pressed = vals[i] == current
-		b.custom_minimum_size = Vector2(0, 36)
-		b.add_theme_font_override("font", UI.font(600)); b.add_theme_font_size_override("font_size", 12)
-		var on := UI.box("fg", "", 8, 0); on.content_margin_left = 10; on.content_margin_right = 10; on.content_margin_top = 4; on.content_margin_bottom = 4
-		var off := UI.box("", "line_strong", 8); off.content_margin_left = 10; off.content_margin_right = 10; off.content_margin_top = 4; off.content_margin_bottom = 4
-		b.add_theme_stylebox_override("normal", off); b.add_theme_stylebox_override("hover", off); b.add_theme_stylebox_override("pressed", on); b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-		b.add_theme_color_override("font_color", UI.c("fg")); b.add_theme_color_override("font_pressed_color", UI.c("bg")); b.add_theme_color_override("font_hover_color", UI.c("fg"))
-		var val: String = vals[i]
-		b.pressed.connect(func(): cb.call(val))
-		h.add_child(b)
-	return h
 
 func _style_input(e: LineEdit) -> void:
 	e.custom_minimum_size = Vector2(160, 40)
