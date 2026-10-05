@@ -33,3 +33,14 @@ Basamak zorluğu = kulüp bilinirliği **+ kesişim büyüklüğü**. İki ünl�
 - Blitz'te can: tek mi, üç mü? (öneri: tek)
 - Tablo kimliği: takma ad yeter mi, hesap gerekir mi? (öneri v1 takma ad + cihaz id, v2 hesap)
 - Klasik'te "pas geç" hakkı: 1 pas, can harcamaz ama basamak puanı yok? (öneri: var, koşu başına 1)
+
+## Kulüp tier'ları ve merdiven ilerleyişi (plan, 2026-10-05 akşam, Kubilay)
+Kulüpler popülerliğe göre sıralanır (`clubs.fame`: oyuncu piyasa değeri toplamı + oyuncu sayısı; ileride lig katsayısı eklenebilir) ve tier'lara bölünür:
+- **T1** ilk ~40 kulüp (Real, Barça, City, GS, FB, BJK…), **T2** sonraki ~120, **T3** sonraki ~400, **T4** gerisi (kesişimi olan).
+Merdiven basamakları çift tipine göre ilerler, her tipten 2-3 basamak:
+```
+T1×T1 → T1×T2 → T2×T2 → T2×T3 → T3×T3 → T3×T4 → T4×T4
+```
+Her basamakta çift, o tier çiftinden rastgele; ortak oyuncu sayısı ≥ 2 (son tier'larda ≥ 1). Aynı kulüp koşuda bir kez.
+Blitz aynı şemayla, soru başına ilerleme daha hızlı (her 4 soruda bir tip).
+Uygulama: `index_service.py` `/ladder` ve `/blitz/pack` içinde `tier(club)` eşiği ve `pairs_for(tierA, tierB)` sorgusu; `pair_counts` + `clubs.fame` yeter, yeni index gerekmez.
