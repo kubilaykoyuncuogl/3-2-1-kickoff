@@ -103,11 +103,11 @@ Ayarlar'dan tekrar açılabilir.
 │ ████████████░░░░░ 11     │  ← zaman çubuğu, son 5 sn kırmızı
 │ Galatasaray  ×  Inter    │  ← iki takım tek satır, mor/amber chip
 │ ┌──────────────────────┐ │
-│ │ Hak|                 │ │  ← tahmin kutusu (klavye hep açık)
+│ │ Snei|                │ │  ← tahmin kutusu (klavye hep açık)
 │ └──────────────────────┘ │
-│   Hakan Çalhanoğlu       │  ← öneriler (tüm oyuncular, kesişim DEĞİL)
-│   Hakan Şükür            │
-│   Hakan Balta            │
+│   Wesley Sneijder        │  ← öneriler (tüm oyuncular, kesişim DEĞİL)
+│   Sven Kums              │
+│   Rodney Sneijder        │
 │ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
 │ Rakip: yazıyor… / ⏳ 4   │  ← ince şerit, klavyenin hemen üstünde
 ├─ klavye ─────────────────┤
@@ -119,7 +119,7 @@ Ayarlar'dan tekrar açılabilir.
 
 ## 4. Tur sonu (4 sn)
 - Paneller yine üstten/alttan gelir, ortada skor: `2 : 1`.
-- Bilen tarafın panelinde cevap: "Hakan Çalhanoğlu ✓". Bilemeyen turda altta "Olası cevaplar: …" (ilk 5, varsa "+12").
+- Bilen tarafın panelinde cevap: "Wesley Sneijder ✓". Bilemeyen turda altta "Olası cevaplar: …" (ilk 5, varsa "+12").
 - Sonra paneller kayar, 1. ekrana (takım seçimi) dönülür. 3 puan → 5. ekran.
 
 ## 5. Maç sonu
