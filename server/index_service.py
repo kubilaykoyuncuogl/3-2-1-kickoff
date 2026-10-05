@@ -136,11 +136,25 @@ def pick_pair(rng, sc: str, ta: int, tb: int, used: set, min_n: int, max_n: int 
             return a, b, n
     return None
 
+class _Rows(list):
+    def fetchall(self): return self
+    def fetchone(self): return self[0] if self else None
+
+class LockedDB:
+    """Tek SQLite bağlantısı birçok istek iş parçacığı tarafından paylaşılır. Aynı anda iki sorgu çalışırsa hazır ifadeler
+    ve sonuç satırları birbirine karışır (yanlış öneri, yanlış doğrulama). Bu sarmalayıcı her sorguyu kilit altında çalıştırıp
+    sonucu tümüyle okur; çağıranlar bilinen fetchall / fetchone / döngü biçimlerini aynen kullanır."""
+    def __init__(self, conn): self._c = conn; self._lock = threading.RLock()
+    def execute(self, sql, params=()):
+        with self._lock:
+            return _Rows(self._c.execute(sql, params).fetchall())
+
 @app.on_event("startup")
 def _load():
     global db
-    db = sqlite3.connect(":memory:", check_same_thread=False)
-    db.deserialize(decrypt_bytes(INDEX, key_from_env()))   # diske düz kopya yazılmaz
+    raw = sqlite3.connect(":memory:", check_same_thread=False)
+    raw.deserialize(decrypt_bytes(INDEX, key_from_env()))   # diske düz kopya yazılmaz
+    db = LockedDB(raw)
     db.execute("CREATE INDEX IF NOT EXISTS ix_pair_b ON pair_counts(club_b)")   # bellekte; club_b aramaları tam tarama yapmasın
     db.execute("CREATE VIRTUAL TABLE IF NOT EXISTS team_names USING fts5(club_id UNINDEXED, text, tokenize='unicode61')")
     if db.execute("SELECT COUNT(*) FROM team_names").fetchone()[0] == 0:
