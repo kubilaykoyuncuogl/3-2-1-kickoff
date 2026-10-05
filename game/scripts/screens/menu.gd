@@ -26,7 +26,7 @@ func _ready() -> void:
 	var elo_label: Label = online.get_child(0)
 	Game.profile_changed.connect(func(_d): if is_instance_valid(elo_label): elo_label.text = str(App.elo))
 	v.add_child(UI.spacer())
-	var ver := UI.label("v0.1 beta · hatalar olabilir, bildir", 11, 600, "muted"); ver.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var ver := UI.label("v0.1 beta · mükemmellik Allah'a mahsus", 11, 600, "muted"); ver.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(ver)
 	if App.nickname == "":
 		call_deferred("_ask_nickname")
