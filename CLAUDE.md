@@ -11,7 +11,7 @@ Kubilay'ın kişisel projesi. YouTube'daki 3-2-1 oyununun (Erman Yaşar & Hasan 
 - Bir maçta bir takım yalnızca bir kez seçilebilir (iki oyuncu için ortak). Futbolcular tekrar söylenebilir.
 - Ortak oyuncusu olmayan çift reddedilmez, tur boş geçer; art arda 3 geçersiz çift → maç berabere biter.
 - Rakibin yanlış tahmini isimle birlikte karşı tarafa gösterilir.
-- Takım seçiminde süre sınırı yok. Ekran akışı: `docs/screens.md`.
+- Takım seçiminde süre sınırı yok. Ekran akışı: `docs/screens.md`. Tek oyunculu modlar (Klasik merdiven, Blitz 5 isim, günlük koşu, skor tablosu): `docs/single-modes.md`.
 - Oyuncu adı eşleştirme: Türkçe karakter/aksan duyarsız, prefix autocomplete (isim listesi iki takımın kesişimi DEĞİL, tüm oyuncular; yoksa cevap sızar).
 
 ## Mimari (karar)
