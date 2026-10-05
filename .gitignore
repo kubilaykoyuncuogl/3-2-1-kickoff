@@ -9,3 +9,9 @@ data/raw/
 __pycache__/
 # OS
 .DS_Store
+# Transfermarkt paketi ve türetilmiş index (düz ve şifreli): git dışı
+all_data/
+data/index/
+data/*.log
+# Sırlar
+.env

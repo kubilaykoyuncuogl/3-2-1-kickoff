@@ -61,7 +61,7 @@ Dört madde, başka bir şey yok:
 Tek tur oynatan tur: gerçek ekranlarla, sahte rakip ("Koç").
 1. "İki takım seç" → Galatasaray ve Inter önceden seçili, Hazırım'a dokun.
 2. Geri sayım gerçek.
-3. Tur: ipucu balonu "İki takımda da oynamış birini yaz" → "Hak" yazınca öneriler, Çalhanoğlu'na dokun.
+3. Tur: ipucu balonu "İki takımda da oynamış birini yaz" → "Snei" yazınca öneriler, Sneijder'a dokun.
 4. Tur sonu: "+1. Yanlış dersen 5 sn beklersin. 3 puan maçı alır."
 5. "Hazırsın" → Online oyna'ya buton.
 Ayarlar'dan tekrar açılabilir.

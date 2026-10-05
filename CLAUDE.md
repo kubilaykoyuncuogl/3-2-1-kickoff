@@ -17,18 +17,18 @@ Kubilay'ın kişisel projesi. YouTube'daki 3-2-1 oyununun (Erman Yaşar & Hasan 
 ## Mimari (karar)
 - **Tek Godot projesi** (`game/`): istemci ve `--headless --server` ile çalışan otorite sunucu. Godot high-level multiplayer + `WebSocketMultiplayerPeer`: hem mobil/NAT için en sorunsuz hem de tarayıcıda çalışan tek seçenek (ENet web'de yok). Prod'da sunucu `wss://` arkasında (reverse proxy + TLS) olmalı, tarayıcı düz `ws://` kabul etmez.
 - Sunucu otoritedir: zamanlayıcı, puan, doğrulama, ceza hep sunucuda; istemci sadece UI.
-- Dataset ham hali `data/raw/` (git dışı, çok büyük). `tools/build_index.py` bunu `game/data/` altına sıkıştırılmış index'e çevirir:
-  - `teams.json`: takım id → ad(lar), ülke, lig (autocomplete için).
-  - `players.json` veya SQLite: oyuncu id → normalize ad(lar).
-  - `player_teams`: oyuncu → takım seti. Sunucu bu seti belleğe alır; "A ve B'de oynadı mı" = set kesişimi.
-  - İstemciye sadece takım listesi + oyuncu ad listesi (autocomplete) gider; oyuncu→takım ilişkisi **sadece sunucuda**.
-- Dil: GDScript. Python sadece `tools/`.
+- **Veri katmanı Python index servisi** (`server/index_service.py`, FastAPI, yalnızca 127.0.0.1:9081). Godot headless 1 M oyuncuyu tutamaz; Godot oyun sunucusu oda/durum/zamanlayıcıyı yönetir, doğrulama/öneri/paket için servise HTTP ile sorar. İstemci servise doğrudan erişemez. Detay ve kurallar: `docs/data.md`.
+- Dataset: Transfermarkt dökümü `all_data/` (git dışı, 3,1 GB). `pg_restore --data-only` ile `data/raw/tsv/` (9 GB) → `tools/build_index.py` → `data/index/index.sqlite` (583 MB, 90 sn; 1.048.321 oyuncu, 62.833 kıdemli kulüp, 4,5 M kariyer dönemi, 3,8 M kulüp çifti) → `tools/encrypt_index.py` → `index.enc` (AES-256-GCM, anahtar `.env`'de `KICKOFF_INDEX_KEY`). Servis şifreli dosyayı belleğe çözer; düz `index.sqlite` sunucuya hiç gitmez.
+- Oyuncu→kulüp ilişkisi istemciye hiç gitmez: yalnızca ad önerisi (≤8), doğru/yanlış, tur sonu olası cevaplar (≤12), Blitz cevapları hash.
+- Dil: GDScript (oyun), Python (`tools/`, `server/`).
 
 ## Çalıştırma
 ```
-# index üret (dataset data/raw/ içindeyken)
-python tools/build_index.py --in data/raw --out game/data
-# sunucu
+# bir kez: tabloları çıkar (all_data/all_data/database.dump → data/raw/tsv/*.sql), index üret, şifrele
+python tools/build_index.py && set -a && . ./.env && set +a && python tools/encrypt_index.py --in data/index/index.sqlite --out data/index/index.enc
+# index servisi (.venv: fastapi uvicorn cryptography)
+set -a && . ./.env && set +a && .venv/bin/uvicorn server.index_service:app --host 127.0.0.1 --port 9081
+# oyun sunucusu
 godot --headless --path game -- --server --port 9080
 # istemci
 godot --path game
@@ -36,7 +36,7 @@ godot --path game
 Godot bu makinede kurulu değil (2026-10-05); indir: https://godotengine.org/download (4.3+).
 
 ## Notlar
-- Dataset formatı henüz incelenmedi; `tools/build_index.py` kolon adlarını doğrulamadan önce `tools/inspect_dataset.py` ile şemaya bak.
+- Veriden mod fikirleri (kariyer yolu, kiralık/satış, ücret, sıralama): `docs/data.md` tablosu. Milli takım verisi transferlerde yok, milli takım modu bu veriyle yapılamaz.
 - Takım adı ve oyuncu adı normalizasyonu `tools/normalize.py` ve `game/scripts/normalize.gd`'de **aynı** olmalı (ş→s, ı→i, apostrof/nokta sil, lower).
-- Yayınlamadan önce: oyuncu ad listesi istemciye gidiyorsa boyutu (milyonlarca satır → muhtemelen sunucu tarafı autocomplete gerekir; `docs/design.md`'deki açık soru).
+- Autocomplete sunucu tarafı (FTS5 prefix, <1 ms). Çalhanoğlu Galatasaray'da oynamadı; örneklerde GS–Inter için Sneijder/Icardi kullan.
 - Web export: Godot 4 web build SharedArrayBuffer ister → hosting `Cross-Origin-Opener-Policy: same-origin` ve `Cross-Origin-Embedder-Policy: require-corp` header'larını vermeli (Godot'nun kendi export "head include"u + sunucu header'ı). Mobil tarayıcıda da (iOS Safari dahil) çalışır; Godot 4.3+ ile "threads" kapalı export daha uyumlu.
