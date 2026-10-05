@@ -13,14 +13,13 @@ config_version=5
 config/name="3-2-1 Kickoff"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
+config/icon="res://icon.svg"
+run/flush_stdout_on_print=true
 
 [autoload]
 App="*res://scripts/app.gd"
 Net="*res://scripts/net.gd"
 IndexAPI="*res://scripts/index_api.gd"
-Game="*res://scripts/game.gd"
-
-Net="*res://scripts/net.gd"
 Game="*res://scripts/game.gd"
 
 [display]
@@ -32,11 +31,7 @@ window/stretch/aspect="expand"
 window/stretch/scale_mode="fractional"
 window/handheld/orientation=1
 
-[export]
-
-config/icon="res://icon.svg"
-run/flush_stdout_on_print=true
-
 [rendering]
 
 renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
