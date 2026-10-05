@@ -53,6 +53,11 @@ func ladder(seed: String, scope := "all") -> Array:
 	var r = await get_json("/ladder", {"steps": 27, "scope": scope})   # seed yok → hazır havuzdan
 	return r.get("steps", []) if r is Dictionary else []
 
+func pack(path: String, params := {}) -> Array:
+	## Yeni modların paketleri (kariyer, zincir, o mu bu mu). Cevap alanları "_" ile başlar; yalnızca sunucu bellekte tutar.
+	var r = await get_json(path, params)
+	return r if r is Array else []
+
 func blitz_pack(seed: String, scope := "all") -> Array:
 	## reveal=1: soru başına "_answer" (doğru şık indeksi) gelir; yalnızca sunucu bellekte tutar.
 	var r = await get_json("/blitz/pack", {"n": 40, "reveal": 1, "scope": scope})   # seed yok → hazır havuzdan

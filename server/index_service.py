@@ -140,6 +140,7 @@ def _load():
         db.execute("INSERT INTO team_names(club_id, text) SELECT id, norm FROM clubs WHERE national=0")
     db.execute("PRAGMA query_only=1")
     _build_scopes()
+    _build_famous()
     threading.Thread(target=_pool_worker, daemon=True).start()
 
 def fts_prefix(q: str) -> str:
@@ -301,6 +302,134 @@ def quick_picks(scope: str = "all", n: int = 5, exclude: str = ""):
     pick = rng.sample(pool, min(n, len(pool))) if pool else []
     names = dict(db.execute(f"SELECT id, name FROM clubs WHERE id IN ({','.join(map(str, pick)) or '0'})").fetchall())
     return [{"id": c, "name": names[c]} for c in pick]
+
+# ============================================================ ünlü oyuncu havuzu ve yeni tek oyunculu modlar
+famous: list = []          # player id'leri, ün sırasıyla (kariyeri çoğunlukla üst liglerde geçmiş bilinen oyuncular)
+fame2: dict = {}
+pinfo: dict = {}           # pid -> (name, birth_year, position)
+CATS = {                   # O mu bu mu kategorileri: anahtar -> (SQL ifadesi, biçim)
+    "goals": ("s.goals", "int"), "apps": ("s.apps", "int"), "assists": ("s.assists", "int"), "yellow": ("s.yellow", "int"),
+    "red": ("s.red", "int"), "best_season": ("s.best_season_goals", "int"), "goals_big5": ("s.goals_big5", "int"), "pens": ("s.pens", "int"),
+    "mv_max": ("p.mv_max", "money"), "max_fee": ("(SELECT MAX(fee) FROM stints WHERE player_id=p.id)", "money"),
+    "fee_sum": ("(SELECT SUM(fee) FROM stints WHERE player_id=p.id)", "money"), "n_clubs": ("p.n_clubs", "int"),
+}
+VERSUS_POOL = 2000
+cat_values: dict = {}      # cat -> {pid: değer}
+cat_sorted: dict = {}      # cat -> [pid] büyükten küçüğe
+cat_rank: dict = {}
+
+MIN_BIRTH = 1965           # bugünün oyuncusunun tanıyacağı dönem
+HOME_APP_W, HOME_GOAL_W = 0.6, 1.8   # Süper Lig: diğer üst liglerden (0.4 / 1.2) biraz fazla, 5 büyük ligden (1.0 / 3.0) az. Global odak, Türkler de girer.
+FAMOUS_SIZE = 5000
+
+def _build_famous():
+    """Ün puanı: 5 büyük lig (+Süper Lig) maçı ve golü, diğer üst lig maçı/golü, zirve piyasa değeri, T1-T3 kulüp sayısı.
+    Şart: üst liglerde ≥120 maç, lig maçlarının ≥%60'ı üst liglerde, doğum ≥ MIN_BIRTH."""
+    if db.execute("SELECT 1 FROM sqlite_master WHERE name='player_stats'").fetchone() is None:
+        print("player_stats yok: kariyer / zincir / o mu bu mu modları kapalı (tools/build_stats.py çalıştır)"); return
+    cols = {r[1] for r in db.execute("PRAGMA table_info(player_stats)")}
+    tr_cols = "s.apps_tr, s.goals_tr" if "apps_tr" in cols else "0, 0"
+    top_ids = ",".join(str(c) for c, t in club_tier.items() if t <= 3) or "0"
+    in_top = dict(db.execute(f"SELECT player_id, COUNT(*) FROM player_clubs WHERE club_id IN ({top_ids}) GROUP BY player_id"))
+    rows = db.execute(f"""SELECT p.id, p.name, p.birth_year, p.position, p.mv_max, s.apps_league, s.apps_top, s.apps_big5, s.goals_top, s.goals_big5, {tr_cols}
+                          FROM players p JOIN player_stats s ON s.player_id = p.id
+                          WHERE s.apps_top >= 120 AND s.apps_top * 10 >= s.apps_league * 6 AND p.birth_year >= ?""", (MIN_BIRTH,)).fetchall()
+    for pid, name, by, pos, mv, al, at, a5, gt, g5, atr, gtr in rows:
+        atr = atr or 0; gtr = gtr or 0
+        fame2[pid] = (a5 * 1.0 + atr * HOME_APP_W + (at - a5 - atr) * 0.4 + g5 * 3.0 + gtr * HOME_GOAL_W + (gt - g5 - gtr) * 1.2
+                      + (mv or 0) / 1e6 * 3.0 + in_top.get(pid, 0) * 80)
+        pinfo[pid] = (name, by, pos)
+    famous.extend(sorted(fame2, key=lambda x: -fame2[x])[:FAMOUS_SIZE])
+    pool = famous[:VERSUS_POOL]; ids = ",".join(map(str, pool))
+    for cat, (expr, _fmt) in CATS.items():
+        vals = {pid: int(v) for pid, v in db.execute(f"SELECT p.id, {expr} FROM players p JOIN player_stats s ON s.player_id=p.id WHERE p.id IN ({ids})") if v}
+        cat_values[cat] = vals
+        cat_sorted[cat] = sorted(vals, key=lambda x: -vals[x])
+        cat_rank[cat] = {pid: i for i, pid in enumerate(cat_sorted[cat])}
+
+def _path(pid: int) -> list:
+    """Oyuncunun kıdemli kulüp yolu: kiralık dönüşleri atılır, art arda aynı kulüp birleştirilir."""
+    out = []
+    for cid, name, date, kind, fee in db.execute("""SELECT s.club_id, c.name, s.date, s.kind, s.fee FROM stints s JOIN clubs c ON c.id = s.club_id
+                                                    WHERE s.player_id = ? ORDER BY s.seq""", (pid,)):
+        if kind == "loan_end": continue
+        if out and out[-1]["club_id"] == cid: continue
+        k = "start" if not out else ("loan" if kind == "loan" else ("sale" if (fee or 0) > 0 else "free"))
+        out.append({"club_id": cid, "club": name, "year": int(date[:4]) if date else None, "kind": k, "fee": fee if (fee or 0) > 0 else None})
+    return out
+
+def _fame_buckets(rng, n: int, ok) -> list:
+    """Ünlüden az ünlüye: ilk üçte biri ilk 300'den, sonraki 300-1200'den, kalanı 1200-5000'den."""
+    out, seen = [], set()
+    for lo, hi, share in ((0, 300, 1 / 3), (300, 1200, 1 / 3), (1200, FAMOUS_SIZE, 1 / 3)):
+        cand = [p for p in famous[lo:hi] if p not in seen]; rng.shuffle(cand)
+        take = 0; want = max(1, round(n * share))
+        for pid in cand:
+            if take >= want: break
+            item = ok(pid)
+            if item: out.append(item); seen.add(pid); take += 1
+    return out
+
+@app.get("/career/pack")
+def career_pack(n: int = 30, seed: str = ""):
+    """Kariyer yolu: kulüpler sırayla açılır, oyuncu tahmin edilir. Yalnızca oyun sunucusu çağırır (cevap içerir)."""
+    rng = random.Random(seed or None)
+    def ok(pid):
+        path = _path(pid)
+        if not (4 <= len(path) <= 11): return None
+        return {"_player_id": pid, "_name": pinfo[pid][0], "clubs": [{"club": x["club"], "year": x["year"], "kind": x["kind"]} for x in path]}
+    return _fame_buckets(rng, n, ok)
+
+@app.get("/chain/pack")
+def chain_pack(n: int = 15, seed: str = ""):
+    """Sıradaki kulüp: oyuncu verilir; ilk kulüp, sonra her transferin hedefi tahmin edilir (yıl, tür, bedel ipucu)."""
+    rng = random.Random(seed or None)
+    def ok(pid):
+        path = _path(pid)
+        if not (3 <= len(path) <= 9): return None
+        if any(club_tier.get(x["club_id"], 99) > 10 for x in path): return None   # tahmin edilemeyecek kadar silik kulüp varsa alma
+        name, by, pos = pinfo[pid]
+        return {"name": name, "born": by, "pos": pos, "_steps": path}
+    return _fame_buckets(rng, n, ok)
+
+TOP_RESET_RANK = 3     # kalan oyuncu listenin ilk 3'üne girince kategori değişir
+STREAK_RESET = 5       # ya da aynı oyuncu 5 tur üst üste kalınca
+
+@app.get("/versus/pack")
+def versus_pack(rounds: int = 80, seed: str = ""):
+    """O mu bu mu: iki oyuncu, bir kategori. Kazanan (değeri büyük olan) yerinde kalır, karşısına yenisi gelir.
+    Kalan oyuncu zirveye ulaşınca (ilk 3) ya da 5 tur üst üste kalınca kategori değişir.
+    Doğru cevap hep büyük olan olduğundan tüm koşu önceden üretilir."""
+    if not cat_sorted: return []
+    rng = random.Random(seed or None)
+    cats = [c for c in CATS if len(cat_sorted.get(c, [])) >= 40]; rng.shuffle(cats)
+    out = []; ci = 0
+    while len(out) < rounds:
+        cat = cats[ci % len(cats)]; ci += 1
+        order, vals, rank = cat_sorted[cat], cat_values[cat], cat_rank[cat]
+        stayer = rng.choice(order[len(order) // 3:]); side = rng.randint(0, 1); used = {stayer}; first = True; streak = 0
+        while len(out) < rounds:
+            r = rank[stayer]
+            near = [p for p in order[max(0, r - 120): r + 120] if p not in used and vals[p] != vals[stayer]]
+            anyw = [p for p in order if p not in used and vals[p] != vals[stayer]]
+            cand = near if (near and rng.random() < 0.75) else anyw
+            if not cand: break
+            ch = rng.choice(cand); used.add(ch)
+            pair = [None, None]; pair[side] = stayer; pair[1 - side] = ch
+            v = [vals[pair[0]], vals[pair[1]]]
+            ans = 0 if v[0] > v[1] else 1
+            out.append({"cat": cat, "fmt": CATS[cat][1], "names": [pinfo[x][0] for x in pair], "born": [pinfo[x][1] for x in pair],
+                        "shown": [None if (first or i != side) else v[i] for i in (0, 1)], "new_cat": first and len(out) > 0,
+                        "_values": v, "_answer": ans})
+            first = False
+            streak = streak + 1 if pair[ans] == stayer else 1
+            stayer = pair[ans]; side = ans
+            if rank[stayer] < TOP_RESET_RANK or streak >= STREAK_RESET: break
+    return out
+
+@app.get("/famous")
+def famous_list(offset: int = 0, limit: int = 30):
+    return {"count": len(famous), "players": [pinfo[p][0] for p in famous[offset: offset + limit]]}
 
 @app.get("/tiers")
 def tiers_list(tier: int = 1, limit: int = 30):

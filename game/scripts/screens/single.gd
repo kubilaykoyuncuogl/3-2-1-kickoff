@@ -7,12 +7,15 @@ func _ready() -> void:
 	v.add_child(UI.label(T.t("single.intro"), 13, 500, "muted"))
 	v.add_child(_mode_card(T.t("mode.ladder"), T.t("mode.ladder_sub"), "ladder"))
 	v.add_child(_mode_card(T.t("mode.blitz"), T.t("mode.blitz_sub"), "blitz"))
+	v.add_child(_mode_card(T.t("mode.career"), T.t("mode.career_sub"), "career"))
+	v.add_child(_mode_card(T.t("mode.chain"), T.t("mode.chain_sub"), "chain"))
+	v.add_child(_mode_card(T.t("mode.versus"), T.t("mode.versus_sub"), "versus"))
 	v.add_child(UI.spacer())
 	if not Net.is_connected_to_server(): Net.connect_to_server()
 
 func _mode_card(title: String, sub: String, mode: String) -> Control:
 	var b := Button.new()
-	b.custom_minimum_size.y = 96
+	b.custom_minimum_size.y = 84
 	b.add_theme_stylebox_override("normal", UI.box("amber_soft", "", 16, 0))
 	b.add_theme_stylebox_override("hover", UI.box("amber_soft", "amber_fill", 16))
 	b.add_theme_stylebox_override("pressed", UI.box("amber_soft", "amber_fill", 16))
@@ -27,6 +30,10 @@ func _mode_card(title: String, sub: String, mode: String) -> Control:
 	for ch in h.get_children(): ch.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(v)
 	b.pressed.connect(func():
-		var sc = load("res://scripts/screens/single_scope.gd").new(); sc.mode = mode
-		App.push(sc))
+		if mode in ["ladder", "blitz"]:      # kulüp kapsamı yalnızca kulüp çifti modlarında
+			var sc = load("res://scripts/screens/single_scope.gd").new(); sc.mode = mode
+			App.push(sc); return
+		if not Net.is_connected_to_server():
+			Game.error.emit(T.t("net.connecting")); Net.connect_to_server(); return
+		App.push(load("res://scripts/screens/%s_play.gd" % mode).new()); Game.c_single_start(mode))
 	return b

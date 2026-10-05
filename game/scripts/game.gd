@@ -23,6 +23,10 @@ const BAND_MAX := 500
 const CROSS_SCOPE_MS := 45000   # bu kadar bekleyenler kapsam fark etmeksizin eşleşir
 const RECONNECT_MS := 10000
 const SCOPE_ORDER := ["big5", "top", "all"]   # dar → geniş
+const SINGLE_LIVES := {"ladder": 3, "blitz": 1, "career": 3, "chain": 3, "versus": 1}
+const CAREER_REVEAL_MS := 4000      # kariyer yolu: bu aralıkla bir kulüp daha açılır
+const CAREER_LAST_MS := 12000       # hepsi açıldıktan sonra son tahmin süresi
+const CHAIN_STEP_MS := 20000
 
 # ---------- istemci tarafı ----------
 signal room_changed(d: Dictionary)
@@ -206,12 +210,18 @@ func single_start(mode: String, scope: String) -> void:
 	var pid := multiplayer.get_remote_sender_id()
 	_leave_everything(pid)
 	var seed := "%d-%d" % [Time.get_ticks_usec(), randi()]   # her oturum farklı merdiven / soru seti
+	if mode not in SINGLE_LIVES: return
 	var items: Array
-	if mode == "ladder": items = await IndexAPI.ladder(seed, _scope_ok(scope))
-	else: items = await IndexAPI.blitz_pack(seed, _scope_ok(scope))
+	match mode:
+		"ladder": items = await IndexAPI.ladder(seed, _scope_ok(scope))
+		"blitz": items = await IndexAPI.blitz_pack(seed, _scope_ok(scope))
+		"career": items = await IndexAPI.pack("/career/pack", {"n": 30})
+		"chain": items = await IndexAPI.pack("/chain/pack", {"n": 15})
+		"versus": items = await IndexAPI.pack("/versus/pack", {"rounds": 80})
 	if items.is_empty(): err.rpc_id(pid, "err.pack_failed"); return
-	singles[pid] = {"mode": mode, "seed": seed, "items": items, "idx": 0, "lives": 3 if mode == "ladder" else 1,
-		"score": 0, "combo": 1.0, "deadline": 0, "lock_until": 0, "over": false, "best_combo": 1.0, "gen": 0}
+	singles[pid] = {"mode": mode, "seed": seed, "items": items, "idx": 0, "lives": SINGLE_LIVES[mode],
+		"score": 0, "combo": 1.0, "deadline": 0, "lock_until": 0, "over": false, "best_combo": 1.0, "gen": 0,
+		"revealed": 1, "step": 0, "done": 0}
 	_single_next(pid, true)
 
 @rpc("any_peer", "call_remote", "reliable")
@@ -219,10 +229,25 @@ func single_guess(player_id: int, name: String) -> void:   # ladder
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
 	var s = singles.get(pid)
-	if s == null or s.over or s.mode != "ladder": return
+	if s == null or s.over or s.mode not in ["ladder", "career"]: return
 	var now := Time.get_ticks_msec()
 	if s.lock_until > now or not _allow("%d:guess" % pid, 30, 60000): return
 	var gen: int = s.gen; var item: Dictionary = s.items[s.idx]
+	if s.mode == "career":
+		var hit: bool = player_id == int(item._player_id) or Normalize.norm(name) == Normalize.norm(str(item._name))
+		if hit:
+			var hidden: int = item.clubs.size() - int(s.revealed)
+			var gained := 100 + 60 * hidden       # erken bilen çok alır
+			s.score += gained; s.done += 1
+			s.last = {"type": "correct", "name": str(item._name), "gained": gained}
+			_single_next(pid, false)
+		else:
+			s.lives -= 1
+			s.last = {"type": "wrong", "name": name}
+			if s.lives <= 0:
+				s.last["answer"] = str(item._name); _single_over(pid)
+			else: _single_send(pid)
+		return
 	var ok: bool = await IndexAPI.check(player_id, int(item.a), int(item.b))
 	if singles.get(pid) != s or s.gen != gen or s.over: return
 	if ok:
@@ -241,8 +266,18 @@ func single_answer(option: int) -> void:   # blitz
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
 	var s = singles.get(pid)
-	if s == null or s.over or s.mode != "blitz": return
+	if s == null or s.over or s.mode not in ["blitz", "versus"]: return
 	var item: Dictionary = s.items[s.idx]
+	if s.mode == "versus":
+		if option == int(item._answer):
+			var bonus := int(maxi(0, s.deadline - Time.get_ticks_msec()) / 100.0)   # hız bonusu: kalan saniye × 10
+			s.score += 100 + bonus; s.done += 1
+			s.last = {"type": "correct", "option": option, "values": item._values, "bonus": bonus}
+			_single_next(pid, false)
+		else:
+			s.last = {"type": "wrong", "option": option, "answer": int(item._answer), "values": item._values}
+			_single_over(pid)
+		return
 	if option == int(item._answer):
 		s.score += int(round(100 * s.combo)); s.combo = minf(2.0, s.combo + 0.1); s.best_combo = maxf(s.best_combo, s.combo)
 		s.last = {"type": "correct", "option": option}
@@ -250,6 +285,36 @@ func single_answer(option: int) -> void:   # blitz
 	else:
 		s.last = {"type": "wrong", "option": option, "answer": int(item._answer)}
 		_single_over(pid)
+
+@rpc("any_peer", "call_remote", "reliable")
+func single_team(team_id: int, name: String) -> void:   # chain: sıradaki kulüp tahmini
+	if not multiplayer.is_server(): return
+	var pid := multiplayer.get_remote_sender_id()
+	var s = singles.get(pid)
+	if s == null or s.over or s.mode != "chain": return
+	if not _allow("%d:guess" % pid, 30, 60000): return
+	var item: Dictionary = s.items[s.idx]
+	var st: Dictionary = item._steps[s.step]
+	if team_id == int(st.club_id):
+		var bonus := int(maxi(0, s.deadline - Time.get_ticks_msec()) / 1000.0) * 5
+		s.score += 100 + bonus
+		_chain_advance(pid, {"type": "correct", "name": str(st.club), "gained": 100 + bonus})
+	else:
+		s.lives -= 1
+		_chain_advance(pid, {"type": "wrong", "name": name, "answer": str(st.club)})
+
+## Zincirde bir adım bitti (doğru, yanlış ya da süre): cevap açılır, sıradaki adıma ya da oyuncuya geçilir.
+func _chain_advance(pid: int, last: Dictionary) -> void:
+	var s: Dictionary = singles[pid]
+	s.last = last
+	if s.lives <= 0: _single_over(pid); return
+	var item: Dictionary = s.items[s.idx]
+	s.step += 1
+	if s.step >= item._steps.size():
+		s.done += 1; _single_next(pid, false)
+	else:
+		s.gen += 1; s.per_ms = CHAIN_STEP_MS; s.deadline = Time.get_ticks_msec() + CHAIN_STEP_MS
+		_single_send(pid)
 
 @rpc("any_peer", "call_remote", "reliable")
 func single_quit() -> void:
@@ -527,8 +592,12 @@ func _single_next(pid: int, first: bool) -> void:
 	if s.idx >= s.items.size(): _single_over(pid); return
 	s.gen += 1; s.lock_until = 0
 	var per_ms: int
-	if s.mode == "ladder": per_ms = maxi(10000, 20000 - 2000 * int(s.idx / 5))
-	else: per_ms = maxi(3000, 8000 - 1000 * int(s.idx / 5))
+	match s.mode:
+		"ladder": per_ms = maxi(10000, 20000 - 2000 * int(s.idx / 5))
+		"career": per_ms = CAREER_REVEAL_MS; s.revealed = 1
+		"chain": per_ms = CHAIN_STEP_MS; s.step = 0
+		"versus": per_ms = maxi(4000, 9000 - 500 * int(s.idx / 5))
+		_: per_ms = maxi(3000, 8000 - 1000 * int(s.idx / 5))
 	s.deadline = Time.get_ticks_msec() + per_ms; s.per_ms = per_ms
 	_single_send(pid)
 
@@ -537,6 +606,25 @@ func _tick_singles() -> void:
 	for pid in singles.keys():
 		var s: Dictionary = singles[pid]
 		if s.over or s.deadline == 0 or now < s.deadline: continue
+		var item: Dictionary = s.items[s.idx]
+		if s.mode == "career":
+			if int(s.revealed) < item.clubs.size():      # bir kulüp daha aç
+				s.revealed += 1; s.last = {}
+				s.per_ms = CAREER_REVEAL_MS if int(s.revealed) < item.clubs.size() else CAREER_LAST_MS
+				s.deadline = now + int(s.per_ms)
+				_single_send(pid); continue
+			s.lives -= 1
+			s.last = {"type": "timeout", "answer": str(item._name)}
+			if s.lives <= 0: _single_over(pid)
+			else: _single_next(pid, false)
+			continue
+		if s.mode == "chain":
+			s.lives -= 1
+			_chain_advance(pid, {"type": "timeout", "answer": str(item._steps[s.step].club)})
+			continue
+		if s.mode == "versus":
+			s.last = {"type": "timeout", "answer": int(item._answer), "values": item._values}
+			_single_over(pid); continue
 		s.last = {"type": "timeout"}
 		if s.mode == "ladder":
 			s.lives -= 1
@@ -554,9 +642,24 @@ func _single_send(pid: int) -> void:
 	var s: Dictionary = singles[pid]
 	var now := Time.get_ticks_msec()
 	var item: Dictionary = s.items[mini(s.idx, s.items.size() - 1)]
-	var pub := {"a_name": item.get("a_name", ""), "b_name": item.get("b_name", ""), "a": int(item.get("a", 0)), "b": int(item.get("b", 0))}
-	if s.mode == "blitz": pub["options"] = item.options
-	single_state.rpc_id(pid, {"mode": s.mode, "idx": s.idx, "total": s.items.size(), "lives": s.lives, "score": s.score, "combo": s.combo,
+	var pub := {}
+	match s.mode:
+		"career":
+			pub = {"clubs": item.clubs.slice(0, int(s.revealed)), "total": item.clubs.size(), "revealed": int(s.revealed)}
+		"chain":
+			var steps: Array = item._steps
+			var st: int = mini(int(s.step), steps.size())
+			pub = {"name": item.name, "born": item.get("born"), "pos": item.get("pos"), "step": st, "steps_total": steps.size(),
+				"history": steps.slice(0, st).map(func(x): return {"club": x.club, "year": x.get("year"), "kind": x.kind, "fee": x.get("fee")})}
+			if st > 0 and st < steps.size():
+				pub["hint"] = {"year": steps[st].get("year"), "kind": steps[st].kind, "fee": steps[st].get("fee")}
+		"versus":
+			for k in item:
+				if not str(k).begins_with("_"): pub[k] = item[k]
+		_:
+			pub = {"a_name": item.get("a_name", ""), "b_name": item.get("b_name", ""), "a": int(item.get("a", 0)), "b": int(item.get("b", 0))}
+			if s.mode == "blitz": pub["options"] = item.options
+	single_state.rpc_id(pid, {"mode": s.mode, "idx": s.idx, "total": s.items.size(), "lives": s.lives, "score": s.score, "combo": s.combo, "done": int(s.get("done", 0)),
 		"best_combo": s.best_combo, "remaining_ms": maxi(0, s.deadline - now), "per_ms": s.get("per_ms", 0), "lock_ms": 0,
 		"over": s.over, "item": pub, "last": s.get("last", {})})
 
@@ -586,6 +689,7 @@ func c_rematch() -> void: rematch.rpc_id(1)
 func c_single_start(mode: String) -> void: single_start.rpc_id(1, mode, App.scope)
 func c_single_guess(id: int, name: String) -> void: single_guess.rpc_id(1, id, name)
 func c_single_answer(i: int) -> void: single_answer.rpc_id(1, i)
+func c_single_team(id: int, name: String) -> void: single_team.rpc_id(1, id, name)
 func c_single_quit() -> void: single_quit.rpc_id(1)
 
 func me() -> Dictionary:

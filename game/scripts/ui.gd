@@ -223,6 +223,15 @@ static func scope_picker(on_change: Callable) -> VBoxContainer:
 static func scope_label(s: String) -> String:
 	return T.t("scope.%s.title" % (s if s in App.SCOPES else "all"))
 
+## Para biçimi: 23300000 → "€23,3M", 450000 → "€450K"
+static func money(v: int) -> String:
+	if v >= 1000000:
+		var m := v / 1000000.0
+		var s := ("%.1f" % m).trim_suffix(".0")
+		return "€%sM" % (s.replace(".", ",") if T.lang == "tr" else s)
+	if v >= 1000: return "€%dK" % int(v / 1000.0)
+	return "€%d" % v
+
 static func vbox(sep := 10) -> VBoxContainer:
 	var v := VBoxContainer.new(); v.add_theme_constant_override("separation", sep); return v
 

@@ -24,6 +24,7 @@ func _ready() -> void:
 				await _show(on)
 			await _matches()
 			await _singles()
+			await _new_modes()
 		print("[smoke] %s ok" % lang)
 	print("[smoke] done, screens built: %d, sample: %s | %s" % [built, T.t("menu.online"), T.t("sp.step") % 3])
 	get_tree().quit()
@@ -81,3 +82,38 @@ func _singles() -> void:
 		Game.single_changed.emit(_single(mode, 3, {"type": "wrong", "name": "Mesut Özil", "option": 1, "answer": 2}, true))
 		await get_tree().create_timer(1.6).timeout
 		sp.queue_free(); built += 1
+
+func _state(mode: String, idx: int, item: Dictionary, last: Dictionary, over: bool) -> Dictionary:
+	return {"mode": mode, "idx": idx, "total": 30, "lives": 2, "score": 260 * (idx + 1), "combo": 1.0, "best_combo": 1.0, "done": idx, "remaining_ms": 3500, "per_ms": 4000,
+		"lock_ms": 0, "over": over, "item": item, "last": last}
+
+func _new_modes() -> void:
+	var clubs := [{"club": "Karlsruher SC", "year": null, "kind": "start"}, {"club": "Hamburger SV", "year": 2012, "kind": "sale"}, {"club": "Karlsruher SC", "year": 2012, "kind": "loan"}]
+	var car: Control = load("res://scripts/screens/career_play.gd").new(); root.add_child(car); await get_tree().process_frame
+	for st in [_state("career", 0, {"clubs": clubs.slice(0, 1), "total": 6, "revealed": 1}, {}, false),
+			_state("career", 0, {"clubs": clubs, "total": 6, "revealed": 3}, {"type": "wrong", "name": "Mesut Özil"}, false),
+			_state("career", 1, {"clubs": clubs.slice(0, 1), "total": 4, "revealed": 1}, {"type": "correct", "name": "Hakan Çalhanoğlu", "gained": 280}, false),
+			_state("career", 2, {"clubs": clubs.slice(0, 2), "total": 4, "revealed": 2}, {"type": "timeout", "answer": "Hakan Çalhanoğlu"}, false),
+			_state("career", 2, {"clubs": clubs, "total": 4, "revealed": 3}, {"type": "wrong", "name": "X", "answer": "Hakan Çalhanoğlu"}, true)]:
+		Game.single_changed.emit(st); await get_tree().process_frame; await get_tree().process_frame
+	car.queue_free(); built += 1
+	var hist := [{"club": "Karlsruher SC", "year": null, "kind": "start", "fee": null}, {"club": "Hamburger SV", "year": 2012, "kind": "sale", "fee": 2500000}]
+	var chn: Control = load("res://scripts/screens/chain_play.gd").new(); root.add_child(chn); await get_tree().process_frame
+	for st in [_state("chain", 0, {"name": "Hakan Çalhanoğlu", "born": 1994, "pos": "CM", "step": 0, "steps_total": 6, "history": []}, {}, false),
+			_state("chain", 0, {"name": "Hakan Çalhanoğlu", "born": 1994, "pos": "CM", "step": 2, "steps_total": 6, "history": hist, "hint": {"year": 2014, "kind": "sale", "fee": 15250000}}, {"type": "correct", "name": "Hamburger SV", "gained": 175}, false),
+			_state("chain", 0, {"name": "Hakan Çalhanoğlu", "born": null, "pos": null, "step": 2, "steps_total": 6, "history": hist, "hint": {"year": null, "kind": "loan", "fee": null}}, {"type": "wrong", "name": "Inter Milan", "answer": "AC Milan"}, false),
+			_state("chain", 1, {"name": "Alan Shearer", "born": 1970, "pos": "CF", "step": 1, "steps_total": 3, "history": hist.slice(0, 1), "hint": {"year": 1992, "kind": "free", "fee": 450000}}, {"type": "timeout", "answer": "Blackburn Rovers"}, false),
+			_state("chain", 1, {"name": "Alan Shearer", "born": 1970, "pos": "CF", "step": 3, "steps_total": 3, "history": hist}, {"type": "wrong", "name": "X", "answer": "Newcastle United"}, true)]:
+		Game.single_changed.emit(st); await get_tree().process_frame; await get_tree().process_frame
+	chn.queue_free(); built += 1
+	var ver: Control = load("res://scripts/screens/versus_play.gd").new(); root.add_child(ver); await get_tree().process_frame
+	var it1 := {"cat": "goals", "fmt": "int", "names": ["Didier Drogba", "Yaya Touré"], "born": [1978, 1983], "shown": [null, null], "new_cat": false}
+	var it2 := {"cat": "max_fee", "fmt": "money", "names": ["Didier Drogba", "Adrien Rabiot"], "born": [1978, null], "shown": [38500000, null], "new_cat": true}
+	Game.single_changed.emit(_state("versus", 0, it1, {}, false)); await get_tree().process_frame
+	Game.single_changed.emit(_state("versus", 1, it2, {"type": "correct", "option": 0, "values": [365, 120], "bonus": 42}, false))
+	await get_tree().create_timer(1.1).timeout
+	Game.single_changed.emit(_state("versus", 1, it2, {"type": "wrong", "option": 1, "answer": 0, "values": [38500000, 450000]}, true))
+	await get_tree().create_timer(1.8).timeout
+	ver.queue_free(); built += 1
+	for cat in ["goals", "apps", "assists", "yellow", "red", "best_season", "goals_big5", "pens", "mv_max", "max_fee", "fee_sum", "n_clubs"]:
+		assert(T.t("cat." + cat) != "cat." + cat, "eksik kategori çevirisi: " + cat)

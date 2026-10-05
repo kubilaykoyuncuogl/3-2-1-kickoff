@@ -25,7 +25,7 @@ Kubilay'ın kişisel projesi. **3-2-1**: iki oyuncu birer kulüp söyler, 3'ten 
 ## Çalıştırma
 ```
 # bir kez: tabloları çıkar (all_data/all_data/database.dump → data/raw/tsv/*.sql), index üret, şifrele
-python tools/build_index.py && set -a && . ./.env && set +a && python tools/encrypt_index.py --in data/index/index.sqlite --out data/index/index.enc
+python tools/build_index.py && python tools/build_stats.py && set -a && . ./.env && set +a && python tools/encrypt_index.py --in data/index/index.sqlite --out data/index/index.enc
 # index servisi (.venv: fastapi uvicorn cryptography)
 set -a && . ./.env && set +a && .venv/bin/uvicorn server.index_service:app --host 127.0.0.1 --port 9081
 # oyun sunucusu
@@ -36,6 +36,7 @@ godot --path game
 Godot 4.7.2 stable kurulu: `~/.local/bin/godot` (2026-10-05). Export template'leri henüz indirilmedi (Android/macOS/Web build için gerekir: Editor > Manage Export Templates).
 
 ## Notlar
+- Tek oyunculu modlar: Klasik merdiven, Beşte Bir, Kariyer yolu, Sıradaki kulüp, O mu bu mu (`docs/single-modes.md`). Son üçü `player_stats` tablosuna (`tools/build_stats.py`) ve ünlü oyuncu havuzuna dayanır; index yeniden üretilirse build_stats da çalıştırılmalı, yoksa bu modlar "paket yüklenemedi" verir.
 - **Dil paketleri** `game/lang/<kod>.json` (anahtar → metin). Kodda görünen metin yazma, `T.t("anahtar")` kullan (`game/scripts/t.gd`); yeni metin eklerken önce `tr.json` ve `en.json`'a anahtar ekle. Sunucu hata mesajı olarak `err.*` anahtarı gönderir, istemci çevirir. Kontrol: `python3 tools/check_lang.py`. Yeni dil = yeni json dosyası, Ayarlar > Dil'de kendiliğinden çıkar.
 - **Duman testi**: `godot --headless --path game -- --smoke` her ekranı her dilde ve iki temada kurar; arayüz değişikliğinden sonra çalıştır, çıktıda SCRIPT ERROR olmamalı (`--check-only` autoload'ları tanımadığı için hataları kaçırır).
 - Export preset'lerinde `include_filter="*.json, *.txt"` şart; yoksa dil dosyaları ve `assets/room_words.txt` pakete girmez.
