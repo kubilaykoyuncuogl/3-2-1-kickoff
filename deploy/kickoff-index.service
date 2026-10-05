@@ -1,0 +1,15 @@
+[Unit]
+Description=3-2-1 Kickoff index service (FastAPI, localhost only)
+After=network.target
+
+[Service]
+User=kickoff
+WorkingDirectory=/opt/kickoff
+EnvironmentFile=/opt/kickoff/.env
+Environment=KICKOFF_INDEX=/opt/kickoff/data/index/index.enc
+ExecStart=/opt/kickoff/.venv/bin/uvicorn server.index_service:app --host 127.0.0.1 --port 9081
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,14 @@
+[Unit]
+Description=3-2-1 Kickoff game server (Godot headless)
+After=kickoff-index.service
+Requires=kickoff-index.service
+
+[Service]
+User=kickoff
+WorkingDirectory=/opt/kickoff
+ExecStart=/opt/kickoff/bin/kickoff-server.x86_64 --headless -- --server --port 9080 --index http://127.0.0.1:9081
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

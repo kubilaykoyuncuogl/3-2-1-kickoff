@@ -1,0 +1,15 @@
+# /etc/caddy/Caddyfile — DOMAIN yerine gerçek alan adı (ör. kickoff.example.com)
+DOMAIN {
+	encode gzip
+	# Godot web build'in istediği izolasyon başlıkları
+	header {
+		Cross-Origin-Opener-Policy "same-origin"
+		Cross-Origin-Embedder-Policy "require-corp"
+		Cache-Control "no-store"
+	}
+	# WebSocket → Godot oyun sunucusu (istemci https altında wss://DOMAIN/ws kullanır)
+	@ws path /ws
+	reverse_proxy @ws 127.0.0.1:9080
+	root * /opt/kickoff/web
+	file_server
+}
