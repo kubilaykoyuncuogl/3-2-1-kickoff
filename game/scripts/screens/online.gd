@@ -119,7 +119,7 @@ func _render_room() -> void:
 	status = UI.label("", 12, 600, "no"); body.add_child(status)
 
 func _render_join() -> void:
-	body.add_child(UI.spacer())
+	# üstte: klavye açılınca görünür kalsın
 	var ey := UI.eyebrow("Arkadaşının kodu"); ey.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; body.add_child(ey)
 	var inp := LineEdit.new(); inp.max_length = 4; inp.placeholder_text = "0000"; inp.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	inp.custom_minimum_size.y = 72; inp.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER
@@ -127,9 +127,13 @@ func _render_join() -> void:
 	inp.add_theme_color_override("font_color", UI.c("fg")); inp.add_theme_color_override("font_placeholder_color", UI.c("line_strong"))
 	var st := UI.box("surface", "violet_fill", 14); inp.add_theme_stylebox_override("normal", st); inp.add_theme_stylebox_override("focus", st)
 	body.add_child(inp)
-	status = UI.label("4 hane", 12, 600, "muted"); status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; body.add_child(status)
+	status = UI.label("4 hane, otomatik katılır", 12, 600, "muted"); status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; body.add_child(status)
+	var go := UI.button("Katıl", "violet")
+	go.pressed.connect(func(): if inp.text.length() == 4: Game.c_join_room(inp.text))
+	body.add_child(go)
 	inp.text_changed.connect(func(t):
 		if t.length() == 4: Game.c_join_room(t))
-	inp.text_submitted.connect(func(t): if t.length() == 4: Game.c_join_room(t))
+	inp.text_submitted.connect(func(t):
+		if t.length() == 4: Game.c_join_room(t))
 	body.add_child(UI.spacer())
 	inp.call_deferred("grab_focus")
