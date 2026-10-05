@@ -40,3 +40,9 @@ Kontrast: yazı rolleri zemin üstünde ≥4.5 (AA), fill üstü yazılar ≥5.5
 
 ## Karar notu (2026-10-05)
 Orkide (sıcak mor) alternatifi denendi, Kubilay mor + amber ikilisini tercih etti. Mavi-sarı okunma riski kabul edildi; gerekçe: mor amber'dan net ayrışıyor ve taraf ayrımı ayrıca konum (sol/sağ) ve "Sen / Rakip" etiketiyle de taşınıyor. Renk körlüğü için bu konum/etiket kuralı zorunlu.
+
+## Tipografi (karar: 2026-10-05)
+Tek aile: **Sora** (Google Fonts, OFL). İlham ITC Eras (France 98 logosu); lisans (£160) yerine Sora + 3° eğim.
+- Display (başlık, geri sayım, sayaç, skor): Sora 800, 3° sağa eğim → `game/assets/fonts/sora_display.tres`
+- Body (gövde, buton, autocomplete listesi): Sora 500, düz → `game/assets/fonts/sora_body.tres`
+- Rakamlarda `tabular_nums` (Sora'da `tnum` özelliği var; Godot'ta FontVariation `opentype_features` ile aç).

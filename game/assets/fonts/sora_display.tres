@@ -1,0 +1,11 @@
+[gd_resource type="FontVariation" load_steps=2 format=3]
+
+; Başlık, sayaç, skor: Sora 800 + 3° sağa eğim (Eras/France 98 duruşu). slant = tan(3°) = 0.0524
+[ext_resource type="FontFile" path="res://assets/fonts/Sora[wght].ttf" id="1"]
+
+[resource]
+base_font = ExtResource("1")
+variation_opentype = {
+"wght": 800
+}
+variation_transform = Transform2D(1, 0.0524, 0, 1, 0, 0)
