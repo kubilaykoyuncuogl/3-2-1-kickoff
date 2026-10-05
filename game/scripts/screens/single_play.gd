@@ -98,18 +98,19 @@ func _header(d: Dictionary) -> void:
 	else:
 		left.add_child(UI.eyebrow(T.t("sp.question") % (int(d.idx) + 1)))
 		left.add_child(UI.chip("×%.1f" % float(d.combo), "ok"))
+	for ch in left.get_children(): ch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	h.add_child(left)
-	timer_label = UI.label("", 28, 800); h.add_child(timer_label)
+	var sc := UI.chip(T.t("sp.score") % int(d.score), "ok"); sc.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(sc)
+	var tb := UI.timer_box(); timer_label = tb[1]; h.add_child(tb[0])
 	body.add_child(h)
-	bar = ProgressBar.new(); bar.max_value = per_ms; bar.value = per_ms; bar.show_percentage = false; bar.custom_minimum_size.y = 8
-	bar.add_theme_stylebox_override("background", UI.box("line", "", 999, 0)); bar.add_theme_stylebox_override("fill", UI.box("fg", "", 999, 0))
+	bar = UI.progress(per_ms)
 	body.add_child(bar)
-	var pair := UI.vbox(0)
-	var a := UI.label(str(d.item.a_name), 26, 800, "violet_ink"); a.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; a.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var x := UI.label("×", 16, 700, "muted"); x.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var b := UI.label(str(d.item.b_name), 26, 800, "amber_ink"); b.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var card := UI.panel(""); body.add_child(card)
+	var pair := UI.vbox(0); card.add_child(pair)
+	var a := UI.label(str(d.item.a_name), 22, 800, "violet_ink"); a.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; a.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var x := UI.label("×", 14, 700, "muted"); x.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var b := UI.label(str(d.item.b_name), 22, 800, "amber_ink"); b.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	pair.add_child(a); pair.add_child(x); pair.add_child(b)
-	body.add_child(pair)
 	toast_slot = UI.vbox(0); body.add_child(toast_slot)
 	_show_toast(d)
 
@@ -158,27 +159,23 @@ func _render_item(d: Dictionary) -> void:
 		body.add_child(ac); ac.call_deferred("focus")
 		strip = UI.label("", 12, 600, "muted"); body.add_child(strip)
 		if not history.is_empty():
-			var hv := UI.vbox(4)
+			var hv := UI.vbox(6)
 			hv.add_child(UI.eyebrow(T.t("sp.history")))
-			for i in mini(history.size(), 8):
+			for i in mini(history.size(), 4):
 				var h: Dictionary = history[i]
-				var row := UI.hbox(8)
-				var n := UI.label("%d. %s" % [int(h.idx) + 1, h.name], 15, 700 if i == 0 else 500, "fg" if i == 0 else "muted"); n.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-				var pts := UI.label("+%d" % int(h.gained) + (T.t("sp.speed_short") % int(h.bonus) if int(h.bonus) > 0 else ""), 14, 700 if i == 0 else 500, "ok" if i == 0 else "muted")
-				row.add_child(n); row.add_child(pts); hv.add_child(row)
+				var pts := UI.label("+%d" % int(h.gained), 15, 800, "ok")
+				hv.add_child(UI.row(str(int(h.idx) + 1), str(h.name), (T.t("sp.speed_short") % int(h.bonus)).strip_edges() if int(h.bonus) > 0 else "", pts, "new" if i == 0 else ""))
 			body.add_child(hv)
-		body.add_child(UI.label(T.t("sp.score") % int(d.score), 15, 800))
 	else:
 		var opts := UI.vbox(8); opts.size_flags_vertical = Control.SIZE_EXPAND_FILL; opts.alignment = BoxContainer.ALIGNMENT_CENTER
 		for i in d.item.options.size():
-			var b := UI.button(str(d.item.options[i]), "line"); b.text = str(d.item.options[i]); b.custom_minimum_size.y = 60
+			var b := UI.button(str(d.item.options[i]), "line"); b.custom_minimum_size.y = 58
 			var idx: int = i
 			b.pressed.connect(func():
 				for ob in opt_buttons: ob.disabled = true
 				Game.c_single_answer(idx))
 			opts.add_child(b); opt_buttons.append(b)
 		body.add_child(opts)
-		body.add_child(UI.label(T.t("sp.score") % int(d.score), 15, 800))
 
 func _update(d: Dictionary) -> void:
 	# aynı basamak, yeni olay (yanlış tahmin): başlıktaki canları ve şeridi tazele

@@ -47,16 +47,16 @@ func _build(d: Dictionary) -> void:
 	var it: Dictionary = d.item
 	fmt = str(it.get("fmt", "int"))
 	body.add_child(UI.nav(_title(), _quit))
-	_header([UI.eyebrow(T.t("versus.round") % (int(d.idx) + 1)), UI.chip(T.t("sp.score") % int(d.score), "ok")])
+	_header([UI.eyebrow(T.t("versus.round") % (int(d.idx) + 1))], int(d.score))
 	toast_slot = UI.vbox(0); body.add_child(toast_slot)
 	if it.get("new_cat", false): _toast(T.t("versus.new_cat"), "ok")
-	var q := UI.label(T.t("cat." + str(it.cat)), 22, 800); q.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; q.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var q := UI.label(T.t("cat." + str(it.cat)), 20, 800); q.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; q.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	body.add_child(q)
 	for i in 2:
 		if i == 1:
-			var vs := UI.label("VS", 16, 800, "muted"); vs.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; body.add_child(vs)
+			var vs := UI.badge("VS", "muted"); vs.custom_minimum_size = Vector2(44, 28); vs.size_flags_horizontal = Control.SIZE_SHRINK_CENTER; body.add_child(vs)
 		var side := "violet" if i == 0 else "amber"
-		var b := Button.new(); b.size_flags_vertical = Control.SIZE_EXPAND_FILL; b.custom_minimum_size.y = 120
+		var b := Button.new(); b.size_flags_vertical = Control.SIZE_EXPAND_FILL; b.custom_minimum_size.y = 110
 		for st in ["normal", "disabled"]: b.add_theme_stylebox_override(st, UI.box(side + "_soft", "", 16, 0))
 		for st in ["hover", "pressed"]: b.add_theme_stylebox_override(st, UI.box(side + "_soft", side + "_fill", 16))
 		b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())

@@ -129,7 +129,7 @@ func _render_pick(d: Dictionary) -> void:
 	mv.add_child(UI.eyebrow(T.t("you") + " · " + str(me.get("nick", "")), "violet_ink"))
 	if me.get("ready", false):
 		mv.add_child(UI.label(str(me.team_name), 26, 800, "violet_ink"))
-		var ch := UI.chip(T.t("ready"), "ok"); mv.add_child(ch)
+		var ch := UI.chip(T.t("ready"), "ok"); ch.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN; mv.add_child(ch)
 		mv.add_child(UI.label(T.t("match.waiting_opp"), 12, 500, "violet_ink"))
 	else:
 		if me.get("team", 0) != 0:
@@ -165,11 +165,14 @@ func _show_quick_picks(list: Array) -> void:
 	if quick_slot == null or list.is_empty(): return
 	for ch in quick_slot.get_children(): ch.queue_free()
 	quick_slot.add_child(UI.label(T.t("match.quick"), 13, 600, "violet_ink"))
+	var fl := UI.flow(6)
 	for it in list:
-		var b := UI.button(str(it.name), "line"); b.text = str(it.name); b.custom_minimum_size.y = 48
+		var b := UI.button(str(it.name), "line"); b.custom_minimum_size.y = 40; b.clip_text = false
+		b.add_theme_font_size_override("font_size", 14)
 		var id := int(it.id); var nm: String = str(it.name)
 		b.pressed.connect(func(): Game.c_pick_team(id, nm))
-		quick_slot.add_child(b)
+		fl.add_child(b)
+	quick_slot.add_child(fl)
 
 func _show_picker() -> void:
 	pass  # pick_team(0) sunucudan boş takım döner → _update → _render
@@ -200,11 +203,9 @@ func _render_round(d: Dictionary) -> void:
 	var chips := UI.hbox(6); chips.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	chips.add_child(UI.chip(str(me.get("team_name", "")), "violet")); chips.add_child(UI.chip(str(op.get("team_name", "")), "amber"))
 	h.add_child(chips)
-	timer_label = UI.label("15", 28, 800); h.add_child(timer_label)
+	var tb := UI.timer_box(); timer_label = tb[1]; h.add_child(tb[0])
 	body.add_child(h)
-	timer_bar = ProgressBar.new(); timer_bar.max_value = Game.ROUND_MS; timer_bar.value = Game.ROUND_MS; timer_bar.show_percentage = false
-	timer_bar.custom_minimum_size.y = 8
-	timer_bar.add_theme_stylebox_override("background", UI.box("line", "", 999, 0)); timer_bar.add_theme_stylebox_override("fill", UI.box("fg", "", 999, 0))
+	timer_bar = UI.progress(Game.ROUND_MS)
 	body.add_child(timer_bar)
 	ac = Autocomplete.new("player", T.t("ph.player"))
 	ac.size_flags_vertical = Control.SIZE_EXPAND_FILL

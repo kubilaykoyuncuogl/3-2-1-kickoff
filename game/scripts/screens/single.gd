@@ -14,21 +14,14 @@ func _ready() -> void:
 	if not Net.is_connected_to_server(): Net.connect_to_server()
 
 func _mode_card(title: String, sub: String, mode: String) -> Control:
-	var b := Button.new()
-	b.custom_minimum_size.y = 84
-	b.add_theme_stylebox_override("normal", UI.box("amber_soft", "", 16, 0))
-	b.add_theme_stylebox_override("hover", UI.box("amber_soft", "amber_fill", 16))
-	b.add_theme_stylebox_override("pressed", UI.box("amber_soft", "amber_fill", 16))
-	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	var v := UI.vbox(2); v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); v.offset_left = 16; v.offset_right = -16; v.offset_top = 14; v.offset_bottom = -14
-	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var h := UI.hbox(8); var t := UI.label(title, 18, 800, "amber_ink"); t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	h.add_child(t); h.add_child(UI.label(T.t("single.best") % int(App.best.get(mode, 0)), 13, 700, "amber_ink"))
-	v.add_child(h)
-	var s := UI.label(sub, 12, 500, "amber_ink"); s.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; v.add_child(s)
-	for ch in v.get_children(): ch.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for ch in h.get_children(): ch.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	b.add_child(v)
+	var tail := UI.hbox(8)
+	var best := int(App.best.get(mode, 0))
+	if best > 0:
+		var bc := UI.chip("%s %d" % [T.t("single.best_short"), best], "amber"); bc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		(bc.get_theme_stylebox("panel") as StyleBoxFlat).bg_color = UI.c("surface")
+		tail.add_child(bc)
+	tail.add_child(UI.chevron("amber_ink"))
+	var b := UI.option_card(title, sub, null, tail, false, "amber", 92.0)
 	b.pressed.connect(func():
 		if mode in ["ladder", "blitz"]:      # kulüp kapsamı yalnızca kulüp çifti modlarında
 			var sc = load("res://scripts/screens/single_scope.gd").new(); sc.mode = mode

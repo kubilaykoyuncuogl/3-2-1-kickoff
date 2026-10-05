@@ -80,16 +80,18 @@ func _process(_dt: float) -> void:
 	timer_label.add_theme_color_override("font_color", UI.c("no" if hot else "fg"))
 	bar.add_theme_stylebox_override("fill", UI.box("no" if hot else "fg", "", 999, 0))
 
-## Başlık satırı: solda verilen kontroller, sağda sayaç; altında süre çubuğu
-func _header(left: Array) -> void:
+## Üst bilgi satırı: solda adım/can, sağda puan ve sayaç kutusu; altında ince süre çubuğu
+func _header(left: Array, score := -1) -> void:
 	var h := UI.hbox(8)
 	var l := UI.hbox(8); l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	for c in left: l.add_child(c)
+	for c in left:
+		c.size_flags_vertical = Control.SIZE_SHRINK_CENTER; l.add_child(c)
 	h.add_child(l)
-	timer_label = UI.label("", 28, 800); h.add_child(timer_label)
+	if score >= 0:
+		var sc := UI.chip(T.t("sp.score") % score, "ok"); sc.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(sc)
+	var tb := UI.timer_box(); timer_label = tb[1]; h.add_child(tb[0])
 	body.add_child(h)
-	bar = ProgressBar.new(); bar.max_value = per_ms; bar.value = per_ms; bar.show_percentage = false; bar.custom_minimum_size.y = 8
-	bar.add_theme_stylebox_override("background", UI.box("line", "", 999, 0)); bar.add_theme_stylebox_override("fill", UI.box("fg", "", 999, 0))
+	bar = UI.progress(per_ms)
 	body.add_child(bar)
 
 func _toast(text: String, kind := "ok") -> void:

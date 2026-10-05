@@ -70,14 +70,15 @@ func _on_suggestions(k: String, q: String, items: Array) -> void:
 		var nm: String = it.name
 		if kind == "player" and it.get("born"): nm += "  ·  %d" % int(it.born)
 		b.text = nm
-		b.custom_minimum_size.y = 50
-		b.add_theme_font_override("font", UI.font(600)); b.add_theme_font_size_override("font_size", 18)
+		b.custom_minimum_size.y = 48
+		b.add_theme_font_override("font", UI.font(600)); b.add_theme_font_size_override("font_size", 16)
 		var used: bool = it.get("used", false) or not it.get("in_scope", true)
-		var st := UI.box("bg", "", 10, 0); st.content_margin_top = 8; st.content_margin_bottom = 8
+		var st := UI.box("surface", "line", 12, 2); st.content_margin_top = 8; st.content_margin_bottom = 8
 		b.add_theme_stylebox_override("normal", st)
-		var hv := UI.box("violet_soft", "violet_fill", 10); hv.content_margin_top = 8; hv.content_margin_bottom = 8
+		var hv := UI.box("violet_soft", "violet_fill", 12, 2); hv.content_margin_top = 8; hv.content_margin_bottom = 8
+		b.add_theme_stylebox_override("disabled", UI.box("", "line", 12, 2)); b.clip_text = true
 		b.add_theme_stylebox_override("hover", hv); b.add_theme_stylebox_override("pressed", hv); b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-		b.add_theme_color_override("font_color", UI.c("muted") if used else UI.c("fg"))
+		b.add_theme_color_override("font_color", UI.c("muted") if used else UI.c("fg")); b.add_theme_color_override("font_disabled_color", UI.c("muted"))
 		b.add_theme_color_override("font_hover_color", UI.c("violet_ink")); b.add_theme_color_override("font_pressed_color", UI.c("violet_ink"))
 		b.disabled = used
 		if used: b.text += T.t("ac.used") if it.get("used", false) else T.t("ac.out_of_scope")

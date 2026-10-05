@@ -24,8 +24,8 @@ const CROSS_SCOPE_MS := 45000   # bu kadar bekleyenler kapsam fark etmeksizin e�
 const RECONNECT_MS := 10000
 const SCOPE_ORDER := ["big5", "top", "all"]   # dar → geniş
 const SINGLE_LIVES := {"ladder": 3, "blitz": 1, "career": 3, "chain": 3, "versus": 1}
-const CAREER_REVEAL_MS := 4000      # kariyer yolu: bu aralıkla bir kulüp daha açılır
-const CAREER_LAST_MS := 12000       # hepsi açıldıktan sonra son tahmin süresi
+const CAREER_REVEAL_MS := 8000      # kariyer yolu: bu aralıkla bir kulüp daha açılır
+const CAREER_LAST_MS := 15000       # hepsi açıldıktan sonra son tahmin süresi
 const CHAIN_STEP_MS := 20000
 
 # ---------- istemci tarafı ----------
@@ -650,9 +650,10 @@ func _single_send(pid: int) -> void:
 			var steps: Array = item._steps
 			var st: int = mini(int(s.step), steps.size())
 			pub = {"name": item.name, "born": item.get("born"), "pos": item.get("pos"), "step": st, "steps_total": steps.size(),
-				"history": steps.slice(0, st).map(func(x): return {"club": x.club, "year": x.get("year"), "kind": x.kind, "fee": x.get("fee")})}
-			if st > 0 and st < steps.size():
-				pub["hint"] = {"year": steps[st].get("year"), "kind": steps[st].kind, "fee": steps[st].get("fee")}
+				"history": steps.slice(0, st).map(func(x): return {"club": x.club, "year": x.get("year"), "kind": x.kind, "fee": x.get("fee"), "country": x.get("country")})}
+			if st < steps.size():      # ipucu: yıl, tür, bedel, gittiği ülke ve lig (ilk kulüp için de ülke/lig)
+				pub["hint"] = {"year": steps[st].get("year"), "kind": steps[st].kind, "fee": steps[st].get("fee"),
+					"country": steps[st].get("country"), "league": steps[st].get("league")}
 		"versus":
 			for k in item:
 				if not str(k).begins_with("_"): pub[k] = item[k]

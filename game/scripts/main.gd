@@ -5,6 +5,8 @@ func _ready() -> void:
 	print("[main] ready server=", Net.is_server)
 	if Net.is_server:
 		return
+	if "--shots" in OS.get_cmdline_user_args():
+		add_child(load("res://scripts/shots.gd").new()); return
 	if "--smoke" in OS.get_cmdline_user_args():
 		add_child(load("res://scripts/smoke.gd").new()); return
 	if "--bot" in OS.get_cmdline_user_args():

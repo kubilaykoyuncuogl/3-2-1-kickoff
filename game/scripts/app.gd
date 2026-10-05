@@ -32,6 +32,21 @@ func _ready() -> void:
 	if not Net.is_server:
 		get_tree().root.size_changed.connect(_fit_scale)
 		_fit_scale()
+		get_tree().node_added.connect(func(n): if n is Label: _fit_label.call_deferred(n))
+
+## Taşma koruması: dikey kutudaki uzun yazı satıra sarılır; yatay kutuda esneyen yazı sığmazsa üç noktayla kesilir.
+func _fit_label(l: Label) -> void:
+	if not is_instance_valid(l) or not l.is_inside_tree(): return
+	var p := l.get_parent()
+	if p is HBoxContainer:
+		if (l.size_flags_horizontal & Control.SIZE_EXPAND) and not l.clip_text and l.autowrap_mode == TextServer.AUTOWRAP_OFF:
+			l.clip_text = true; l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		return
+	if l.autowrap_mode != TextServer.AUTOWRAP_OFF or l.clip_text or l.text.length() < 22: return
+	if p is VBoxContainer or p is PanelContainer or p is MarginContainer:
+		var gp := p.get_parent()
+		if p is VBoxContainer and gp is HBoxContainer and not (p.size_flags_horizontal & Control.SIZE_EXPAND): return   # daralan sütun: sarma harf harf böler
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 ## Ölçek yalnızca genişlikten: telefon = 1.0, masaüstü en çok 1.5. Yükseklik (klavye açılınca kısalır) ölçeği etkilemez.
 func _fit_scale() -> void:

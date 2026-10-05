@@ -313,7 +313,7 @@ CATS = {                   # O mu bu mu kategorileri: anahtar -> (SQL ifadesi, b
     "mv_max": ("p.mv_max", "money"), "max_fee": ("(SELECT MAX(fee) FROM stints WHERE player_id=p.id)", "money"),
     "fee_sum": ("(SELECT SUM(fee) FROM stints WHERE player_id=p.id)", "money"), "n_clubs": ("p.n_clubs", "int"),
 }
-VERSUS_POOL = 2000
+VERSUS_POOL = 400       # yalnızca en tanınan isimler
 cat_values: dict = {}      # cat -> {pid: değer}
 cat_sorted: dict = {}      # cat -> [pid] büyükten küçüğe
 cat_rank: dict = {}
@@ -327,6 +327,11 @@ def _build_famous():
     Şart: üst liglerde ≥120 maç, lig maçlarının ≥%60'ı üst liglerde, doğum ≥ MIN_BIRTH."""
     if db.execute("SELECT 1 FROM sqlite_master WHERE name='player_stats'").fetchone() is None:
         print("player_stats yok: kariyer / zincir / o mu bu mu modları kapalı (tools/build_stats.py çalıştır)"); return
+    global PATH_SQL
+    if db.execute("SELECT 1 FROM sqlite_master WHERE name='countries'").fetchone():        # tools/build_geo.py
+        PATH_SQL = """SELECT s.club_id, c.name, s.date, s.kind, s.fee, co.name, cp.name FROM stints s JOIN clubs c ON c.id = s.club_id
+                      LEFT JOIN countries co ON co.id = c.country_id LEFT JOIN competitions cp ON cp.id = c.competition_id
+                      WHERE s.player_id = ? ORDER BY s.seq"""
     cols = {r[1] for r in db.execute("PRAGMA table_info(player_stats)")}
     tr_cols = "s.apps_tr, s.goals_tr" if "apps_tr" in cols else "0, 0"
     top_ids = ",".join(str(c) for c, t in club_tier.items() if t <= 3) or "0"
@@ -347,15 +352,18 @@ def _build_famous():
         cat_sorted[cat] = sorted(vals, key=lambda x: -vals[x])
         cat_rank[cat] = {pid: i for i, pid in enumerate(cat_sorted[cat])}
 
+PATH_SQL = """SELECT s.club_id, c.name, s.date, s.kind, s.fee, NULL, NULL FROM stints s JOIN clubs c ON c.id = s.club_id
+              WHERE s.player_id = ? ORDER BY s.seq"""      # ülke/lig tabloları varsa _build_famous içinde genişletilir
+
 def _path(pid: int) -> list:
     """Oyuncunun kıdemli kulüp yolu: kiralık dönüşleri atılır, art arda aynı kulüp birleştirilir."""
     out = []
-    for cid, name, date, kind, fee in db.execute("""SELECT s.club_id, c.name, s.date, s.kind, s.fee FROM stints s JOIN clubs c ON c.id = s.club_id
-                                                    WHERE s.player_id = ? ORDER BY s.seq""", (pid,)):
+    for cid, name, date, kind, fee, country, league in db.execute(PATH_SQL, (pid,)):
         if kind == "loan_end": continue
         if out and out[-1]["club_id"] == cid: continue
         k = "start" if not out else ("loan" if kind == "loan" else ("sale" if (fee or 0) > 0 else "free"))
-        out.append({"club_id": cid, "club": name, "year": int(date[:4]) if date else None, "kind": k, "fee": fee if (fee or 0) > 0 else None})
+        out.append({"club_id": cid, "club": name, "year": int(date[:4]) if date else None, "kind": k, "fee": fee if (fee or 0) > 0 else None,
+                    "country": country, "league": league})
     return out
 
 def _fame_buckets(rng, n: int, ok) -> list:
@@ -377,7 +385,7 @@ def career_pack(n: int = 30, seed: str = ""):
     def ok(pid):
         path = _path(pid)
         if not (4 <= len(path) <= 11): return None
-        return {"_player_id": pid, "_name": pinfo[pid][0], "clubs": [{"club": x["club"], "year": x["year"], "kind": x["kind"]} for x in path]}
+        return {"_player_id": pid, "_name": pinfo[pid][0], "clubs": [{"club": x["club"], "year": x["year"], "kind": x["kind"], "country": x["country"]} for x in path]}
     return _fame_buckets(rng, n, ok)
 
 @app.get("/chain/pack")
@@ -410,7 +418,7 @@ def versus_pack(rounds: int = 80, seed: str = ""):
         stayer = rng.choice(order[len(order) // 3:]); side = rng.randint(0, 1); used = {stayer}; first = True; streak = 0
         while len(out) < rounds:
             r = rank[stayer]
-            near = [p for p in order[max(0, r - 120): r + 120] if p not in used and vals[p] != vals[stayer]]
+            near = [p for p in order[max(0, r - 50): r + 50] if p not in used and vals[p] != vals[stayer]]
             anyw = [p for p in order if p not in used and vals[p] != vals[stayer]]
             cand = near if (near and rng.random() < 0.75) else anyw
             if not cand: break
