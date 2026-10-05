@@ -16,3 +16,5 @@ data/*.log
 # Sırlar
 .env
 build/
+# Hesap veritabanı (cihaz kimlikleri, Elo): asla repoya girmez
+data/state/

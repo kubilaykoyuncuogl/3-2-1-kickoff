@@ -21,6 +21,15 @@ func _ready() -> void:
 	await _scr("05_single", "single")
 	await _scr("06_scope", "single_scope")
 	await _scr("07_settings", "settings")
+	App.linked = false
+	await _scr("08_account_guest", "account")
+	await _scr("08b_account_have", "account", func(x): x.view = "have")
+	await _scr("08c_account_recovery", "account", func(x): x.view = "recovery"; x.recovery = "zidane-pirlo-xavi-4821")
+	App.linked = true; App.devices = 2
+	await _scr("09_account_linked", "account")
+	await _scr("09b_account_code", "account", func(x): x.view = "code"; x.link_code = "946757"; x.code_until = Time.get_ticks_msec() + 583000)
+	await _scr("09c_settings_linked", "settings")
+	App.linked = false
 	await _match("10_pick", Game.State.PICK_TEAMS, {}, 0, true)
 	await _match("11_pick_ready", Game.State.PICK_TEAMS, {}, 2, false)
 	await _match("12_countdown", Game.State.COUNTDOWN, {}, 2, false)

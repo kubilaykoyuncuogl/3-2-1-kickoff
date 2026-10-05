@@ -8,6 +8,8 @@ services:
     ports: ["8080:8080"]   # rootless Docker: 127.0.0.1 bağlaması yönlendirmiyor; dış erişimi güvenlik duvarıyla kapat
     volumes:
       - ../data/index/index.enc:/app/data/index/index.enc:ro
-      - kickoff-state:/app/.local   # Godot user:// (accounts.json)
+      - kickoff-state:/app/.local   # Godot user://
+      - kickoff-data:/app/data/state   # hesap veritabanı (kickoff.sqlite): Elo, hesaplar, en iyi skorlar. Yedeklenmesi gereken tek şey bu.
 volumes:
   kickoff-state:
+  kickoff-data:

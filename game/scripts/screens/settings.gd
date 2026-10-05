@@ -16,9 +16,11 @@ func _ready() -> void:
 	nick.focus_exited.connect(func(): if Net.is_connected_to_server(): Game.c_hello())
 	body.add_child(_row(T.t("set.nick"), nick))
 	body.add_child(_section(T.t("set.account")))
-	var acc: Control = UI.chip(T.t("verified"), "ok") if App.verified else UI.button(T.t("set.link"), "line")
-	if acc is Button: acc.custom_minimum_size = Vector2(110, 40); acc.pressed.connect(func(): Game.error.emit(T.t("set.link_soon")))
-	body.add_child(_row(T.t("set.account") + ("" if App.verified else "\n" + T.t("set.not_linked")), acc))
+	var acc := UI.option_card(App.nickname if App.linked else T.t("acct.guest_title"),
+		(T.t("verified") if App.verified else T.t("acct.linked_chip")) if App.linked else T.t("acct.create"),
+		null, UI.chevron("violet_ink" if App.linked else "muted"), App.linked, "surface", 64.0)
+	acc.pressed.connect(func(): App.push(load("res://scripts/screens/account.gd").new()))
+	body.add_child(acc)
 
 	body.add_child(_section(T.t("set.sound")))
 	var snd := _toggle(App.sound, func(on): App.sound = on; App.save_settings(); App.rebuild_top())
@@ -40,7 +42,7 @@ func _ready() -> void:
 	body.add_child(_section(T.t("set.other")))
 	var howto := UI.button(T.t("menu.howto"), "ghost"); howto.pressed.connect(func(): App.push(load("res://scripts/screens/howto.gd").new()))
 	body.add_child(howto)
-	body.add_child(UI.label(T.t("set.version") + App.device_id.substr(0, 8), 11, 500, "muted"))
+	body.add_child(UI.label("3-2-1 Kickoff v0.1 beta", 11, 500, "muted"))      # cihaz kimliği hesabın anahtarı: ekranda gösterilmez
 
 func _section(t: String) -> Control:
 	var l := UI.eyebrow(t); l.add_theme_constant_override("line_spacing", 0)

@@ -25,6 +25,7 @@ func _ready() -> void:
 			await _matches()
 			await _singles()
 			await _new_modes()
+			await _account()
 		print("[smoke] %s ok" % lang)
 	print("[smoke] done, screens built: %d, sample: %s | %s" % [built, T.t("menu.online"), T.t("sp.step") % 3])
 	get_tree().quit()
@@ -117,3 +118,16 @@ func _new_modes() -> void:
 	ver.queue_free(); built += 1
 	for cat in ["goals", "apps", "assists", "yellow", "red", "best_season", "goals_big5", "pens", "mv_max", "max_fee", "fee_sum", "n_clubs"]:
 		assert(T.t("cat." + cat) != "cat." + cat, "eksik kategori çevirisi: " + cat)
+
+func _account() -> void:
+	for linked in [false, true]:
+		App.linked = linked; App.devices = 2
+		var ac: Control = load("res://scripts/screens/account.gd").new(); root.add_child(ac); await get_tree().process_frame
+		for step in [{"op": "create", "ok": true, "recovery": "zidane-pirlo-xavi-4821"}, {"op": "link_code", "ok": true, "code": "946757", "ttl": 600},
+				{"op": "link", "ok": false, "error": "bad_code"}, {"op": "recover", "ok": true}, {"op": "logout", "ok": true}, {"op": "delete", "ok": false, "error": "too_many"}]:
+			Game.acct_done.emit(step); await get_tree().process_frame; await get_tree().process_frame
+		for v in ["have", "confirm_delete", "main"]:
+			ac.view = v; ac._render(); await get_tree().process_frame
+		ac.have_tab = "recovery"; ac.view = "have"; ac._render(); await get_tree().process_frame
+		ac.queue_free(); built += 1
+	App.linked = false

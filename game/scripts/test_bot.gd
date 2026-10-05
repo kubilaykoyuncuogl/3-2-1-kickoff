@@ -13,6 +13,18 @@ func _ready() -> void:
 	App.nickname = nick; App.device_id = "dev-" + nick
 	Game.room_changed.connect(_on_room); Game.suggestions.connect(_on_sugg); Game.error.connect(func(m): print("[%s] ERR %s" % [nick, m]))
 	Game.single_changed.connect(_on_single)
+	if "--acct" in args:       # hesap senaryosu: oluştur → bağlama kodu → çıkış → sil
+		var steps := ["create", "create", "link_code", "logout", "link_code", "delete"]
+		Game.profile_changed.connect(func(d): print("[%s] profile linked=%s nick=%s elo=%s devices=%s" % [nick, d.get("linked"), d.get("nick"), d.get("elo"), d.get("devices")]))
+		Game.acct_done.connect(func(d):
+			print("[%s] acct %s" % [nick, d])
+			if steps.is_empty(): get_tree().quit()
+			else: Game.c_acct(steps.pop_front()))
+		Net.connected.connect(func():
+			print("[%s] connected" % nick); Game.c_hello()
+			await get_tree().create_timer(1.0).timeout
+			Game.c_acct(steps.pop_front()))
+		Net.connect_to_server(); return
 	Net.connected.connect(func():
 		print("[%s] connected" % nick); Game.c_hello()
 		if single_mode != "": Game.c_single_start(single_mode)

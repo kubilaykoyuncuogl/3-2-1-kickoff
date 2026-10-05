@@ -34,6 +34,7 @@ signal suggestions(kind: String, q: String, list: Array)
 signal single_changed(d: Dictionary)
 signal error(msg: String)
 signal profile_changed(d: Dictionary)
+signal acct_done(d: Dictionary)      # hesap işlemi sonucu: {op, ok, error, recovery?, code?, ttl?}
 var room := {}          # son oda durumu
 var single := {}        # son tek oyunculu durumu
 var my_id := 0
@@ -47,7 +48,7 @@ var queue_since := {}   # pid -> msec
 var singles := {}       # pid -> session
 var packs := {}         # (kullanılmıyor: her oturum yeni paket)
 var rate := {}          # pid -> Array[msec]
-var _accounts := {}     # device -> {elo, games}
+var _legacy_checked := false
 var words: PackedStringArray = []   # oda kodu kelimeleri (efsane soyadları)
 var pending_rc := {}    # device -> {code, pid, until}  (kopan oyuncunun geri dönüş hakkı)
 
@@ -56,7 +57,6 @@ func _ready() -> void:
 	if Net.is_server:
 		multiplayer.peer_disconnected.connect(_on_leave)
 		multiplayer.peer_connected.connect(func(pid): profiles[pid] = {"nick": "misafir", "device": "", "elo": 1000, "games": 0})
-		_load_accounts()
 		var f := FileAccess.open("res://assets/room_words.txt", FileAccess.READ)
 		if f: words = f.get_as_text().split("\n", false)
 		set_process(true)
@@ -73,9 +73,16 @@ func _process(_dt: float) -> void:
 func hello(nick: String, device: String) -> void:
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
-	var acc: Dictionary = _accounts.get(device, {"elo": 1000, "games": 0})
-	profiles[pid] = {"nick": nick.strip_edges().substr(0, 16), "device": device, "elo": acc.elo, "games": acc.games, "last_opp": acc.get("last_opp", "")}
+	if device.length() < 8: return
+	await _import_legacy()
+	var prev: Dictionary = profiles.get(pid, {})
+	profiles[pid] = {"nick": nick.strip_edges().substr(0, 16), "device": device, "elo": int(prev.get("elo", 1000)), "games": int(prev.get("games", 0)),
+		"last_opp": prev.get("last_opp", ""), "linked": false, "verified": false, "bests": {}}
+	var res = await IndexAPI.post_json("/acct/hello", {"device": device, "nick": nick})
+	if not profiles.has(pid) or profiles[pid].device != device: return
+	if res is Dictionary: _apply_profile(pid, res)
 	_send_profile(pid)
+	if res is Dictionary and res.has("error"): err.rpc_id(pid, "err." + str(res.error))
 	if device != "" and pending_rc.has(device):
 		var prc: Dictionary = pending_rc[device]; pending_rc.erase(device)
 		var r = rooms.get(prc.code)
@@ -336,7 +343,12 @@ func single_state(d: Dictionary) -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func profile_state(d: Dictionary) -> void:
-	App.elo = int(d.get("elo", App.elo)); App.save_settings(); profile_changed.emit(d)
+	App.elo = int(d.get("elo", App.elo))
+	App.linked = bool(d.get("linked", false)); App.verified = bool(d.get("verified", false)); App.devices = int(d.get("devices", 1))
+	if App.linked and str(d.get("nick", "")) != "": App.nickname = str(d.nick)      # hesabın adı cihazdakinin önüne geçer
+	var sb: Dictionary = d.get("bests", {})
+	for m in sb: App.best[m] = maxi(int(App.best.get(m, 0)), int(sb[m]))
+	App.save_settings(); profile_changed.emit(d)
 
 @rpc("authority", "call_remote", "reliable")
 func err(msg: String) -> void:
@@ -551,8 +563,6 @@ func _tick_queue() -> void:
 				queue.erase(b); queue.erase(a); queue_since.erase(a); queue_since.erase(b)
 				var scope_idx := maxi(SCOPE_ORDER.find(pa.get("scope", "all")), SCOPE_ORDER.find(pb.get("scope", "all")))
 				pa["last_opp"] = pb.get("device", ""); pb["last_opp"] = pa.get("device", "")
-				for dp in [pa, pb]:
-					if dp.device != "": _accounts[dp.device] = {"elo": dp.elo, "games": dp.games, "last_opp": dp.last_opp}
 				var code := _new_code(); rooms[code] = _new_room(code, true, SCOPE_ORDER[scope_idx])
 				_join(code, a); _join(code, b); matched = true; break
 		if not matched:
@@ -569,14 +579,63 @@ func _apply_elo(r: Dictionary, winner: int, loser: int) -> void:
 	r.elo_delta = {winner: dw, loser: dl}
 	for pid in [winner, loser]:
 		var p: Dictionary = profiles[pid]
-		if p.device != "": _accounts[p.device] = {"elo": p.elo, "games": p.games, "last_opp": p.get("last_opp", "")}
+		if p.device != "": IndexAPI.post_json("/acct/save", {"device": p.device, "elo": int(p.elo), "games": int(p.games)})
 		_send_profile(pid)
-	_save_accounts()
 
 func _send_profile(pid: int) -> void:
 	if pid not in multiplayer.get_peers(): return
 	var p: Dictionary = profiles[pid]
-	profile_state.rpc_id(pid, {"elo": p.elo, "games": p.games})
+	profile_state.rpc_id(pid, {"elo": p.elo, "games": p.games, "nick": p.nick, "linked": p.get("linked", false), "verified": p.get("verified", false),
+		"bests": p.get("bests", {}), "devices": p.get("devices", 1)})
+
+## Hesap servisinden gelen profili bellekteki oyuncuya işler
+func _apply_profile(pid: int, res: Dictionary) -> void:
+	var p: Dictionary = profiles[pid]
+	p.elo = int(res.get("elo", p.elo)); p.games = int(res.get("games", p.games))
+	if str(res.get("nick", "")) != "": p.nick = str(res.nick)
+	p.linked = bool(res.get("linked", false)); p.verified = bool(res.get("verified", false))
+	p.bests = res.get("bests", {}); p.devices = int(res.get("devices", 1))
+
+## Eski user://accounts.json (cihaz → Elo) bir kez hesap veritabanına aktarılır
+func _import_legacy() -> void:
+	if _legacy_checked: return
+	_legacy_checked = true
+	if not FileAccess.file_exists("user://accounts.json"): return
+	var d = JSON.parse_string(FileAccess.get_file_as_string("user://accounts.json"))
+	if d is Dictionary and not d.is_empty():
+		var res = await IndexAPI.post_json("/acct/import", {"accounts": d})
+		if res is Dictionary and res.get("ok", false):
+			DirAccess.rename_absolute(ProjectSettings.globalize_path("user://accounts.json"), ProjectSettings.globalize_path("user://accounts.imported.json"))
+
+## Hesap işlemleri: create | link_code | link | recover | logout | delete.  İstemci yalnızca işlem adını ve gereken alanı yollar; cihaz kimliği sunucudaki kayıttan alınır.
+@rpc("any_peer", "call_remote", "reliable")
+func acct(op: String, a: String, b: String) -> void:
+	if not multiplayer.is_server(): return
+	var pid := multiplayer.get_remote_sender_id()
+	var p: Dictionary = profiles.get(pid, {})
+	var device: String = p.get("device", "")
+	if device == "" or op not in ["create", "link_code", "link", "recover", "logout", "delete"]: return
+	if not _allow("%d:acct" % pid, 12, 60000): acct_result.rpc_id(pid, {"op": op, "ok": false, "error": "too_many"}); return
+	if _room_of(pid) != null or pid in queue: acct_result.rpc_id(pid, {"op": op, "ok": false, "error": "busy"}); return
+	var body := {"device": device}
+	if op == "link": body["code"] = a
+	if op == "recover": body["nick"] = a; body["recovery"] = b
+	var res = await IndexAPI.post_json("/acct/" + op, body)
+	if not profiles.has(pid): return
+	if not (res is Dictionary): acct_result.rpc_id(pid, {"op": op, "ok": false, "error": "server"}); return
+	var prof: Dictionary = res if res.get("ok", false) else res.get("profile", {})
+	if not prof.is_empty():
+		_apply_profile(pid, prof)
+		if op in ["logout", "delete"] and str(prof.get("nick", "")) == "": profiles[pid].nick = ""
+		_send_profile(pid)
+	var out := {"op": op, "ok": bool(res.get("ok", false)), "error": str(res.get("error", ""))}
+	for k in ["recovery", "code", "ttl"]:
+		if res.has(k): out[k] = res[k]
+	acct_result.rpc_id(pid, out)
+
+@rpc("authority", "call_remote", "reliable")
+func acct_result(d: Dictionary) -> void:
+	acct_done.emit(d)
 
 func _allow(key: String, max_n: int, window_ms: int) -> bool:
 	var now := Time.get_ticks_msec()
@@ -636,6 +695,8 @@ func _tick_singles() -> void:
 func _single_over(pid: int) -> void:
 	var s: Dictionary = singles[pid]
 	s.over = true; s.deadline = 0
+	var dev: String = profiles.get(pid, {}).get("device", "")
+	if dev != "" and int(s.score) > 0: IndexAPI.post_json("/acct/best", {"device": dev, "mode": s.mode, "score": int(s.score)})
 	_single_send(pid)
 
 func _single_send(pid: int) -> void:
@@ -664,19 +725,9 @@ func _single_send(pid: int) -> void:
 		"best_combo": s.best_combo, "remaining_ms": maxi(0, s.deadline - now), "per_ms": s.get("per_ms", 0), "lock_ms": 0,
 		"over": s.over, "item": pub, "last": s.get("last", {})})
 
-# ---------- kalıcılık ----------
-func _load_accounts() -> void:
-	var f := FileAccess.open("user://accounts.json", FileAccess.READ)
-	if f:
-		var d = JSON.parse_string(f.get_as_text())
-		if d is Dictionary: _accounts = d
-
-func _save_accounts() -> void:
-	var f := FileAccess.open("user://accounts.json", FileAccess.WRITE)
-	if f: f.store_string(JSON.stringify(_accounts))
-
 # ============================================================ istemci yardımcıları
 func c_hello() -> void: hello.rpc_id(1, App.nickname, App.device_id)
+func c_acct(op: String, a := "", b := "") -> void: acct.rpc_id(1, op, a, b)
 func c_create_room() -> void: create_room.rpc_id(1, App.scope)
 func c_join_room(code: String) -> void: join_room.rpc_id(1, code)
 func c_find_match() -> void: find_match.rpc_id(1, App.scope)

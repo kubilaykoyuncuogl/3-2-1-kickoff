@@ -25,6 +25,19 @@ func get_json(path: String, params := {}) -> Variant:
 		push_warning("index %s → %s" % [url, res[1]]); return null
 	return JSON.parse_string(res[3].get_string_from_utf8())
 
+func post_json(path: String, body: Dictionary) -> Variant:
+	## Hesap uçları (yazma). Hata olursa null.
+	var req := HTTPRequest.new(); req.timeout = 10
+	add_child(req)
+	var err := req.request(base + path, ["Content-Type: application/json"], HTTPClient.METHOD_POST, JSON.stringify(body))
+	if err != OK:
+		req.queue_free(); push_warning("index POST hatası %s %s" % [err, path]); return null
+	var res: Array = await req.request_completed
+	req.queue_free()
+	if res[1] != 200:
+		push_warning("index POST %s → %s" % [path, res[1]]); return null
+	return JSON.parse_string(res[3].get_string_from_utf8())
+
 func suggest_teams(q: String, scope := "all") -> Array:
 	var r = await get_json("/teams/suggest", {"q": q, "scope": scope})
 	return r if r is Array else []

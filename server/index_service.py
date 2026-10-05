@@ -17,6 +17,11 @@ from normalize import normalize
 import re
 INDEX = os.environ.get("KICKOFF_INDEX", "data/index/index.enc")
 app = FastAPI(title="kickoff-index")
+try:
+    from server import accounts as _accounts
+except ImportError:      # doğrudan çalıştırma
+    import accounts as _accounts
+app.include_router(_accounts.router)
 db: sqlite3.Connection
 
 # ---- kulüp kapsamı (scope) ve tier
