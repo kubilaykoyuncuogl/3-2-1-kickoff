@@ -35,5 +35,9 @@ Güncelleme: 2026-10-06. Biten işler buradan silinir; ayrıntı ilgili doküman
 - [ ] Dil: varsayılanı cihaz diline göre seçmek; `en.json` çevirisinin gözden geçirilmesi.
 
 ## Veri
+- [ ] Kulüp adlarını kendi yazımımıza çekmek (en az ilk birkaç yüz kulüp: "Fenerbahçe", "Başakşehir").
+- [ ] Transfer bedellerinde kaynağın tahmini olanları ayıklamak ya da bedel ipucunu yuvarlamak.
+- [ ] Ün sıralamasını piyasa değerinden bağımsız kurmak (maç/gol/kulüp tier'ı yeterli olabilir); sonra `mv_max` ve `stints.mv` sütunlarını index'ten tamamen silmek.
+- [ ] Yayından önce: lisanslı ya da açık bir veri kaynağı ve hukuki görüş.
 - [ ] İstatistiklerde tuhaf değerlerin taranması (ör. bazı oyuncularda sarı kart sayısı şüpheli).
 - [ ] Sıradaki kulüp ipucundaki lig, kulübün bugünkü ligi; transfer yılındaki lig veride yok.

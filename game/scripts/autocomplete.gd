@@ -82,6 +82,10 @@ func _on_suggestions(k: String, q: String, items: Array) -> void:
 		b.add_theme_color_override("font_hover_color", UI.c("violet_ink")); b.add_theme_color_override("font_pressed_color", UI.c("violet_ink"))
 		b.disabled = used
 		if used: b.text += T.t("ac.used") if it.get("used", false) else T.t("ac.out_of_scope")
+		if it.get("defunct", false):
+			var di := UI.defunct_icon("muted", 16.0); di.set_anchors_and_offsets_preset(Control.PRESET_CENTER_RIGHT)
+			di.offset_left = -34; di.offset_right = -14; di.offset_top = -10; di.offset_bottom = 10
+			b.add_child(di)
 		var id := int(it.id); var name: String = it.name
 		b.pressed.connect(func(): picked.emit(id, name))
 		list.add_child(b)

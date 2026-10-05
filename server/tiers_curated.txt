@@ -1,56 +1,56 @@
-# tier|club_id|ad  — ilk üç tier elle; puan sırası bunların altından başlar
-1|418|Real Madrid
-1|131|FC Barcelona
-1|985|Manchester United
-1|31|Liverpool FC
-1|27|Bayern Munich
-1|506|Juventus FC
-1|583|Paris Saint-Germain
-1|631|Chelsea FC
-1|281|Manchester City
-1|11|Arsenal FC
-2|5|AC Milan
-2|46|Inter Milan
-2|16|Borussia Dortmund
-2|13|Atlético de Madrid
-2|148|Tottenham Hotspur
-2|141|Galatasaray
-2|36|Fenerbahce
-2|610|Ajax Amsterdam
-2|294|SL Benfica
-2|720|FC Porto
-2|12|AS Roma
-2|6195|SSC Napoli
-2|189|CA Boca Juniors
-2|209|CA River Plate
-2|114|Beşiktaş JK
-3|336|Sporting CP
-3|244|Olympique Marseille
-3|1041|Olympique Lyon
-3|162|AS Monaco
-3|15|Bayer 04 Leverkusen
-3|33|FC Schalke 04
-3|368|Sevilla FC
-3|1049|Valencia CF
-3|371|Celtic FC
-3|124|Rangers FC
-3|383|PSV Eindhoven
-3|234|Feyenoord Rotterdam
-3|398|SS Lazio
-3|430|ACF Fiorentina
-3|762|Newcastle United
-3|29|Everton FC
-3|399|Leeds United
-3|405|Aston Villa
-3|379|West Ham United
-3|964|Zenit St. Petersburg
-3|660|Shakhtar Donetsk
-3|18544|Al-Nassr FC
-3|1114|Al-Hilal SFC
-3|1023|Sociedade Esportiva Palmeiras
-3|221|Santos FC
-3|449|Trabzonspor
-3|614|CR Flamengo
-3|3631|CF América
-3|1061|Los Angeles Galaxy
-3|199|Sport Club Corinthians Paulista
+# tier|kulüp adı  — ilk üç tier elle; puan sırası bunların altından başlar. Ad, index'teki adla aynı yazılmalı; aynı adlı kulüplerde en ünlüsü alınır.
+1|Real Madrid
+1|FC Barcelona
+1|Manchester United
+1|Liverpool FC
+1|Bayern Munich
+1|Juventus FC
+1|Paris Saint-Germain
+1|Chelsea FC
+1|Manchester City
+1|Arsenal FC
+2|AC Milan
+2|Inter Milan
+2|Borussia Dortmund
+2|Atlético de Madrid
+2|Tottenham Hotspur
+2|Galatasaray
+2|Fenerbahce
+2|Ajax Amsterdam
+2|SL Benfica
+2|FC Porto
+2|AS Roma
+2|SSC Napoli
+2|CA Boca Juniors
+2|CA River Plate
+2|Beşiktaş JK
+3|Sporting CP
+3|Olympique Marseille
+3|Olympique Lyon
+3|AS Monaco
+3|Bayer 04 Leverkusen
+3|FC Schalke 04
+3|Sevilla FC
+3|Valencia CF
+3|Celtic FC
+3|Rangers FC
+3|PSV Eindhoven
+3|Feyenoord Rotterdam
+3|SS Lazio
+3|ACF Fiorentina
+3|Newcastle United
+3|Everton FC
+3|Leeds United
+3|Aston Villa
+3|West Ham United
+3|Zenit St. Petersburg
+3|Shakhtar Donetsk
+3|Al-Nassr FC
+3|Al-Hilal SFC
+3|Sociedade Esportiva Palmeiras
+3|Santos FC
+3|Trabzonspor
+3|CR Flamengo
+3|CF América
+3|Los Angeles Galaxy
+3|Sport Club Corinthians Paulista

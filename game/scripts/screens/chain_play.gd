@@ -56,7 +56,7 @@ func _on_state(d: Dictionary) -> void:
 	for i in range(hist.size() - 1, -1, -1):
 		var st: Dictionary = hist[i]
 		var mt := _move_text(st)
-		hv.add_child(UI.row(str(i + 1), str(st.club), UI.country(st.get("country")), UI.label(mt, 12, 600, "muted") if mt != "" else null, "new" if i == hist.size() - 1 else ""))
+		hv.add_child(UI.row(str(i + 1), str(st.club), UI.country(st.get("country")), UI.label(mt, 12, 600, "muted") if mt != "" else null, "new" if i == hist.size() - 1 else "", bool(st.get("defunct", false))))
 	scroll.add_child(hv); body.add_child(scroll)
 
 func _summary(d: Dictionary) -> String:

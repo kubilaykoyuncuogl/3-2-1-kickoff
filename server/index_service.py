@@ -69,8 +69,10 @@ def _compute_tiers():
     if CURATED.exists():
         for line in CURATED.read_text().splitlines():
             if line.startswith("#") or "|" not in line: continue
-            t, cid, _ = line.split("|", 2)
-            curated[int(cid)] = int(t)
+            t, name = line.split("|", 1)
+            row = db.execute("SELECT id FROM clubs WHERE name = ? AND national = 0 ORDER BY fame DESC LIMIT 1", (name.strip(),)).fetchone()
+            if row: curated[row[0]] = int(t)
+            else: print("kürate listede bulunamadı:", name)
     ranked = sorted((c for c in comps if c not in curated), key=lambda c: -club_score[c])[:MAX_RANKED]
     club_tier.update(curated)
     # kürate kulüpler ilgili tier kotasından düşer
@@ -157,9 +159,9 @@ def fts_prefix(q: str) -> str:
 def _teams_suggest(n: str, sc: str, limit: int):
     m = fts_prefix(n)
     if not m: return []
-    rows = db.execute("""SELECT c.id, c.name FROM team_names t JOIN clubs c ON c.id = t.club_id
+    rows = db.execute("""SELECT c.id, c.name, c.defunct FROM team_names t JOIN clubs c ON c.id = t.club_id
                          WHERE team_names MATCH ? ORDER BY c.fame DESC LIMIT 40""", (m,)).fetchall()
-    out = [{"id": i, "name": nm, "in_scope": sc == "all" or i in scope_clubs[sc]} for i, nm in rows]
+    out = [{"id": i, "name": nm, "in_scope": sc == "all" or i in scope_clubs[sc], "defunct": bool(df)} for i, nm, df in rows]
     out.sort(key=lambda x: not x["in_scope"])
     return out[:limit]
 
@@ -169,11 +171,11 @@ def teams_suggest(q: str = Query(min_length=2), limit: int = 8, scope: str = "al
 
 @app.get("/club/{club_id}")
 def club(club_id: int, scope: str = "all"):
-    row = db.execute("SELECT id, name, competition_id FROM clubs WHERE id=?", (club_id,)).fetchone()
+    row = db.execute("SELECT id, name, competition_id, defunct FROM clubs WHERE id=?", (club_id,)).fetchone()
     if not row: raise HTTPException(404)
     sc = scope if scope in SCOPES else "all"
     top, big5 = club_scope_flags(row[2])
-    return {"id": row[0], "name": row[1], "competition": row[2], "top": top, "big5": big5,
+    return {"id": row[0], "name": row[1], "competition": row[2], "top": top, "big5": big5, "defunct": bool(row[3]),
             "in_scope": sc == "all" or row[0] in scope_clubs[sc], "tier": club_tier.get(row[0], N_TIERS)}
 
 @functools.lru_cache(maxsize=100000)
@@ -247,8 +249,9 @@ def _ladder(seed: str, steps: int, sc: str):
         if not got: break
         a, b, n = got; used.update((a, b))
         out.append({"a": a, "b": b, "n": n, "tiers": [ta, tb]})
-    names = dict(db.execute(f"SELECT id, name FROM clubs WHERE id IN ({','.join(str(c) for c in used) or '0'})").fetchall())
-    for st in out: st["a_name"], st["b_name"] = names[st["a"]], names[st["b"]]
+    info = {i: (nm, bool(df)) for i, nm, df in db.execute(f"SELECT id, name, defunct FROM clubs WHERE id IN ({','.join(str(c) for c in used) or '0'})")}
+    for st in out:
+        st["a_name"], st["a_defunct"] = info[st["a"]]; st["b_name"], st["b_defunct"] = info[st["b"]]
     return {"seed": seed, "scope": sc, "steps": out}
 
 @app.get("/blitz/pack")
@@ -285,8 +288,9 @@ def _blitz(seed: str, n: int, sc: str):
         qid = f"{seed}-{len(qs)}"
         qs.append({"id": qid, "a": ca, "b": cb, "options": [o[1] for o in opts], "tiers": [ta, tb],
                    "answer_hash": hashlib.sha256(f"{qid}:{ans[0]}".encode()).hexdigest(), "_answer_id": ans[0], "_answer": opts.index(ans)})
-    names = dict(db.execute(f"SELECT id, name FROM clubs WHERE id IN ({','.join(str(c) for c in used) or '0'})").fetchall())
-    for q in qs: q["a_name"], q["b_name"] = names[q["a"]], names[q["b"]]
+    info = {i: (nm, bool(df)) for i, nm, df in db.execute(f"SELECT id, name, defunct FROM clubs WHERE id IN ({','.join(str(c) for c in used) or '0'})")}
+    for q in qs:
+        q["a_name"], q["a_defunct"] = info[q["a"]]; q["b_name"], q["b_defunct"] = info[q["b"]]
     return qs
 
 @app.get("/player/{player_id}/career")
@@ -305,8 +309,8 @@ def quick_picks(scope: str = "all", n: int = 5, exclude: str = ""):
     pool = [c for t in (1, 2, 3) for c in tiers[sc][t] if c not in ex]
     rng = random.Random()
     pick = rng.sample(pool, min(n, len(pool))) if pool else []
-    names = dict(db.execute(f"SELECT id, name FROM clubs WHERE id IN ({','.join(map(str, pick)) or '0'})").fetchall())
-    return [{"id": c, "name": names[c]} for c in pick]
+    names = dict(db.execute(f"SELECT id, name FROM clubs WHERE id IN ({','.join(map(str, pick)) or '0'}) AND defunct = 0").fetchall())
+    return [{"id": c, "name": names[c]} for c in pick if c in names]
 
 # ============================================================ ünlü oyuncu havuzu ve yeni tek oyunculu modlar
 famous: list = []          # player id'leri, ün sırasıyla (kariyeri çoğunlukla üst liglerde geçmiş bilinen oyuncular)
@@ -315,7 +319,7 @@ pinfo: dict = {}           # pid -> (name, birth_year, position)
 CATS = {                   # O mu bu mu kategorileri: anahtar -> (SQL ifadesi, biçim)
     "goals": ("s.goals", "int"), "apps": ("s.apps", "int"), "assists": ("s.assists", "int"), "yellow": ("s.yellow", "int"),
     "red": ("s.red", "int"), "best_season": ("s.best_season_goals", "int"), "goals_big5": ("s.goals_big5", "int"), "pens": ("s.pens", "int"),
-    "mv_max": ("p.mv_max", "money"), "max_fee": ("(SELECT MAX(fee) FROM stints WHERE player_id=p.id)", "money"),
+    "max_fee": ("(SELECT MAX(fee) FROM stints WHERE player_id=p.id)", "money"),      # piyasa değeri kategorisi bilerek yok (kaynağa özgü tahmin)
     "fee_sum": ("(SELECT SUM(fee) FROM stints WHERE player_id=p.id)", "money"), "n_clubs": ("p.n_clubs", "int"),
 }
 VERSUS_POOL = 400       # yalnızca en tanınan isimler
@@ -334,7 +338,7 @@ def _build_famous():
         print("player_stats yok: kariyer / zincir / o mu bu mu modları kapalı (tools/build_stats.py çalıştır)"); return
     global PATH_SQL
     if db.execute("SELECT 1 FROM sqlite_master WHERE name='countries'").fetchone():        # tools/build_geo.py
-        PATH_SQL = """SELECT s.club_id, c.name, s.date, s.kind, s.fee, co.name, cp.name FROM stints s JOIN clubs c ON c.id = s.club_id
+        PATH_SQL = """SELECT s.club_id, c.name, s.date, s.kind, s.fee, co.name, cp.name, c.defunct FROM stints s JOIN clubs c ON c.id = s.club_id
                       LEFT JOIN countries co ON co.id = c.country_id LEFT JOIN competitions cp ON cp.id = c.competition_id
                       WHERE s.player_id = ? ORDER BY s.seq"""
     cols = {r[1] for r in db.execute("PRAGMA table_info(player_stats)")}
@@ -357,18 +361,18 @@ def _build_famous():
         cat_sorted[cat] = sorted(vals, key=lambda x: -vals[x])
         cat_rank[cat] = {pid: i for i, pid in enumerate(cat_sorted[cat])}
 
-PATH_SQL = """SELECT s.club_id, c.name, s.date, s.kind, s.fee, NULL, NULL FROM stints s JOIN clubs c ON c.id = s.club_id
+PATH_SQL = """SELECT s.club_id, c.name, s.date, s.kind, s.fee, NULL, NULL, c.defunct FROM stints s JOIN clubs c ON c.id = s.club_id
               WHERE s.player_id = ? ORDER BY s.seq"""      # ülke/lig tabloları varsa _build_famous içinde genişletilir
 
 def _path(pid: int) -> list:
     """Oyuncunun kıdemli kulüp yolu: kiralık dönüşleri atılır, art arda aynı kulüp birleştirilir."""
     out = []
-    for cid, name, date, kind, fee, country, league in db.execute(PATH_SQL, (pid,)):
+    for cid, name, date, kind, fee, country, league, defunct in db.execute(PATH_SQL, (pid,)):
         if kind == "loan_end": continue
         if out and out[-1]["club_id"] == cid: continue
         k = "start" if not out else ("loan" if kind == "loan" else ("sale" if (fee or 0) > 0 else "free"))
         out.append({"club_id": cid, "club": name, "year": int(date[:4]) if date else None, "kind": k, "fee": fee if (fee or 0) > 0 else None,
-                    "country": country, "league": league})
+                    "country": country, "league": league, "defunct": bool(defunct)})
     return out
 
 def _fame_buckets(rng, n: int, ok) -> list:
@@ -390,7 +394,7 @@ def career_pack(n: int = 30, seed: str = ""):
     def ok(pid):
         path = _path(pid)
         if not (4 <= len(path) <= 11): return None
-        return {"_player_id": pid, "_name": pinfo[pid][0], "clubs": [{"club": x["club"], "year": x["year"], "kind": x["kind"], "country": x["country"]} for x in path]}
+        return {"_player_id": pid, "_name": pinfo[pid][0], "clubs": [{"club": x["club"], "year": x["year"], "kind": x["kind"], "country": x["country"], "defunct": x["defunct"]} for x in path]}
     return _fame_buckets(rng, n, ok)
 
 @app.get("/chain/pack")

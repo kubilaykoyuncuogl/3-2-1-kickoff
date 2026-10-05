@@ -47,7 +47,7 @@ func _fill(d: Dictionary) -> void:
 		if str(c.kind) == "loan": right.add_child(UI.chip(T.t("kind.loan"), "amber"))
 		if c.get("year") != null: right.add_child(UI.label(str(int(c.year)), 15, 800, "violet_ink" if i == clubs.size() - 1 else "muted"))
 		for ch in right.get_children(): ch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		list_box.add_child(UI.row(str(i + 1), str(c.club), UI.country(c.get("country")), right, "new" if i == clubs.size() - 1 else ""))
+		list_box.add_child(UI.row(str(i + 1), str(c.club), UI.country(c.get("country")), right, "new" if i == clubs.size() - 1 else "", bool(c.get("defunct", false))))
 	var last: Dictionary = d.get("last", {})
 	match str(last.get("type", "")):
 		"correct": _toast("%s  +%d" % [last.get("name", ""), int(last.get("gained", 0))], "ok")

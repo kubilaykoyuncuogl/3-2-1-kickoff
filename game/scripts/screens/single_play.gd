@@ -110,7 +110,11 @@ func _header(d: Dictionary) -> void:
 	var a := UI.label(str(d.item.a_name), 22, 800, "violet_ink"); a.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; a.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var x := UI.label("×", 14, 700, "muted"); x.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var b := UI.label(str(d.item.b_name), 22, 800, "amber_ink"); b.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if d.item.get("a_defunct", false):
+		var ia := UI.defunct_icon("violet_ink"); ia.size_flags_horizontal = Control.SIZE_SHRINK_CENTER; pair.add_child(ia)
 	pair.add_child(a); pair.add_child(x); pair.add_child(b)
+	if d.item.get("b_defunct", false):
+		var ib := UI.defunct_icon("amber_ink"); ib.size_flags_horizontal = Control.SIZE_SHRINK_CENTER; pair.add_child(ib)
 	toast_slot = UI.vbox(0); body.add_child(toast_slot)
 	_show_toast(d)
 

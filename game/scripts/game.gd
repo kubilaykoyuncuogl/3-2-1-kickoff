@@ -711,7 +711,7 @@ func _single_send(pid: int) -> void:
 			var steps: Array = item._steps
 			var st: int = mini(int(s.step), steps.size())
 			pub = {"name": item.name, "born": item.get("born"), "pos": item.get("pos"), "step": st, "steps_total": steps.size(),
-				"history": steps.slice(0, st).map(func(x): return {"club": x.club, "year": x.get("year"), "kind": x.kind, "fee": x.get("fee"), "country": x.get("country")})}
+				"history": steps.slice(0, st).map(func(x): return {"club": x.club, "year": x.get("year"), "kind": x.kind, "fee": x.get("fee"), "country": x.get("country"), "defunct": x.get("defunct", false)})}
 			if st < steps.size():      # ipucu: yıl, tür, bedel, gittiği ülke ve lig (ilk kulüp için de ülke/lig)
 				pub["hint"] = {"year": steps[st].get("year"), "kind": steps[st].kind, "fee": steps[st].get("fee"),
 					"country": steps[st].get("country"), "league": steps[st].get("league")}
@@ -719,7 +719,8 @@ func _single_send(pid: int) -> void:
 			for k in item:
 				if not str(k).begins_with("_"): pub[k] = item[k]
 		_:
-			pub = {"a_name": item.get("a_name", ""), "b_name": item.get("b_name", ""), "a": int(item.get("a", 0)), "b": int(item.get("b", 0))}
+			pub = {"a_name": item.get("a_name", ""), "b_name": item.get("b_name", ""), "a": int(item.get("a", 0)), "b": int(item.get("b", 0)),
+				"a_defunct": item.get("a_defunct", false), "b_defunct": item.get("b_defunct", false)}
 			if s.mode == "blitz": pub["options"] = item.options
 	single_state.rpc_id(pid, {"mode": s.mode, "idx": s.idx, "total": s.items.size(), "lives": s.lives, "score": s.score, "combo": s.combo, "done": int(s.get("done", 0)),
 		"best_combo": s.best_combo, "remaining_ms": maxi(0, s.deadline - now), "per_ms": s.get("per_ms", 0), "lock_ms": 0,

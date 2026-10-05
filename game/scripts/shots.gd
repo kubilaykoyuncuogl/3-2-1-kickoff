@@ -47,7 +47,7 @@ func _ready() -> void:
 	sp = load("res://scripts/screens/single_play.gd").new(); sp.mode = "blitz"; _add(sp); await _frames(2)
 	var bi := _single("blitz", 4, {}, false); bi.item.options = ["Ricardo Quaresma", "Fabri", "Pepe", "Mario Gómez", "Jackson Martínez"]; bi.item.a_name = "Beşiktaş JK"; bi.item.b_name = "FC Porto"
 	Game.single_changed.emit(bi); await _save("21_blitz"); sp.queue_free()
-	var clubs := [{"club": "Danubio FC", "year": 1982, "kind": "start", "country": "Uruguay"}, {"club": "Real Zaragoza", "year": 1985, "kind": "sale", "country": "Spain"}, {"club": "SS Lazio", "year": 1988, "kind": "sale", "country": "Italy"}, {"club": "Inter Milan", "year": 1992, "kind": "loan", "country": "Italy"}, {"club": "Borussia Dortmund", "year": 1995, "kind": "sale", "country": "Germany"}]
+	var clubs := [{"club": "Danubio FC", "year": 1982, "kind": "start", "country": "Uruguay", "defunct": true}, {"club": "Real Zaragoza", "year": 1985, "kind": "sale", "country": "Spain"}, {"club": "SS Lazio", "year": 1988, "kind": "sale", "country": "Italy"}, {"club": "Inter Milan", "year": 1992, "kind": "loan", "country": "Italy"}, {"club": "Borussia Dortmund", "year": 1995, "kind": "sale", "country": "Germany"}]
 	var car: Control = load("res://scripts/screens/career_play.gd").new(); _add(car); await _frames(2)
 	Game.single_changed.emit(_state("career", 0, {"clubs": clubs, "total": 10, "revealed": 5}, {"type": "wrong", "name": "Diego Forlán"}, false)); await _save("22_career"); car.queue_free()
 	var hist := [{"club": "Arsenal FC", "year": 2013, "kind": "start", "fee": null, "country": "England"}, {"club": "West Bromwich Albion", "year": 2015, "kind": "loan", "fee": null, "country": "England"}, {"club": "SV Werder Bremen", "year": 2016, "kind": "sale", "fee": 5000000, "country": "Germany"}]
@@ -86,6 +86,6 @@ func _match(name: String, st: int, last: Dictionary, variant: int, suggest: bool
 	if suggest and m.ac:
 		var team: bool = m.ac.kind == "team"
 		m.ac.input.text = "gala" if team else "snei"; m.ac._last_q = m.ac.input.text
-		Game.suggestions.emit(m.ac.kind, m.ac._last_q, [{"id": 1, "name": "Galatasaray"}, {"id": 2, "name": "Los Angeles Galaxy", "used": true}, {"id": 3, "name": "SC Otelul Galati", "in_scope": false}] if team else [{"id": 1, "name": "Wesley Sneijder", "born": 1984.0}, {"id": 2, "name": "Rodney Sneijder", "born": 1991.0}, {"id": 3, "name": "Jeffrey Sneijder", "born": 1982.0}])
+		Game.suggestions.emit(m.ac.kind, m.ac._last_q, [{"id": 1, "name": "Galatasaray"}, {"id": 2, "name": "Los Angeles Galaxy", "used": true}, {"id": 4, "name": "Galatasaray Spandau", "defunct": true}, {"id": 3, "name": "SC Otelul Galati", "in_scope": false}] if team else [{"id": 1, "name": "Wesley Sneijder", "born": 1984.0}, {"id": 2, "name": "Rodney Sneijder", "born": 1991.0}, {"id": 3, "name": "Jeffrey Sneijder", "born": 1982.0}])
 	if st == Game.State.PICK_TEAMS and m.quick_slot and suggest == false: m._show_quick_picks(Game.room.quick_picks)
 	await _save(name); m.queue_free(); await _frames(1)

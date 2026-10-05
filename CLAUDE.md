@@ -25,7 +25,7 @@ Kubilay'ın kişisel projesi. **3-2-1**: iki oyuncu birer kulüp söyler, 3'ten 
 ## Çalıştırma
 ```
 # bir kez: tabloları çıkar (all_data/all_data/database.dump → data/raw/tsv/*.sql), index üret, şifrele
-python tools/build_index.py && python tools/build_stats.py && set -a && . ./.env && set +a && python tools/encrypt_index.py --in data/index/index.sqlite --out data/index/index.enc
+python tools/build_index.py && python tools/build_stats.py && python tools/build_geo.py && python tools/finalize_index.py && set -a && . ./.env && set +a && python tools/encrypt_index.py --in data/index/index.sqlite --out data/index/index.enc
 # index servisi (.venv: fastapi uvicorn cryptography)
 set -a && . ./.env && set +a && .venv/bin/uvicorn server.index_service:app --host 127.0.0.1 --port 9081
 # oyun sunucusu
@@ -36,6 +36,7 @@ godot --path game
 Godot 4.7.2 stable kurulu: `~/.local/bin/godot` (2026-10-05). Export template'leri henüz indirilmedi (Android/macOS/Web build için gerekir: Editor > Manage Export Templates).
 
 ## Notlar
+- Index'teki kulüp/oyuncu kimlikleri **kendi numaralarımız** (`tools/finalize_index.py`, kaynak kimlikler silinir); kodda ya da dokümanda sabit kimlik yazma, adla ara. Kapanmış kulüpler `clubs.defunct` ile işaretli, adlarında dönem eki yok. Piyasa değeri hiçbir uçtan dışarı verilmez (bkz. `docs/data.md` "Kaynak izlerinin temizlenmesi").
 - **Yapılacaklar listesi: `docs/TODO.md`** (Google/Apple girişi, skor tablosu, animasyon/ses, mobil yayın). Yeni iş çıkınca oraya yaz, bitince sil.
 - **Hesaplar** (`server/accounts.py`, kalıcı SQLite `data/state/kickoff.sqlite`, Docker'da `kickoff-data` volume'ü): kullanıcı = misafir ya da hesap; cihaz kimliği (istemcide `App.device_id`, gizli, ekranda gösterilmez) kullanıcıya bağlanır. Elo, maç sayısı ve mod başına en iyi skor kullanıcıda tutulur. Akışlar: hesap oluştur (benzersiz takma ad + bir kez gösterilen kurtarma kodu), başka cihaz ekle (6 haneli, 10 dk, tek kullanımlık kod), kurtarma koduyla gir, çıkış, sil. Oyun sunucusu `/acct/*` uçlarını `IndexAPI.post_json` ile çağırır; istemci `Game.c_acct(op, …)` gönderir, sonuç `Game.acct_done` sinyaliyle gelir. `verified` yalnızca Google/Apple bağlanınca 1 olacak (henüz yok).
 - **Android APK**: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 godot --headless --path game --export-debug "Android" ../build/android/kickoff.apk`. Android SDK `~/Android/Sdk` (platform-tools, build-tools 35.0.0), debug anahtarı `~/.local/share/godot/keystores/debug.keystore`; Java yolu Godot Editor Settings > Export > Android'de kayıtlı. Export edilmiş uygulama `Net.PROD_URL`'e (wss://kickoff.grandecorpo.com/ws) bağlanır; APK ile sunucu aynı commit'ten olmalı, yoksa RPC imzaları tutmaz. Mağaza için release anahtarı ve AAB (gradle build) ayrıca gerekir.

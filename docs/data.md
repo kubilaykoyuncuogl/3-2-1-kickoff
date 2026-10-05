@@ -57,3 +57,11 @@ KICKOFF_INDEX_KEY=... uvicorn server.index_service:app --port 9081
 - **Kapsam** (`scope`): `all` (ilk 3000 kulüp ün sırasıyla), `top` (üst lig: lig kodu `^[A-Z]{1,4}1[A-Z]?$` ya da ARGC/MEXA/URUC/QSL/CLPD), `big5` (GB1 ES1 IT1 L1 FR1). Lig bilgisi olmayan 56 bin kulüp `top`/`big5`'te dışarıda. Altyapı/rezerv zaten index'e girmez.
 - Kapsam oyun ayarı: Online'da aynı kapsamı seçenler eşleşir; oda kuranın kapsamı geçerli; takım seçiminde kapsam dışı kulüp reddedilir (öneride soluk, "kapsam dışı"). Tek oyunculuda merdiven/Blitz aynı kapsamla üretilir.
 - **Tier**: kapsam içindeki kulüpler ün sırasına göre T1 (40) · T2 (120) · T3 (400) · T4 (gerisi); dar kapsamda (big5) oranlı. Merdiven basamak tipi her 3 basamakta ilerler: T1×T1 → T1×T2 → T2×T2 → T2×T3 → T3×T3 → T3×T4 → T4×T4; Blitz'te her 6 soruda. Ortak oyuncu ≥ 2 (T4'te ≥ 1), kulüp koşuda bir kez. Uç noktalar: `/ladder?seed&scope`, `/blitz/pack?seed&scope&n=40`, `/teams/suggest?q&scope`, `/club/{id}?scope`.
+
+## Kaynak izlerinin temizlenmesi (2026-10-06)
+`tools/finalize_index.py` index'in son adımıdır (build_index → build_stats → build_geo → **finalize_index** → encrypt_index):
+- **Kimlikler bizim:** kulüp ve oyuncu kimlikleri 1..N aralığında, bilgi taşımayan karışık bir sırayla yeniden atanır. Kaynak kimlikler hiçbir tabloda kalmaz. İstemciye giden tüm kimlikler bunlardır.
+- **Dönem ekleri yok:** "Aldershot FC (- 1992)" → "Aldershot FC", `clubs.defunct = 1` (2978 kulüp). Oyunda adın yanında küçük geçmiş ikonu çıkar (`UI.defunct_icon`); servis `defunct` alanını öneri, kariyer yolu, zincir, merdiven ve Beşte Bir verilerinde taşır. Hızlı seçeneklerde kapanmış kulüp önerilmez.
+- **Piyasa değeri oyunda gösterilmez:** "O mu bu mu"dan piyasa değeri kategorisi çıkarıldı. `players.mv_max` ve `stints.mv` sütunları yalnızca sunucuda, sıralama (ün puanı, tier) için kullanılır; hiçbir uçtan dışarı verilmez.
+- Kürate tier listesi (`server/tiers_curated.txt`) kimlik yerine kulüp adıyla tutulur.
+Kalan izler (bkz. `docs/TODO.md`): kulüp adlarının yazımı kaynakla aynı ("Fenerbahce", "Basaksehir FK"); açıklanmamış transfer bedellerinde kaynağın tahminleri olabilir; ün sıralaması piyasa değerinden besleniyor.

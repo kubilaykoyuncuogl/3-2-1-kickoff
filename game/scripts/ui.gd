@@ -66,6 +66,10 @@ static func icon(path: String, size: float, color: String) -> TextureRect:
 	ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return ic
 
+## Artık var olmayan kulüp işareti (veritabanında clubs.defunct). Ad sade yazılır, yanına bu ikon gelir.
+static func defunct_icon(color := "muted", size := 15.0) -> TextureRect:
+	return icon("res://assets/icons/history.svg", size, color)
+
 static func chevron(color := "muted", left := false, size := 18.0) -> TextureRect:
 	var ic := icon("res://assets/icons/chevron.svg", size, color); ic.flip_h = left
 	return ic
@@ -158,7 +162,7 @@ static func badge(text: String, kind := "muted") -> PanelContainer:
 	return p
 
 ## Liste satırı: [rozet] başlık (+ alt satır) ……… [sağ kontrol].  state: "" | "new" (vurgulu) | "hidden" (henüz açılmamış)
-static func row(index: String, title: String, sub := "", right: Control = null, state := "") -> PanelContainer:
+static func row(index: String, title: String, sub := "", right: Control = null, state := "", defunct := false) -> PanelContainer:
 	var p := PanelContainer.new()
 	var st: StyleBoxFlat
 	match state:
@@ -170,6 +174,7 @@ static func row(index: String, title: String, sub := "", right: Control = null, 
 	p.custom_minimum_size.y = 48
 	var h := hbox(10)
 	h.add_child(badge(index, "violet" if state == "new" else "muted"))
+	if defunct: h.add_child(defunct_icon("violet_ink" if state == "new" else "muted"))
 	var tv := vbox(0); tv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; tv.alignment = BoxContainer.ALIGNMENT_CENTER
 	var t := label(title, 16, 700, "violet_ink" if state == "new" else ("muted" if state == "hidden" else "fg"))
 	t.clip_text = true; t.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
