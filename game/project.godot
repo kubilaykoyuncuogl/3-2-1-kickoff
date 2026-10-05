@@ -1,0 +1,22 @@
+; Engine configuration file.
+config_version=5
+
+[application]
+config/name="Üç İki Bir"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.3", "Mobile")
+config/icon="res://icon.svg"
+
+[autoload]
+Net="*res://scripts/net.gd"
+Game="*res://scripts/game.gd"
+
+[display]
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/handheld/orientation=1
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[rendering]
+renderer/rendering_method="mobile"
