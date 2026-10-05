@@ -5,20 +5,20 @@
 :root{
   --bg:#F2F2F5;--surface:#FFFFFF;--fg:#1B1A21;--muted:#5F5D6B;--line:#DCDBE3;
   --v-fill:#5E4BC9;--v-ink:#4A3AAE;--v-soft:#E9E5FA;--v-on:#FFFFFF;
-  --a-fill:#B83E8E;--a-ink:#9A2E77;--a-soft:#FAE4F2;--a-on:#FFFFFF;
-  --ok:#167A52;--ok-soft:#DCF3E8;--no:#BE2F28;--no-soft:#FBE3E0;
+  --a-fill:#E9A23B;--a-ink:#9A6207;--a-soft:#FBEFD8;--a-on:#1B1A21;
+  --ok:#167A52;--ok-soft:#DCF3E8;--no:#C2334F;--no-soft:#FBE1E7;
   --display:"Archivo",system-ui,sans-serif;--body:"IBM Plex Sans",system-ui,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#131218;--surface:#1C1B23;--fg:#ECEBF2;--muted:#A09EAD;--line:#2E2D38;
   --v-fill:#8C7CF0;--v-ink:#B3A7FF;--v-soft:#272443;--v-on:#131218;
-  --a-fill:#E57DC2;--a-ink:#F09BD4;--a-soft:#3E1F34;--a-on:#131218;
-  --ok:#4FCF93;--ok-soft:#163528;--no:#FF7A6B;--no-soft:#3E1F1A;color-scheme:dark}}
+  --a-fill:#F0B45A;--a-ink:#F4C77A;--a-soft:#3A2D14;--a-on:#131218;
+  --ok:#4FCF93;--ok-soft:#163528;--no:#FF7D96;--no-soft:#3C1B25;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#131218;--surface:#1C1B23;--fg:#ECEBF2;--muted:#A09EAD;--line:#2E2D38;
   --v-fill:#8C7CF0;--v-ink:#B3A7FF;--v-soft:#272443;--v-on:#131218;
-  --a-fill:#E57DC2;--a-ink:#F09BD4;--a-soft:#3E1F34;--a-on:#131218;
-  --ok:#4FCF93;--ok-soft:#163528;--no:#FF7A6B;--no-soft:#3E1F1A;color-scheme:dark}
+  --a-fill:#F0B45A;--a-ink:#F4C77A;--a-soft:#3A2D14;--a-on:#131218;
+  --ok:#4FCF93;--ok-soft:#163528;--no:#FF7D96;--no-soft:#3C1B25;color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);padding-inline:16px;padding-block:28px 48px;line-height:1.5}
 main{max-width:980px;margin:0 auto;display:grid;gap:40px}
@@ -82,8 +82,8 @@ section{display:grid;gap:14px}
 <main>
 <header style="display:grid;gap:10px">
   <span class="eyebrow">3-2-1 Kickoff · görsel kimlik · 2026-10-05</span>
-  <h1>İki mor, iki sıcaklık</h1>
-  <p class="lead">A tarafı mor, B tarafı orchid. Soğuk ve sıcak olduğu için uzaktan bile karışmıyor. Kırmızı ve yeşil taraflara verilmedi, sadece doğru ve yanlışı söylüyor. Zemin saf beyaz ya da saf siyah değil, hafif mor eğilimli gri. Uzun oturumda göz yormasın diye.</p>
+  <h1>İki taraf, iki sıcaklık</h1>
+  <p class="lead">A tarafı mor, B tarafı amber. Soğuk ve sıcak olduğu için uzaktan bile karışmıyor. Kırmızı ve yeşil taraflara verilmedi, sadece doğru ve yanlışı söylüyor. Zemin saf beyaz ya da saf siyah değil, hafif mor eğilimli gri. Uzun oturumda göz yormasın diye.</p>
   <div class="themebar" role="group" aria-label="Tema">
     <span class="eyebrow">Tema</span>
     <button type="button" id="t-sys" aria-pressed="true">Sistem</button>
@@ -134,7 +134,7 @@ section{display:grid;gap:14px}
   <div class="swatches" id="sw-neutral"></div>
   <span class="eyebrow">A tarafı · mor</span>
   <div class="swatches" id="sw-v"></div>
-  <span class="eyebrow">B tarafı · orkide</span>
+  <span class="eyebrow">B tarafı · amber</span>
   <div class="swatches" id="sw-a"></div>
   <span class="eyebrow">Durum</span>
   <div class="swatches" id="sw-state"></div>
@@ -145,7 +145,7 @@ section{display:grid;gap:14px}
   <ol class="rules">
     <li><b>Üç rol:</b> fill (buton, kart dolgusu), ink (zemin üstü yazı ve çizgi), soft (ince zemin). Dark temada fill açılır, üstüne koyu yazı gelir.</li>
     <li><b>Taraf rengi yalnızca taraf anlamı taşır.</b> "Hazırım" butonu kendi tarafının rengi, skorun kendi yarısı kendi tarafının soft tonu.</li>
-    <li><b>Doğru ve yanlış taraf renginden bağımsız.</b> Mint yeşil ve vermilyon kırmızı. Kırmızı bilerek orkideden uzak bir tonda; ceza kilidi kırmızı soft zemin, timer son 5 saniyede kırmızıya döner.</li>
+    <li><b>Doğru ve yanlış taraf renginden bağımsız.</b> Mint yeşil ve gül kırmızısı. Ceza kilidi gül kırmızısı soft zemin, timer son 5 saniyede gül kırmızısına döner.</li>
     <li><b>Yazı kontrastı:</b> zemin üstü yazılar ≥ 4.5:1, fill üstü yazılar ≥ 5.5:1. Hesap aracı repoda tools/contrast.py.</li>
     <li><b>Tipografi:</b> Archivo (black ağırlık) sayılar ve başlıklar için, IBM Plex Sans gövde için. Godot'ta ikisi de Google Fonts'tan TTF olarak gömülür.</li>
   </ol>
@@ -169,7 +169,7 @@ section{display:grid;gap:14px}
   var groups={
     'sw-neutral':[['bg','--bg','zemin'],['surface','--surface','kart'],['fg','--fg','yazı'],['muted','--muted','ikincil yazı'],['line','--line','ayraç']],
     'sw-v':[['violet.fill','--v-fill','buton'],['violet.ink','--v-ink','yazı'],['violet.soft','--v-soft','zemin']],
-    'sw-a':[['orchid.fill','--a-fill','buton'],['orchid.ink','--a-ink','yazı'],['orchid.soft','--a-soft','zemin']],
+    'sw-a':[['amber.fill','--a-fill','buton'],['amber.ink','--a-ink','yazı'],['amber.soft','--a-soft','zemin']],
     'sw-state':[['ok','--ok','doğru'],['ok.soft','--ok-soft','doğru zemin'],['no','--no','yanlış / ceza'],['no.soft','--no-soft','ceza zemin']]
   };
   function lum(h){var r=parseInt(h.substr(1,2),16)/255,g=parseInt(h.substr(3,2),16)/255,b=parseInt(h.substr(5,2),16)/255;function f(c){return c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4)}return 0.2126*f(r)+0.7152*f(g)+0.0722*f(b)}
