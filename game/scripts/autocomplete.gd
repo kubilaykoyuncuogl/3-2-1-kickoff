@@ -15,9 +15,9 @@ func _init(k: String, placeholder: String) -> void:
 	add_theme_constant_override("separation", 6)
 	input = LineEdit.new()
 	input.placeholder_text = placeholder
-	input.custom_minimum_size.y = 52
+	input.custom_minimum_size.y = 56
 	input.add_theme_font_override("font", UI.font(600))
-	input.add_theme_font_size_override("font_size", 17)
+	input.add_theme_font_size_override("font_size", 19)
 	input.add_theme_color_override("font_color", UI.c("fg"))
 	input.add_theme_color_override("font_placeholder_color", UI.c("muted"))
 	input.add_theme_color_override("caret_color", UI.c("fg"))
@@ -70,8 +70,8 @@ func _on_suggestions(k: String, q: String, items: Array) -> void:
 		var nm: String = it.name
 		if kind == "player" and it.get("born"): nm += "  ·  %d" % int(it.born)
 		b.text = nm
-		b.custom_minimum_size.y = 44
-		b.add_theme_font_override("font", UI.font(600)); b.add_theme_font_size_override("font_size", 15)
+		b.custom_minimum_size.y = 50
+		b.add_theme_font_override("font", UI.font(600)); b.add_theme_font_size_override("font_size", 17)
 		var used: bool = it.get("used", false) or not it.get("in_scope", true)
 		var st := UI.box("bg", "", 10, 0); st.content_margin_top = 8; st.content_margin_bottom = 8
 		b.add_theme_stylebox_override("normal", st)

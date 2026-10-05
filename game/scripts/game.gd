@@ -138,7 +138,7 @@ func guess(player_id: int, name: String) -> void:
 	if r == null or r.state != State.ROUND: return
 	var now := Time.get_ticks_msec()
 	if r.penalty_until.get(pid, 0) > now: return
-	if not _allow(pid, 20, 60000): return
+	if not _allow("%d:guess" % pid, 30, 60000): return
 	var gen: int = r.gen
 	var t: Array = r.teams.values()
 	var ok: bool = await IndexAPI.check(player_id, t[0], t[1])
@@ -155,7 +155,7 @@ func guess(player_id: int, name: String) -> void:
 func suggest(kind: String, q: String) -> void:
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
-	if q.length() < 2 or not _allow(pid, 12, 1000): return
+	if q.length() < 2 or not _allow("%d:suggest" % pid, 12, 1000): return
 	var list: Array
 	if kind == "team":
 		var r0 = _room_of(pid)
@@ -201,7 +201,7 @@ func single_guess(player_id: int, name: String) -> void:   # ladder
 	var s = singles.get(pid)
 	if s == null or s.over or s.mode != "ladder": return
 	var now := Time.get_ticks_msec()
-	if s.lock_until > now or not _allow(pid, 20, 60000): return
+	if s.lock_until > now or not _allow("%d:guess" % pid, 30, 60000): return
 	var gen: int = s.gen; var item: Dictionary = s.items[s.idx]
 	var ok: bool = await IndexAPI.check(player_id, int(item.a), int(item.b))
 	if singles.get(pid) != s or s.gen != gen or s.over: return
@@ -305,7 +305,7 @@ func _leave_everything(pid: int) -> void:
 	_broadcast(r)
 
 func _on_leave(pid: int) -> void:
-	_leave_everything(pid); profiles.erase(pid); rate.erase(pid)
+	_leave_everything(pid); profiles.erase(pid); rate.erase("%d:guess" % pid); rate.erase("%d:suggest" % pid)
 
 func _start_countdown(r: Dictionary) -> void:
 	for t in r.teams.values(): r.used_teams[t] = true
@@ -410,12 +410,12 @@ func _send_profile(pid: int) -> void:
 	var p: Dictionary = profiles[pid]
 	profile_state.rpc_id(pid, {"elo": p.elo, "games": p.games})
 
-func _allow(pid: int, max_n: int, window_ms: int) -> bool:
+func _allow(key: String, max_n: int, window_ms: int) -> bool:
 	var now := Time.get_ticks_msec()
-	var arr: Array = rate.get(pid, [])
+	var arr: Array = rate.get(key, [])
 	arr = arr.filter(func(t): return now - t < window_ms)
-	if arr.size() >= max_n: rate[pid] = arr; return false
-	arr.append(now); rate[pid] = arr; return true
+	if arr.size() >= max_n: rate[key] = arr; return false
+	arr.append(now); rate[key] = arr; return true
 
 # ---------- tek oyunculu iç ----------
 func _single_next(pid: int, first: bool) -> void:

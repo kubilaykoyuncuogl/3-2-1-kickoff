@@ -22,7 +22,7 @@ static func c(token: String) -> Color:
 	return Palette.c(token)
 
 # ---------- metin ----------
-static func label(text: String, size := 15, weight := 500, color := "fg") -> Label:
+static func label(text: String, size := 16, weight := 500, color := "fg") -> Label:
 	var l := Label.new()
 	l.text = text
 	l.add_theme_font_override("font", font(weight))
@@ -65,7 +65,7 @@ static func button(text: String, kind := "violet", right_text := "") -> Button:
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT if right_text != "" else HORIZONTAL_ALIGNMENT_CENTER
 	b.custom_minimum_size = Vector2(0, 56 if kind != "ghost" else 44)
 	b.add_theme_font_override("font", font(800 if kind != "ghost" else 600))
-	b.add_theme_font_size_override("font_size", 15)
+	b.add_theme_font_size_override("font_size", 16)
 	var normal: StyleBoxFlat; var fg: String
 	match kind:
 		"violet": normal = box("violet_fill", "", RADIUS, 0, "violet_shade"); fg = "violet_on"
@@ -110,7 +110,7 @@ static func chip(text: String, kind := "violet") -> PanelContainer:
 	var st := box(bg, "line" if kind == "line" else "", 999, BORDER if kind == "line" else 0)
 	st.content_margin_left = 10; st.content_margin_right = 10; st.content_margin_top = 4; st.content_margin_bottom = 4
 	p.add_theme_stylebox_override("panel", st)
-	p.add_child(label(text, 12, 600, fg))
+	p.add_child(label(text, 13, 600, fg))
 	return p
 
 ## Büyük renkli bildirim şeridi. kind: "ok" | "no" | "muted"
@@ -207,7 +207,7 @@ static func nav(title: String, on_back: Callable) -> HBoxContainer:
 	return h
 
 ## Sayfa iskeleti: güvenli alan + 20 px kenar boşluğu + dikey kutu
-const MAX_COL := 560.0
+const MAX_COL := 520.0
 static func page() -> VBoxContainer:
 	var v := vbox(12)
 	v.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -219,4 +219,4 @@ static func _layout_page(v: VBoxContainer) -> void:
 	var w := v.get_viewport_rect().size.x
 	var half := minf(MAX_COL, w - 40.0) / 2.0
 	v.anchor_left = 0.5; v.anchor_right = 0.5; v.anchor_top = 0.0; v.anchor_bottom = 1.0
-	v.offset_left = -half; v.offset_right = half; v.offset_top = 20; v.offset_bottom = -20
+	v.offset_left = -half; v.offset_right = half; v.offset_top = 16; v.offset_bottom = -16
