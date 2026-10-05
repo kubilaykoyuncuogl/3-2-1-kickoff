@@ -180,7 +180,9 @@ func suggest(kind: String, q: String) -> void:
 		var r = _room_of(pid)
 		if r != null:
 			for item in list:
-				item["used"] = r.used_teams.has(int(item.id)) or (r.teams.values().has(int(item.id)))
+				if not (item is Dictionary) or item.get("id") == null: continue
+				var tid := int(item.id)
+				item["used"] = r.used_teams.has(tid) or r.teams.values().has(tid)
 	suggest_result.rpc_id(pid, kind, q, list)
 
 @rpc("any_peer", "call_remote", "reliable")
