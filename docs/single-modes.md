@@ -44,3 +44,10 @@ T1×T1 → T1×T2 → T2×T2 → T2×T3 → T3×T3 → T3×T4 → T4×T4
 Her basamakta çift, o tier çiftinden rastgele; ortak oyuncu sayısı ≥ 2 (son tier'larda ≥ 1). Aynı kulüp koşuda bir kez.
 Blitz aynı şemayla, soru başına ilerleme daha hızlı (her 4 soruda bir tip).
 Uygulama: `index_service.py` `/ladder` ve `/blitz/pack` içinde `tier(club)` eşiği ve `pairs_for(tierA, tierB)` sorgusu; `pair_counts` + `clubs.fame` yeter, yeni index gerekmez.
+
+## 14 tier (uygulandı 2026-10-06)
+- Popülerlik puanı servis açılışında hesaplanır (`index_service._compute_tiers`): ücret 0,35 + gelen piyasa değeri 0,30 + yıldız (≥20 M€) 0,20 + oyuncu sayısı 0,10 + yıl aralığı 0,05 (hepsi log10) + lig katsayısı (5 büyük 1,0 · güçlü üst ligler 0,8 · diğer üst 0,6 · alt 0,4 · bilinmeyen 0,2).
+- İlk üç tier kürate: `server/tiers_curated.txt` (tier|club_id|ad). T1 10 kulüp (Real, Barça, United, Liverpool, Bayern, Juve, PSG, Chelsea, City, Arsenal). Süper Lig kulüpleri bir tier yukarı (`BOOST_COMP`).
+- Tier büyüklükleri: 10, 14, 30, 45, 65, 90, 130, 180, 250, 350, 480, 650, 900; T14 gerisi (4000. kulübe kadar). Amatörler merdivene girmez.
+- İlerleyiş: 27 tip (1-1, 1-2, 2-2 … 14-14). Klasik: tip başına 1 basamak, %25 ihtimalle bir önceki tip (yumuşatma). Blitz: tip başına 2 soru. Ortak oyuncu alt sınırı: T1-5 ≥3, T6-9 ≥2, T10-14 ≥1. Dar kapsamda (5 büyük lig) boş tier'lar atlanır.
+- `/tiers?tier=N` uç noktası tier içeriğini listeler (ayıklama için).

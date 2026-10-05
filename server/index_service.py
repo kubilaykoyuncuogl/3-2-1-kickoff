@@ -24,8 +24,62 @@ BIG5 = {"GB1", "ES1", "IT1", "L1", "FR1"}
 TOP_RE = re.compile(r"^[A-Z]{1,4}1[A-Z]?$")          # GB1, TR1, BRA1, MLS1, EC1N…
 TOP_EXTRA = {"ARGC", "MEXA", "URUC", "QSL", "CLPD"}   # kodu 1 ile bitmeyen üst ligler
 SCOPES = ("all", "top", "big5")
-PROGRESSION = [(1, 1), (1, 2), (2, 2), (2, 3), (3, 3), (3, 4), (4, 4)]   # merdiven basamak tipleri
-TIER_SIZES = (40, 120, 400)                           # T1, T2, T3 büyüklükleri; T4 gerisi
+N_TIERS = 14
+# merdiven tipleri: (1,1),(1,2),(2,2),(2,3)…(14,14) = 27 tip
+PROGRESSION = [(t, t) if k % 2 == 0 else (t, t + 1) for k in range(2 * N_TIERS - 1) for t in [k // 2 + 1]]
+TIER_SIZES = [10, 14, 30, 45, 65, 90, 130, 180, 250, 350, 480, 650, 900]   # T1..T13; T14 gerisi (en çok 4000. kulübe kadar)
+MAX_RANKED = 4000
+CURATED = pathlib.Path(__file__).with_name("tiers_curated.txt")
+BOOST_COMP = {"TR1": 1}            # yerel ayar: Süper Lig kulüpleri bir tier yukarı
+STRONG_TOP = {"PO1", "NL1", "TR1", "BE1", "BRA1", "ARGC", "MEXA", "MLS1", "SA1", "RU1", "SC1", "GR1", "A1", "C1", "DK1", "UKR1"}
+club_tier: dict = {}      # club_id -> tier (1..14), kapsamdan bağımsız
+club_score: dict = {}
+
+def min_common_for(ta: int, tb: int) -> int:
+    t = max(ta, tb)
+    return 3 if t <= 5 else 2 if t <= 9 else 1
+
+def _league_weight(comp):
+    comp = comp or ""
+    if comp in BIG5: return 1.0
+    if comp in STRONG_TOP: return 0.8
+    if TOP_RE.match(comp) or comp in TOP_EXTRA: return 0.6
+    return 0.4 if comp else 0.2
+
+def _compute_tiers():
+    """Popülerlik puanı: ücret 0.35 + gelen piyasa değeri 0.30 + yıldız 0.20 + oyuncu sayısı 0.10 + yıl aralığı 0.05 (log10) + lig katsayısı.
+    İlk tier'lar kürate listeden; gerisi puan sırasıyla TIER_SIZES'a bölünür; TR1 kulüpleri bir tier yukarı."""
+    import math
+    L = lambda x: math.log10(1 + max(0, x))
+    fees = dict(db.execute("SELECT club_id, SUM(fee) FROM stints WHERE fee>0 GROUP BY club_id"))
+    mv = dict(db.execute("SELECT club_id, SUM(mv) FROM stints WHERE mv>0 GROUP BY club_id"))
+    stars = dict(db.execute("SELECT pc.club_id, COUNT(*) FROM player_clubs pc JOIN players p ON p.id=pc.player_id WHERE p.mv_max>=20000000 GROUP BY pc.club_id"))
+    npl = dict(db.execute("SELECT club_id, COUNT(*) FROM player_clubs GROUP BY club_id"))
+    span = dict(db.execute("SELECT club_id, MAX(CAST(substr(date,1,4) AS INT))-MIN(CAST(substr(date,1,4) AS INT)) FROM stints WHERE date IS NOT NULL GROUP BY club_id"))
+    comps = dict(db.execute("SELECT id, competition_id FROM clubs WHERE national=0"))
+    for cid, comp in comps.items():
+        club_score[cid] = (0.35 * L(fees.get(cid, 0) / 1e6) + 0.30 * L(mv.get(cid, 0) / 1e6) + 0.20 * L(stars.get(cid, 0))
+                           + 0.10 * L(npl.get(cid, 0)) + 0.05 * L(span.get(cid) or 0) + 0.6 * _league_weight(comp))
+    curated = {}
+    if CURATED.exists():
+        for line in CURATED.read_text().splitlines():
+            if line.startswith("#") or "|" not in line: continue
+            t, cid, _ = line.split("|", 2)
+            curated[int(cid)] = int(t)
+    ranked = sorted((c for c in comps if c not in curated), key=lambda c: -club_score[c])[:MAX_RANKED]
+    club_tier.update(curated)
+    # kürate kulüpler ilgili tier kotasından düşer
+    quota = list(TIER_SIZES)
+    for t in curated.values():
+        if t - 1 < len(quota): quota[t - 1] = max(0, quota[t - 1] - 1)
+    t = 1; filled = 0
+    for cid in ranked:
+        while t <= len(quota) and filled >= quota[t - 1]: t += 1; filled = 0
+        club_tier[cid] = min(t, N_TIERS); filled += 1
+    for cid, comp in comps.items():
+        if comp in BOOST_COMP and cid in club_tier and cid not in curated:
+            club_tier[cid] = max(1, club_tier[cid] - BOOST_COMP[comp])
+
 scope_clubs: dict = {}    # scope -> set(club_id)
 tier_of: dict = {}        # scope -> {club_id: tier}
 tiers: dict = {}          # scope -> {tier: [club_id...]} (fame sırasıyla)
@@ -36,28 +90,29 @@ def club_scope_flags(comp):
     return top, comp in BIG5
 
 def _build_scopes():
-    rows = db.execute("SELECT id, competition_id FROM clubs WHERE national=0 AND fame>0 ORDER BY fame DESC").fetchall()
+    _compute_tiers()
+    rows = db.execute("SELECT id, competition_id FROM clubs WHERE national=0 AND fame>0").fetchall()
     for sc in SCOPES:
         ids = []
         for cid, comp in rows:
+            if cid not in club_tier: continue
             top, big5 = club_scope_flags(comp)
             if sc == "all" or (sc == "top" and top) or (sc == "big5" and big5): ids.append(cid)
-        ids = ids[:3000]                       # çok silik kulüpler merdivene girmesin
         scope_clubs[sc] = set(ids)
-        t = {}; by = {1: [], 2: [], 3: [], 4: []}
-        n1, n2, n3 = TIER_SIZES
-        if len(ids) < 200: n1, n2, n3 = max(10, len(ids) // 5), max(10, len(ids) // 3), len(ids)   # dar kapsam (big5)
-        for i, cid in enumerate(ids):
-            tier = 1 if i < n1 else 2 if i < n1 + n2 else 3 if i < n1 + n2 + n3 else 4
-            t[cid] = tier; by[tier].append(cid)
-        tier_of[sc] = t; tiers[sc] = by
+        by = {k: [] for k in range(1, N_TIERS + 1)}
+        for cid in ids: by[club_tier[cid]].append(cid)
+        tier_of[sc] = {cid: club_tier[cid] for cid in ids}; tiers[sc] = by
 
-def tier_pair_for(step: int, per: int, sc: str):
-    a, b = PROGRESSION[min(step // per, len(PROGRESSION) - 1)]
-    # boş tier'lara düşme (big5'te T4 yok)
-    avail = [k for k in (1, 2, 3, 4) if tiers[sc][k]]
-    a = min(a, max(avail)); b = min(b, max(avail))
-    return a, b
+def tier_pair_for(step: int, per: int, sc: str, rng=None):
+    """step → (tierA, tierB). Kapsamda boş tier'lar atlanır (big5'te 14 tier yok); rng verilirse %25 bir önceki tip."""
+    k = step // per
+    if rng is not None and k > 0 and rng.random() < 0.25: k -= 1
+    avail = [t for t in range(1, N_TIERS + 1) if tiers[sc][t]]
+    # kapsamın mevcut tier sayısına göre ilerleyişi sıkıştır
+    n_types = 2 * len(avail) - 1
+    k = min(k, n_types - 1)
+    a_i, b_i = (k // 2, k // 2) if k % 2 == 0 else (k // 2, k // 2 + 1)
+    return avail[min(a_i, len(avail) - 1)], avail[min(b_i, len(avail) - 1)]
 
 def pick_pair(rng, sc: str, ta: int, tb: int, used: set, min_n: int, max_n: int = 10**9):
     """ta tier'ından rastgele A, tb tier'ından ortak oyuncusu min_n..max_n olan rastgele B."""
@@ -113,7 +168,7 @@ def club(club_id: int, scope: str = "all"):
     sc = scope if scope in SCOPES else "all"
     top, big5 = club_scope_flags(row[2])
     return {"id": row[0], "name": row[1], "competition": row[2], "top": top, "big5": big5,
-            "in_scope": sc == "all" or row[0] in scope_clubs[sc], "tier": tier_of["all"].get(row[0], 4)}
+            "in_scope": sc == "all" or row[0] in scope_clubs[sc], "tier": club_tier.get(row[0], N_TIERS)}
 
 @functools.lru_cache(maxsize=100000)
 def _players_suggest(n: str, limit: int):
@@ -155,7 +210,7 @@ def _pool_worker():
             for (kind, sc), lst in list(pools.items()):
                 while len(lst) < POOL_SIZE:
                     seed = f"pool-{time.time_ns()}-{rnd.random()}"
-                    pack = _ladder(seed, 30, sc) if kind == "ladder" else _blitz(seed, 40, sc)
+                    pack = _ladder(seed, 27, sc) if kind == "ladder" else _blitz(seed, 40, sc)
                     with pool_lock: lst.append(pack)
         except Exception as e:
             print("pool error", e)
@@ -167,9 +222,9 @@ def _pool_take(kind: str, sc: str):
         return lst.pop() if lst else None
 
 @app.get("/ladder")
-def ladder(day: str = "", steps: int = 30, seed: str = "", scope: str = "all"):
+def ladder(day: str = "", steps: int = 27, seed: str = "", scope: str = "all"):
     sc = scope if scope in SCOPES else "all"
-    if not seed and not day and steps == 30:
+    if not seed and not day and steps == 27:
         got = _pool_take("ladder", sc)
         if got: return got
     return _ladder(seed or day, steps, sc)
@@ -179,8 +234,8 @@ def _ladder(seed: str, steps: int, sc: str):
     rng = _seeded(seed, "ladder:" + sc)
     out, used = [], set()
     for i in range(steps):
-        ta, tb = tier_pair_for(i, 3, sc)
-        min_n = 2 if max(ta, tb) <= 3 else 1
+        ta, tb = tier_pair_for(i, 1, sc, rng)
+        min_n = min_common_for(ta, tb)
         got = pick_pair(rng, sc, ta, tb, used, min_n) or pick_pair(rng, sc, ta, tb, used, 1) \
               or pick_pair(rng, sc, min(ta, tb), min(ta, tb), used, 1)
         if not got: break
@@ -210,8 +265,8 @@ def _blitz(seed: str, n: int, sc: str):
     tries = 0
     while len(qs) < n and tries < n * 6:
         tries += 1
-        ta, tb = tier_pair_for(len(qs), 6, sc)
-        got = pick_pair(rng, sc, ta, tb, used, 2, 60) or pick_pair(rng, sc, ta, tb, used, 1, 200)
+        ta, tb = tier_pair_for(len(qs), 2, sc, rng)
+        got = pick_pair(rng, sc, ta, tb, used, max(2, min_common_for(ta, tb)), 60) or pick_pair(rng, sc, ta, tb, used, 1, 200)
         if not got: break
         ca, cb, _ = got
         both = db.execute("""SELECT p.id, p.name FROM player_clubs x JOIN player_clubs y ON x.player_id=y.player_id JOIN players p ON p.id=x.player_id
@@ -235,6 +290,13 @@ def career(player_id: int):
                          WHERE s.player_id=? ORDER BY s.seq""", (player_id,)).fetchall()
     if not rows: raise HTTPException(404)
     return [{"seq": a, "club": b, "date": c, "kind": d, "fee": e, "mv": f, "age": g} for a, b, c, d, e, f, g in rows]
+
+@app.get("/tiers")
+def tiers_list(tier: int = 1, limit: int = 30):
+    ids = [c for c, t in club_tier.items() if t == tier]
+    ids.sort(key=lambda c: -club_score.get(c, 0))
+    names = dict(db.execute(f"SELECT id, name FROM clubs WHERE id IN ({','.join(map(str, ids[:limit])) or '0'})").fetchall())
+    return {"tier": tier, "count": len(ids), "clubs": [names.get(c) for c in ids[:limit]]}
 
 @app.get("/health")
 def health():

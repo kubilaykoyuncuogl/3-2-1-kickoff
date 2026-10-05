@@ -1,0 +1,56 @@
+# tier|club_id|ad  — ilk üç tier elle; puan sırası bunların altından başlar
+1|418|Real Madrid
+1|131|FC Barcelona
+1|985|Manchester United
+1|31|Liverpool FC
+1|27|Bayern Munich
+1|506|Juventus FC
+1|583|Paris Saint-Germain
+1|631|Chelsea FC
+1|281|Manchester City
+1|11|Arsenal FC
+2|5|AC Milan
+2|46|Inter Milan
+2|16|Borussia Dortmund
+2|13|Atlético de Madrid
+2|148|Tottenham Hotspur
+2|141|Galatasaray
+2|36|Fenerbahce
+2|610|Ajax Amsterdam
+2|294|SL Benfica
+2|720|FC Porto
+2|12|AS Roma
+2|6195|SSC Napoli
+2|189|CA Boca Juniors
+2|209|CA River Plate
+3|114|Beşiktaş JK
+3|336|Sporting CP
+3|244|Olympique Marseille
+3|1041|Olympique Lyon
+3|162|AS Monaco
+3|15|Bayer 04 Leverkusen
+3|33|FC Schalke 04
+3|368|Sevilla FC
+3|1049|Valencia CF
+3|371|Celtic FC
+3|124|Rangers FC
+3|383|PSV Eindhoven
+3|234|Feyenoord Rotterdam
+3|398|SS Lazio
+3|430|ACF Fiorentina
+3|762|Newcastle United
+3|29|Everton FC
+3|399|Leeds United
+3|405|Aston Villa
+3|379|West Ham United
+3|964|Zenit St. Petersburg
+3|660|Shakhtar Donetsk
+3|18544|Al-Nassr FC
+3|1114|Al-Hilal SFC
+3|1023|Sociedade Esportiva Palmeiras
+3|221|Santos FC
+3|449|Trabzonspor
+3|614|CR Flamengo
+3|3631|CF América
+3|1061|Los Angeles Galaxy
+3|199|Sport Club Corinthians Paulista

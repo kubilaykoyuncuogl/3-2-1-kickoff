@@ -46,7 +46,7 @@ func answers(a: int, b: int) -> Dictionary:
 	return r if r is Dictionary else {"names": [], "total": 0}
 
 func ladder(seed: String, scope := "all") -> Array:
-	var r = await get_json("/ladder", {"steps": 30, "scope": scope})   # seed yok → hazır havuzdan
+	var r = await get_json("/ladder", {"steps": 27, "scope": scope})   # seed yok → hazır havuzdan
 	return r.get("steps", []) if r is Dictionary else []
 
 func blitz_pack(seed: String, scope := "all") -> Array:
