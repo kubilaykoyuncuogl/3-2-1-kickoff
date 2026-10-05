@@ -33,7 +33,7 @@ godot --headless --path game -- --server --port 9080
 # istemci
 godot --path game
 ```
-Godot bu makinede kurulu değil (2026-10-05); indir: https://godotengine.org/download (4.3+).
+Godot 4.7.2 stable kurulu: `~/.local/bin/godot` (2026-10-05). Export template'leri henüz indirilmedi (Android/macOS/Web build için gerekir: Editor > Manage Export Templates).
 
 ## Notlar
 - Veriden mod fikirleri (kariyer yolu, kiralık/satış, ücret, sıralama): `docs/data.md` tablosu. Milli takım verisi transferlerde yok, milli takım modu bu veriyle yapılamaz.

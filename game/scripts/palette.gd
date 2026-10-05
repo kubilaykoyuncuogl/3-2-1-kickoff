@@ -1,7 +1,7 @@
 class_name Palette
-## Renk tokenları. docs/palette.md ile aynı. Tema: Palette.set_theme(Palette.Theme.DARK)
-enum Theme { LIGHT, DARK }
-static var theme: Theme = Theme.LIGHT
+## Renk tokenları. docs/palette.md ile aynı. Tema: Palette.mode = Palette.Mode.DARK
+enum Mode { LIGHT, DARK }
+static var mode: Mode = Mode.LIGHT
 
 const LIGHT := {
 	"bg": Color("#F2F2F5"), "surface": Color("#FFFFFF"), "fg": Color("#1B1A21"),
@@ -23,7 +23,7 @@ const DARK := {
 }
 
 static func c(token: String) -> Color:
-	return (DARK if theme == Theme.DARK else LIGHT)[token]
+	return (DARK if mode == Mode.DARK else LIGHT)[token]
 
 ## side: 0 = mor (A), 1 = amber (B)
 static func side(side_idx: int, role: String) -> Color:
