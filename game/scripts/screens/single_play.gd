@@ -150,7 +150,7 @@ func _flash_options(pressed: int, answer: int) -> void:
 func _render_item(d: Dictionary) -> void:
 	for ch in body.get_children(): ch.queue_free()
 	ac = null; opt_buttons = []
-	body.add_child(UI.nav("Klasik merdiven" if mode == "ladder" else "Blitz", _quit))
+	body.add_child(UI.nav(_mode_title(), _quit))
 	_header(d)
 	if mode == "ladder":
 		ac = Autocomplete.new("player", "Oyuncu adı yaz…"); ac.size_flags_vertical = Control.SIZE_EXPAND_FILL
