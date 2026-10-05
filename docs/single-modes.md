@@ -1,4 +1,7 @@
-# Tek oyunculu modlar (taslak: 2026-10-05)
+# Tek oyunculu modlar
+
+> Güncelleme 2026-10-05: günlük koşu, tablo ve kilit kaldırıldı. Her başlatma rastgele tohumlu yeni merdiven/soru seti; en iyi skor cihazda (`App.best`). Aşağısı ilk taslak.
+
 
 İki mod da **merdiven**: basamaklar bilinen kulüplerle başlar, nadirleşir. Yanınca koşu biter, skor tabloya yazılır. Günlük koşu (herkese aynı merdiven, tarih tohumlu) + sınırsız pratik (tablosuz).
 

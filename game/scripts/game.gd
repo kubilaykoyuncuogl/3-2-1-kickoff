@@ -31,8 +31,7 @@ var profiles := {}      # pid -> {nick, device, elo, games}
 var queue: Array[int] = []      # eşleşme kuyruğu
 var queue_since := {}   # pid -> msec
 var singles := {}       # pid -> session
-var packs := {}         # "ladder:day" / "blitz:day" -> Array
-var daily := {}         # day -> {mode: [{nick, score}]}
+var packs := {}         # (kullanılmıyor: her oturum yeni paket)
 var rate := {}          # pid -> Array[msec]
 var _accounts := {}     # device -> {elo, games}
 
@@ -175,14 +174,16 @@ func rematch() -> void:
 
 # ---------- tek oyunculu ----------
 @rpc("any_peer", "call_remote", "reliable")
-func single_start(mode: String, practice: bool) -> void:
+func single_start(mode: String) -> void:
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
 	_leave_everything(pid)
-	var day := Time.get_date_string_from_system(true)
-	var items: Array = await _pack(mode, day)
+	var seed := "%d-%d" % [Time.get_ticks_usec(), randi()]   # her oturum farklı merdiven / soru seti
+	var items: Array
+	if mode == "ladder": items = await IndexAPI.ladder(seed)
+	else: items = await IndexAPI.blitz_pack(seed)
 	if items.is_empty(): err.rpc_id(pid, "Paket yüklenemedi"); return
-	singles[pid] = {"mode": mode, "day": day, "practice": practice, "items": items, "idx": 0, "lives": 3 if mode == "ladder" else 1,
+	singles[pid] = {"mode": mode, "seed": seed, "items": items, "idx": 0, "lives": 3 if mode == "ladder" else 1,
 		"score": 0, "combo": 1.0, "deadline": 0, "lock_until": 0, "over": false, "best_combo": 1.0, "gen": 0}
 	_single_next(pid, true)
 
@@ -203,7 +204,7 @@ func single_guess(player_id: int, name: String) -> void:   # ladder
 		s.last = {"type": "correct", "name": name}
 		_single_next(pid, false)
 	else:
-		s.lives -= 1; s.lock_until = Time.get_ticks_msec() + 3000
+		s.lives -= 1   # kilit yok: hemen yeni tahmin
 		s.last = {"type": "wrong", "name": name}
 		if s.lives <= 0: _single_over(pid)
 		else: _single_send(pid)
@@ -406,13 +407,6 @@ func _allow(pid: int, max_n: int, window_ms: int) -> bool:
 	arr.append(now); rate[pid] = arr; return true
 
 # ---------- tek oyunculu iç ----------
-func _pack(mode: String, day: String) -> Array:
-	var key := "%s:%s" % [mode, day]
-	if not packs.has(key):
-		if mode == "ladder": packs[key] = await IndexAPI.ladder(day)
-		else: packs[key] = await IndexAPI.blitz_pack(day)
-	return packs[key]
-
 func _single_next(pid: int, first: bool) -> void:
 	var s: Dictionary = singles[pid]
 	if not first: s.idx += 1
@@ -440,13 +434,6 @@ func _tick_singles() -> void:
 func _single_over(pid: int) -> void:
 	var s: Dictionary = singles[pid]
 	s.over = true; s.deadline = 0
-	var board := []
-	if not s.practice:
-		var d: Dictionary = daily.get(s.day, {}); var lst: Array = d.get(s.mode, [])
-		lst.append({"nick": profiles.get(pid, {"nick": "?"}).nick, "score": s.score, "pid": pid})
-		lst.sort_custom(func(x, y): return x.score > y.score)
-		d[s.mode] = lst.slice(0, 100); daily[s.day] = d; board = d[s.mode]
-	s.board = board
 	_single_send(pid)
 
 func _single_send(pid: int) -> void:
@@ -455,13 +442,9 @@ func _single_send(pid: int) -> void:
 	var item: Dictionary = s.items[mini(s.idx, s.items.size() - 1)]
 	var pub := {"a_name": item.get("a_name", ""), "b_name": item.get("b_name", ""), "a": int(item.get("a", 0)), "b": int(item.get("b", 0))}
 	if s.mode == "blitz": pub["options"] = item.options
-	var rank := 0
-	if s.over:
-		for i in s.get("board", []).size():
-			if s.board[i].pid == pid: rank = i + 1; break
 	single_state.rpc_id(pid, {"mode": s.mode, "idx": s.idx, "total": s.items.size(), "lives": s.lives, "score": s.score, "combo": s.combo,
-		"best_combo": s.best_combo, "remaining_ms": maxi(0, s.deadline - now), "per_ms": s.get("per_ms", 0), "lock_ms": maxi(0, s.lock_until - now),
-		"over": s.over, "item": pub, "last": s.get("last", {}), "board": s.get("board", []).slice(0, 10), "rank": rank, "practice": s.practice})
+		"best_combo": s.best_combo, "remaining_ms": maxi(0, s.deadline - now), "per_ms": s.get("per_ms", 0), "lock_ms": 0,
+		"over": s.over, "item": pub, "last": s.get("last", {})})
 
 # ---------- kalıcılık ----------
 func _load_accounts() -> void:
@@ -486,7 +469,7 @@ func c_ready() -> void: set_ready.rpc_id(1)
 func c_guess(id: int, name: String) -> void: guess.rpc_id(1, id, name)
 func c_suggest(kind: String, q: String) -> void: suggest.rpc_id(1, kind, q)
 func c_rematch() -> void: rematch.rpc_id(1)
-func c_single_start(mode: String, practice: bool) -> void: single_start.rpc_id(1, mode, practice)
+func c_single_start(mode: String) -> void: single_start.rpc_id(1, mode)
 func c_single_guess(id: int, name: String) -> void: single_guess.rpc_id(1, id, name)
 func c_single_answer(i: int) -> void: single_answer.rpc_id(1, i)
 func c_single_quit() -> void: single_quit.rpc_id(1)

@@ -13,7 +13,7 @@ func _ready() -> void:
 	Game.single_changed.connect(_on_single)
 	Net.connected.connect(func():
 		print("[%s] connected" % nick); Game.c_hello()
-		if single_mode != "": Game.c_single_start(single_mode, true)
+		if single_mode != "": Game.c_single_start(single_mode)
 		else: Game.c_find_match())
 	Net.connect_failed.connect(func(): print("[%s] connect failed" % nick))
 	Net.connect_to_server()
@@ -54,6 +54,6 @@ func _on_sugg(kind: String, _q: String, list: Array) -> void:
 func _on_single(d: Dictionary) -> void:
 	print("[%s] single idx=%s lives=%s score=%s over=%s item=%s×%s opts=%s last=%s" % [nick, d.idx, d.lives, d.score, d.over, d.item.a_name, d.item.b_name, d.item.get("options", []), d.get("last", {})])
 	if d.over:
-		print("[%s] board=%s rank=%s" % [nick, d.board, d.rank]); get_tree().quit(); return
+		print("[%s] over score=%s" % [nick, d.score]); get_tree().quit(); return
 	if d.mode == "blitz": Game.c_single_answer(int(d.idx) % 5)   # rastgele cevap: bazen doğru, çoğu kez yanlış → koşu biter
 	else: Game.c_suggest("player", guess_q)

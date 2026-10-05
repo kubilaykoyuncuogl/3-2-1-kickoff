@@ -41,11 +41,11 @@ func answers(a: int, b: int) -> Dictionary:
 	var r = await get_json("/pair/answers", {"club_a": a, "club_b": b})
 	return r if r is Dictionary else {"names": [], "total": 0}
 
-func ladder(day: String) -> Array:
-	var r = await get_json("/ladder", {"day": day, "steps": 30})
+func ladder(seed: String) -> Array:
+	var r = await get_json("/ladder", {"seed": seed, "steps": 30})
 	return r.get("steps", []) if r is Dictionary else []
 
-func blitz_pack(day: String) -> Array:
+func blitz_pack(seed: String) -> Array:
 	## reveal=1: soru başına "_answer" (doğru şık indeksi) gelir; yalnızca sunucu bellekte tutar.
-	var r = await get_json("/blitz/pack", {"day": day, "n": 60, "reveal": 1})
+	var r = await get_json("/blitz/pack", {"seed": seed, "n": 60, "reveal": 1})
 	return r.get("questions", []) if r is Dictionary else []

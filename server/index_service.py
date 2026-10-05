@@ -62,7 +62,8 @@ def _seeded(day: str, salt: str) -> random.Random:
     return random.Random(hashlib.sha256(f"{day}:{salt}:{os.environ.get('KICKOFF_DAILY_SALT','')}".encode()).digest())
 
 @app.get("/ladder")
-def ladder(day: str, steps: int = 30):
+def ladder(day: str = "", steps: int = 30, seed: str = ""):
+    day = seed or day
     """Klasik merdiven: basamak zorluğu = kesişim büyüklüğü ↓ ve kulüp ünü ↓. Aynı gün herkese aynı."""
     rng = _seeded(day, "ladder")
     tiers = [(15, 10**9), (8, 14), (4, 7), (2, 3), (1, 1)]           # (min n, max n) kesişim
@@ -81,7 +82,8 @@ def ladder(day: str, steps: int = 30):
     return {"day": day, "steps": out}
 
 @app.get("/blitz/pack")
-def blitz_pack(day: str, n: int = 60, reveal: int = 0):
+def blitz_pack(day: str = "", n: int = 60, reveal: int = 0, seed: str = ""):
+    day = seed or day
     """5 isim: 2 yalnız A, 2 yalnız B, 1 ikisi. Çeldiriciler ≥3 kulüplü, ünlü oyunculardan; cevap hash olarak gider."""
     rng = _seeded(day, "blitz")
     pairs = db.execute("""SELECT p.club_a, p.club_b FROM pair_counts p JOIN clubs a ON a.id=p.club_a JOIN clubs b ON b.id=p.club_b
