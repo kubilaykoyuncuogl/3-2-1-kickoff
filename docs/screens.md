@@ -6,10 +6,75 @@
 
 Portre kilitli. Masaüstü/web'de aynı düzen, sadece klavye yok.
 
-## 0. Ana menü / Lobi
-- Ana menü: **Çok oyunculu** (Oda kur · Koda katıl · sonra Rastgele eşleş), **Tek oyunculu** modlar (ayrı doküman, gelecek), Ayarlar.
-- Takma ad girişi (bir kez, cihazda saklanır).
-- Rakip gelince → Takım seçimi.
+## 0a. Ana menü
+Dört madde, başka bir şey yok:
+```
+┌──────────────────────────┐
+│ 3·2·1            (kubi) ●│  ← wordmark (tek eğik öğe) + profil chip
+│ KICKOFF                  │
+│ ┌──────────────────────┐ │
+│ │ ONLINE OYNA     1240 │ │  ← birincil, mor fill; sağda Elo'n
+│ └──────────────────────┘ │
+│ ┌──────────────────────┐ │
+│ │ TEK OYNA             │ │  ← amber fill; dokununca modlar açılır
+│ └──────────────────────┘ │
+│ ┌──────────────────────┐ │
+│ │ NASIL OYNANIR        │ │  ← çerçeveli
+│ └──────────────────────┘ │
+│ ┌──────────────────────┐ │
+│ │ AYARLAR              │ │  ← çerçeveli
+│ └──────────────────────┘ │
+└──────────────────────────┘
+```
+- Günlük kart menüden çıktı; Tek oyna sayfasına taşındı.
+- Yazılar düz (eğim yalnızca wordmark ve geri sayım rakamlarında). Kenarlıklar 1.5 px, net; gölge yalnızca dolgulu butonlarda, 0 2px 0 koyu ton (basılı his), bulanık gölge yok.
+
+## 0b. Online oyna
+```
+┌──────────────────────────┐
+│ ‹            ONLINE OYNA │
+│ ┌──────────────────────┐ │
+│ │ kubi            1240 │ │  ← Elo kartı: puan, son 5 maç (● ● ○ ● ●), sıra
+│ │ ●●○●●   #318         │ │
+│ └──────────────────────┘ │
+│ ┌──────────────────────┐ │
+│ │ ARA              ▸   │ │  ← birincil: Elo'ya göre otomatik eşleşme
+│ └──────────────────────┘ │
+│ ┌──────────┐┌──────────┐ │
+│ │ ODA KUR  ││ ODAYA    │ │  ← arkadaşla; Elo işlenmez (dostluk maçı)
+│ │          ││ KATIL    │ │
+│ └──────────┘└──────────┘ │
+│ Skor tablosu ▸           │
+└──────────────────────────┘
+```
+- **Elo** satranç gibi: başlangıç 1000, K = 32 (ilk 20 maçta 40). Yalnızca **Ara** ile eşleşen maçlar işlenir; oda maçları dostluk, Elo'ya dokunmaz.
+- **Ara:** ±100 Elo bandı, her 10 sn'de ±100 genişler, 60 sn'de bulamazsa "Oda kur" önerir. Arama ekranı: nabız + "Rakip aranıyor · 1140–1340" + İptal.
+- **Doğrulanmış (verified):** Ayarlar'dan hesap bağlayan oyuncu doğrulanmış sayılır ve **yalnızca doğrulanmışlarla eşleşir**. Doğrulanmış maçların Elo'su da tutulur ama tabloda doğrulanmış etiketi gösterilmez (tek tablo, tek Elo). Varsayım: Kubilay'ın cümlesi böyle okundu; alternatif okuma "tabloda yalnızca doğrulanmışlar görünür" ise tek satır değişiklik.
+- **Oda kur:** 4 haneli kod büyük, Kopyala · Paylaş; altta "Rakip bekleniyor…". **Odaya katıl:** 4 kutu, otomatik ilerler, yanlış kodda kutular sallanır.
+
+## 0c. Tek oyna
+- Üstte günlük kart (bugünün koşusu, skorun, sıran, oynayan sayısı).
+- İki büyük kart: **Klasik merdiven** (yaz) · **Blitz** (5 isim, dokun). Her kartta kendi en iyin ve bugünkü sıran.
+- Altta "Pratik (tablosuz)" anahtarı.
+
+## 0d. Nasıl oynanır
+Tek tur oynatan tur: gerçek ekranlarla, sahte rakip ("Koç").
+1. "İki takım seç" → Galatasaray ve Inter önceden seçili, Hazırım'a dokun.
+2. Geri sayım gerçek.
+3. Tur: ipucu balonu "İki takımda da oynamış birini yaz" → "Hak" yazınca öneriler, Çalhanoğlu'na dokun.
+4. Tur sonu: "+1. Yanlış dersen 5 sn beklersin. 3 puan maçı alır."
+5. "Hazırsın" → Online oyna'ya buton.
+Ayarlar'dan tekrar açılabilir.
+
+## 0e. Ayarlar
+| Bölüm | Alanlar |
+|---|---|
+| Profil | Takma ad (düzenle), avatar rengi (mor/amber tonları) |
+| Hesap | Hesap bağla (Google / Apple / e-posta) → "Doğrulanmış ✓" rozeti; bağlıysa Çıkış |
+| Ses | Ana ses (anahtar) → açıkken: Oyun müziği (kaydırıcı), Oyun sesleri (kaydırıcı), Titreşim (anahtar) |
+| Görünüm | Tema: Sistem / Açık / Koyu; Animasyonları azalt |
+| Dil | Türkçe, English (v1), oyuncu/takım adları her dilde aynı |
+| Diğer | Nasıl oynanır'ı tekrar aç, Gizlilik, Sürüm |
 
 ## 1. Takım seçimi
 ```

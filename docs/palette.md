@@ -15,7 +15,7 @@ Kaynak: `game/scripts/palette.gd`. Buradaki değerler oradakiyle aynı tutulur.
 | surface | #FFFFFF | kart |
 | fg | #1B1A21 | ana yazı |
 | muted | #5F5D6B | ikincil yazı |
-| line | #DCDBE3 | ayraç |
+| line | #C9C8D3 | ayraç, kenarlık (1.5 px, net) |
 | violet.fill / ink / soft | #5E4BC9 / #4A3AAE / #E9E5FA | A tarafı (fill üstü yazı: beyaz) |
 | amber.fill / ink / soft | #E9A23B / #9A6207 / #FBEFD8 | B tarafı (fill üstü yazı: fg) |
 | ok / ok.soft | #167A52 / #DCF3E8 | doğru |
@@ -28,7 +28,7 @@ Kaynak: `game/scripts/palette.gd`. Buradaki değerler oradakiyle aynı tutulur.
 | surface | #1C1B23 | |
 | fg | #ECEBF2 | |
 | muted | #A09EAD | |
-| line | #2E2D38 | |
+| line | #3A3946 | |
 | violet.fill / ink / soft | #8C7CF0 / #B3A7FF / #272443 | fill üstü yazı: bg |
 | amber.fill / ink / soft | #F0B45A / #F4C77A / #3A2D14 | fill üstü yazı: bg |
 | ok / ok.soft | #4FCF93 / #163528 | |
@@ -46,3 +46,8 @@ Tek aile: **Sora** (Google Fonts, OFL). İlham ITC Eras (France 98 logosu); lisa
 - Display (başlık, geri sayım, sayaç, skor): Sora 800, 3° sağa eğim → `game/assets/fonts/sora_display.tres`
 - Body (gövde, buton, autocomplete listesi): Sora 500, düz → `game/assets/fonts/sora_body.tres`
 - Rakamlarda `tabular_nums` (Sora'da `tnum` özelliği var; Godot'ta FontVariation `opentype_features` ile aç).
+
+## Kenarlık / gölge / eğim (karar: 2026-10-05)
+- Kenarlık 1.5 px, `line` tonu koyulaştırıldı (light #C9C8D3, dark #3A3946) ki net görünsün. Önemli kutular (input, çerçeveli buton) `line_strong` (light #9F9DAD, dark #5B5A6B).
+- Gölge yalnızca dolgulu butonlarda: sert `0 2px 0` koyu ton (mor #3E3193 / amber #B57618; dark'ta #6657C4 / #C58C34). Bulanık gölge yok.
+- Eğim (3°) yalnızca wordmark ve geri sayım rakamlarında. Diğer tüm yazılar düz. `sora_display.tres` sadece bu ikisinde kullanılır; başlık ve sayaçlar için `sora_body.tres` 700/800 ağırlık düz.
