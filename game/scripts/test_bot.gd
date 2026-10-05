@@ -1,0 +1,57 @@
+extends Node
+## Uçtan uca test botu: `godot --headless --path game -- --bot ali --team galatasaray --guess sneijder`
+## Ara ile eşleşir, takım seçer, hazır der, turda tahmin eder. Durumları stdout'a yazar.
+var nick := "bot"; var team_q := "galatasaray"; var guess_q := "sneijder"
+var picked := false; var guessed := false; var single_mode := ""
+
+func _ready() -> void:
+	var args := OS.get_cmdline_user_args()
+	print("[bot] start args=", args, " url=", Net.server_url)
+	nick = _arg(args, "--bot", nick); team_q = _arg(args, "--team", team_q); guess_q = _arg(args, "--guess", guess_q); single_mode = _arg(args, "--single", "")
+	App.nickname = nick; App.device_id = "dev-" + nick
+	Game.room_changed.connect(_on_room); Game.suggestions.connect(_on_sugg); Game.error.connect(func(m): print("[%s] ERR %s" % [nick, m]))
+	Game.single_changed.connect(_on_single)
+	Net.connected.connect(func():
+		print("[%s] connected" % nick); Game.c_hello()
+		if single_mode != "": Game.c_single_start(single_mode, true)
+		else: Game.c_find_match())
+	Net.connect_failed.connect(func(): print("[%s] connect failed" % nick))
+	Net.connect_to_server()
+
+func _arg(args: PackedStringArray, key: String, def: String) -> String:
+	var i := args.find(key)
+	return args[i + 1] if i >= 0 and i + 1 < args.size() else def
+
+func _on_room(d: Dictionary) -> void:
+	var st: int = int(d.get("state", -1))
+	print("[%s] state=%s code=%s phase=%s last=%s scores=%s" % [nick, st, d.get("code", ""), d.get("phase_ms", ""), d.get("last", {}), d.get("players", []).map(func(p): return "%s:%s" % [p.nick, p.score])])
+	if st == Game.State.PICK_TEAMS and not picked and Game.me().get("team", 0) == 0:
+		Game.c_suggest("team", team_q)
+	elif st == Game.State.PICK_TEAMS and Game.me().get("team", 0) != 0 and not Game.me().get("ready", false):
+		Game.c_ready()
+	elif st == Game.State.ROUND and not guessed:
+		guessed = true; Game.c_suggest("player", guess_q)
+	elif st == Game.State.ROUND_END:
+		picked = false; guessed = false
+		print("[%s] answers=%s total=%s" % [nick, d.get("answers", []), d.get("answers_total", 0)])
+	elif st == Game.State.GAME_OVER:
+		print("[%s] GAME OVER winner=%s elo_delta=%s" % [nick, d.get("winner"), Game.me().get("elo_delta")])
+		get_tree().quit()
+
+func _on_sugg(kind: String, list: Array) -> void:
+	if list.is_empty(): print("[%s] no suggestions for %s" % [nick, kind]); return
+	print("[%s] sugg %s: %s" % [nick, kind, list.slice(0, 3).map(func(x): return x.name)])
+	if kind == "team" and not picked:
+		for it in list:
+			if not it.get("used", false):
+				picked = true; Game.c_pick_team(int(it.id), it.name); return
+		print("[%s] all suggested teams used" % nick)
+	elif kind == "player":
+		Game.c_guess(int(list[0].id), list[0].name)
+
+func _on_single(d: Dictionary) -> void:
+	print("[%s] single idx=%s lives=%s score=%s over=%s item=%s×%s opts=%s last=%s" % [nick, d.idx, d.lives, d.score, d.over, d.item.a_name, d.item.b_name, d.item.get("options", []), d.get("last", {})])
+	if d.over:
+		print("[%s] board=%s rank=%s" % [nick, d.board, d.rank]); get_tree().quit(); return
+	if d.mode == "blitz": Game.c_single_answer(int(d.idx) % 5)   # rastgele cevap: bazen doğru, çoğu kez yanlış → koşu biter
+	else: Game.c_suggest("player", guess_q)

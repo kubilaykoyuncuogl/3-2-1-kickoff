@@ -15,6 +15,10 @@ run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 
 [autoload]
+App="*res://scripts/app.gd"
+Net="*res://scripts/net.gd"
+IndexAPI="*res://scripts/index_api.gd"
+Game="*res://scripts/game.gd"
 
 Net="*res://scripts/net.gd"
 Game="*res://scripts/game.gd"
@@ -30,6 +34,7 @@ window/handheld/orientation=1
 [export]
 
 config/icon="res://icon.svg"
+run/flush_stdout_on_print=true
 
 [rendering]
 

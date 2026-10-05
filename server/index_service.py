@@ -81,7 +81,7 @@ def ladder(day: str, steps: int = 30):
     return {"day": day, "steps": out}
 
 @app.get("/blitz/pack")
-def blitz_pack(day: str, n: int = 60):
+def blitz_pack(day: str, n: int = 60, reveal: int = 0):
     """5 isim: 2 yalnız A, 2 yalnız B, 1 ikisi. Çeldiriciler ≥3 kulüplü, ünlü oyunculardan; cevap hash olarak gider."""
     rng = _seeded(day, "blitz")
     pairs = db.execute("""SELECT p.club_a, p.club_b FROM pair_counts p JOIN clubs a ON a.id=p.club_a JOIN clubs b ON b.id=p.club_b
@@ -98,11 +98,12 @@ def blitz_pack(day: str, n: int = 60):
         ans = rng.choice(both); opts = [ans] + rng.sample(oa, 2) + rng.sample(ob, 2); rng.shuffle(opts)
         qid = f"{day}-{len(qs)}"
         qs.append({"id": qid, "a": ca, "b": cb, "options": [o[1] for o in opts],
-                   "answer_hash": hashlib.sha256(f"{qid}:{ans[0]}".encode()).hexdigest(), "_answer_id": ans[0]})
+                   "answer_hash": hashlib.sha256(f"{qid}:{ans[0]}".encode()).hexdigest(), "_answer_id": ans[0], "_answer": opts.index(ans)})
         if len(qs) >= n: break
     names = dict(db.execute("SELECT id, name FROM clubs").fetchall())
     for q in qs: q["a_name"], q["b_name"] = names[q["a"]], names[q["b"]]
-    return {"day": day, "questions": [{k: v for k, v in q.items() if not k.startswith("_")} for q in qs]}
+    # reveal=1 yalnızca oyun sunucusu için (localhost); cevap indeksi istemciye asla iletilmez
+    return {"day": day, "questions": [{k: v for k, v in q.items() if not k.startswith("_") or (reveal and k == "_answer")} for q in qs]}
 
 @app.get("/player/{player_id}/career")
 def career(player_id: int):
