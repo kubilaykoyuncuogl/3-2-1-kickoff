@@ -12,7 +12,7 @@ LOBBY  → (2 oyuncu) → PICK_TEAMS → (ikisi ready) → COUNTDOWN(3s)
 - 15 sn dolarsa puan yok, mümkün cevaplar gösterilir, yeni tur.
 
 ## Takım seçimi
-- İki oyuncu da birer takım seçer (YouTube'daki gibi "aynı anda iki takım söyleme"nin karşılığı). İkisi aynı takımı seçerse sunucu ikinciyi reddeder.
+- İki oyuncu da birer takım seçer. İkisi aynı takımı seçerse sunucu ikinciyi reddeder.
 - Opsiyon: "rastgele takım" butonu; kesişimi boş olan takım çiftlerini sunucu engeller (en az 1 ortak oyuncu şartı).
 
 ## Açık sorular

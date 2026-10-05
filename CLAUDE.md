@@ -1,6 +1,6 @@
 # 321-kickoff — 3-2-1 Kickoff (Godot 4)
 
-Kubilay'ın kişisel projesi. YouTube'daki 3-2-1 oyununun (Erman Yaşar & Hasan Arda Kaşıkçı) 2 kişilik online versiyonu. Hedef: **Android + iOS (telefon ve tablet) + Web**. PC hedef değil; Linux build yalnızca headless sunucu ve yerel test için. iOS build için Mac + Xcode gerekir (bu makineden çıkmaz). Çalışma adı "3-2-1 Kickoff" (2026-10-05). Repo: GitHub private `kubilaykoyuncuogl/3-2-1-kickoff`.
+Kubilay'ın kişisel projesi. **3-2-1**: iki oyuncu birer kulüp söyler, 3'ten geri sayılır, 15 saniyede iki kulüpte de oynamış futbolcuyu bulan puan alır. 2 kişilik online versiyon. Hedef: **Android + iOS (telefon ve tablet) + Web**. PC hedef değil; Linux build yalnızca headless sunucu ve yerel test için. iOS build için Mac + Xcode gerekir (bu makineden çıkmaz).
 
 ## Kurallar (ürün)
 - 2 oyuncu bağlanır (oda kodu ile). Her biri bir takım yazar; yazdıkça autocomplete listesi gelir.

@@ -1,6 +1,6 @@
 # 3-2-1 Kickoff
 
-Erman Yaşar & Hasan Arda Kaşıkçı'nın YouTube'da oynadığı **3-2-1** oyununun 2 kişilik online versiyonu. Godot 4; Android + iOS + Web (mobil, tablet, tarayıcı).
+İki oyuncu birer kulüp seçer, 3'ten geri sayılır, 15 saniyede iki kulüpte de oynamış futbolcuyu bulan puan alır. 2 kişilik online oyun. Godot 4; Android + iOS + Web (mobil, tablet, tarayıcı).
 
 ## Oyun kuralı
 1. İki oyuncu bağlanır, her biri bir takım seçer (yazdıkça öneri listesi).
