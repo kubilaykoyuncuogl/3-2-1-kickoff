@@ -1,72 +1,61 @@
+"""Önizleme sayfası: docs/logo-preview.html (ikinci deneme üstte, ilk XOR denemesi altta)."""
+import pathlib
 from logo import layout
 from logo_svg import svg, VARIANTS
-L = {n: layout(**kw) for n, kw in VARIANTS.items()}
+from logo2 import svg2, SCHEMES, LAYOUTS, VIO_L, AMB_L, VIO_D, AMB_D, BLACK, WHITE, PAPER_L, PAPER_D
+L1 = {n: layout(**kw) for n, kw in VARIANTS.items()}; L2 = {n: layout(**kw) for n, kw in LAYOUTS.items()}
 n = 0
-def s(name, ink, square=False, pad=40):
-    global n; n += 1
-    return svg(L[name], ink=ink, uid=f"m{n}", square=square, pad=pad)
-INK_L, INK_D, VIO, VIO_D, AMB, AMB_D = "#1B1A21", "#ECEBF2", "#5E4BC9", "#B3A7FF", "#9A6207", "#F0B45A"
-names = {"figur": ("Figür", "Siluet bloktan büyük. Baş harflerin üstüne taşar, eller iki yandan dışarı çıkar. En okunaklı figür."),
-         "kompakt": ("Kompakt", "Siluet blokla aynı hizada. Daha derli toplu, küçük boyutta daha sağlam."),
-         "blok": ("Blok", "Satırlar yapışık, siluet tamamen içeride. En sıkı kütle, uygulama ikonuna en yakın.")}
-cards = ""
-for key, (title, desc) in names.items():
-    cards += f'''<article class="v"><div class="pair"><div class="sw light">{s(key, INK_L)}</div><div class="sw dark">{s(key, INK_D)}</div></div>
-<h3>{title}</h3><p>{desc}</p></article>'''
+def x(name, ink, **kw):
+    global n; n += 1; return svg(L1[name], ink=ink, uid=f"m{n}", **kw)
+def card(lname, sname, layered, cls=""):
+    c1, c2, fill, stroke, bg = SCHEMES[sname]
+    return f'<div class="sw {cls}" style="background:{bg}">{svg2(L2[lname], c1, c2, fill, stroke, layered=layered)}</div>'
+names = {"acik-siyah": "Açık zemin · siyah siluet, beyaz kontur", "acik-beyaz": "Açık zemin · beyaz siluet, siyah kontur",
+         "koyu-beyaz": "Koyu zemin · beyaz siluet, koyu kontur", "koyu-siyah": "Koyu zemin · siyah siluet, beyaz kontur"}
+grid = lambda lname, layered: "".join(f'<figure>{card(lname, s, layered)}<figcaption>{t}</figcaption></figure>' for s, t in names.items())
+icon = lambda size, sname, bg: f'<div class="icon"><div style="width:{size}px;height:{size}px;background:{bg}">{svg2(L2["kompakt"], *SCHEMES[sname][:4], layered=True, square=True, pad=70)}</div>{size} px</div>'
 html = f'''<title>MR GUESS Logo</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&display=swap">
 <style>
-/* Layout: hero logo, then three layout variants each on light+dark, then color and icon trials */
-:root{{--bg:#F2F2F5;--surface:#FFFFFF;--fg:#1B1A21;--muted:#5F5D6B;--line:#C9C8D3;--paper-l:#F2F2F5;--paper-d:#131218;--font:"Sora",system-ui,sans-serif}}
+/* Layout: hero, sonra dört renk şeması (katmanlı), siluet üstte karşılaştırması, ikon, ilk deneme */
+:root{{--bg:#F2F2F5;--surface:#FFFFFF;--fg:#1B1A21;--muted:#5F5D6B;--line:#C9C8D3;--font:"Sora",system-ui,sans-serif}}
 @media (prefers-color-scheme:dark){{:root:not([data-theme="light"]){{--bg:#131218;--surface:#1C1B23;--fg:#ECEBF2;--muted:#A09EAD;--line:#3A3946;color-scheme:dark}}}}
 :root[data-theme="dark"]{{--bg:#131218;--surface:#1C1B23;--fg:#ECEBF2;--muted:#A09EAD;--line:#3A3946;color-scheme:dark}}
 *{{box-sizing:border-box}}
 body{{background:var(--bg);color:var(--fg);font-family:var(--font);padding-inline:16px;padding-block:28px 56px;line-height:1.5;font-size:14px}}
 main{{max-width:1000px;margin:0 auto;display:grid;gap:36px}}
 h1{{font-size:clamp(24px,5vw,34px);font-weight:800;margin:0;letter-spacing:-.02em;text-wrap:balance}}
-h2{{font-size:18px;font-weight:700;margin:0}} h3{{font-size:15px;font-weight:700;margin:0}}
+h2{{font-size:18px;font-weight:700;margin:0}}
 p{{margin:0;color:var(--muted);max-width:62ch}}
 .eyebrow{{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}}
 section{{display:grid;gap:14px}}
-.hero{{background:var(--paper-l);border:1.5px solid var(--line);border-radius:20px;padding:clamp(20px,6vw,56px);display:grid;place-items:center}}
-.hero svg{{width:min(100%,520px);height:auto;display:block}}
-.grid{{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}}
-.v{{display:grid;gap:8px;min-width:0;align-content:start}}
-.pair{{display:grid;gap:8px}}
+.grid{{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}}
+figure{{margin:0;display:grid;gap:6px;min-width:0}} figcaption{{font-size:12px;color:var(--muted)}}
 .sw{{border-radius:14px;padding:22px;display:grid;place-items:center;border:1.5px solid var(--line)}}
-.sw svg{{width:100%;max-width:300px;height:auto;display:block}}
-.light{{background:var(--paper-l)}} .dark{{background:var(--paper-d)}} .vio{{background:#E9E5FA}} .amb{{background:#3A2D14}} .solidv{{background:#5E4BC9}} .solida{{background:#E9A23B}}
+.sw svg{{width:100%;max-width:420px;height:auto;display:block}}
+.hero .sw{{padding:clamp(20px,6vw,48px)}} .hero .sw svg{{max-width:560px}}
 .icons{{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end}}
 .icon{{display:grid;gap:6px;justify-items:center;font-size:11px;color:var(--muted)}}
-.icon div{{border-radius:22%;display:grid;place-items:center;overflow:hidden}}
+.icon div{{border-radius:22%;display:grid;place-items:center;overflow:hidden;border:1.5px solid var(--line)}}
 .icon svg{{width:100%;height:100%;display:block}}
 ul{{margin:0;padding-left:18px;color:var(--muted);display:grid;gap:6px;max-width:62ch}} ul b{{color:var(--fg);font-weight:600}}
 </style>
 <main>
 <header style="display:grid;gap:10px">
-  <span class="eyebrow">Logo denemesi · 2026-10-06</span>
+  <span class="eyebrow">Logo · ikinci deneme · 2026-10-06</span>
   <h1>MR GUESS</h1>
-  <p>Üstte MR, altta GUESS, ikisi aynı genişlikte ve bitişik. Harfler Sora ExtraBold. Kolları açık siluet bloğun üstünden geçiyor; harfle kesiştiği yerde renk ters dönüyor. Tek renk, şeffaf zeminli SVG.</p>
+  <p>MR mor, GUESS amber. Siluet tek renk ve dolu, etrafında kontur çizgisi var. Figür MR'nin önünde, GUESS'in arkasında duruyor; böylece kelime tam okunuyor ve derinlik oluşuyor.</p>
 </header>
-<section><div class="hero">{s("figur", INK_L)}</div></section>
-<section><h2>Üç yerleşim</h2><div class="grid">{cards}</div></section>
-<section><h2>Renk denemeleri</h2>
-<div class="grid">
-<div class="sw vio">{s("figur", VIO)}</div><div class="sw amb">{s("figur", AMB_D)}</div>
-<div class="sw solidv">{s("figur", "#FFFFFF")}</div><div class="sw solida">{s("figur", INK_L)}</div>
-</div></section>
-<section><h2>Uygulama ikonu</h2>
-<div class="icons">
-<div class="icon"><div style="width:144px;height:144px;background:#5E4BC9">{s("blok", "#FFFFFF", square=True, pad=110)}</div>144 px</div>
-<div class="icon"><div style="width:96px;height:96px;background:#1B1A21">{s("blok", "#F0B45A", square=True, pad=110)}</div>96 px</div>
-<div class="icon"><div style="width:64px;height:64px;background:#F2F2F5;border:1.5px solid var(--line)">{s("blok", INK_L, square=True, pad=110)}</div>64 px</div>
-<div class="icon"><div style="width:40px;height:40px;background:#5E4BC9">{s("blok", "#FFFFFF", square=True, pad=110)}</div>40 px</div>
-</div>
-<p>40 pikselde siluet artık okunmuyor, yalnızca harf kütlesi kalıyor. İkon için ya yalnızca "MR" ve siluet, ya da sadece siluet daha iyi çalışır.</p></section>
+<section class="hero">{card("figur", "acik-siyah", True)}</section>
+<section><h2>Dört renk şeması</h2><p>Siluet siyah-beyaz ikilisinde, yazı mor-amber ikilisinde. Koyu zeminde mor ve amber, oyunun koyu tema tonlarına geçiyor.</p><div class="grid">{grid("figur", True)}</div></section>
+<section><h2>Karşılaştırma: siluet en üstte</h2><p>Siluet iki satırın da önünde olunca GUESS'in U ve E harfleri kapanıyor, kelime okunmuyor. Bu yüzden katmanlı hali öneriyorum.</p><div class="grid">{card("figur", "acik-siyah", False)}{card("figur", "koyu-beyaz", False)}</div></section>
+<section><h2>Uygulama ikonu</h2><div class="icons">{icon(144, "acik-siyah", PAPER_L)}{icon(96, "koyu-beyaz", PAPER_D)}{icon(64, "acik-siyah", PAPER_L)}{icon(40, "koyu-beyaz", PAPER_D)}</div>
+<p>İki satır ve figür 64 pikselin altında sıkışıyor. Küçük ikon için ayrı bir işaret gerekir: yalnızca siluet ya da "MR" ve siluet.</p></section>
+<section><h2>İlk deneme: ters renk</h2><div class="grid"><div class="sw" style="background:{PAPER_L}">{x("figur", BLACK)}</div><div class="sw" style="background:{PAPER_D}">{x("figur", "#ECEBF2")}</div></div></section>
 <section><h2>Notlar</h2><ul>
-<li><b>Kaynak:</b> siluet indirdiğin fotoğraftan çıkarıldı (renk ayrımı, delik doldurma, yumuşatma, vektör izleme). Forma yazısı ve numara silüette yok.</li>
-<li><b>Hak durumu:</b> fotoğraf bir basın fotoğrafı ve poz tanınan bir oyuncuya ait. Mağazaya çıkacak bir logoda bu, fotoğrafın telifi ve kişilik hakkı açısından risk taşır. Yayından önce aynı duruşu sıfırdan çizdirmek ya da pozu değiştirmek gerekir.</li>
-<li><b>Dosyalar:</b> her yerleşim ayrı SVG, harfler kontura çevrili, font gerekmez.</li>
+<li><b>Kaynak:</b> siluet indirdiğin fotoğraftan çıkarıldı. Forma yazısı ve numara silüette yok.</li>
+<li><b>Hak durumu:</b> kaynak bir basın fotoğrafı ve poz tanınan bir oyuncuya ait. Mağazaya çıkacak logoda risk taşır; yayından önce aynı duruş sıfırdan çizilmeli ya da poz değişmeli.</li>
+<li><b>Dosyalar:</b> her şema ayrı SVG, harfler kontura çevrili, font gerekmez.</li>
 </ul></section>
 </main>'''
-open("mrguess-logo.html", "w").write(html); print(len(html))
+out = pathlib.Path(__file__).resolve().parents[2] / "docs" / "logo-preview.html"; out.write_text(html); print(len(html))
