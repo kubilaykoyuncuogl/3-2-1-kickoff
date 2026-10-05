@@ -21,6 +21,22 @@ func _ready() -> void:
 	Game.error.connect(_on_error)
 	body.add_child(UI.nav("Klasik merdiven" if mode == "ladder" else "Blitz", _quit))
 	body.add_child(UI.label("Yükleniyor…", 14, 600, "muted"))
+	_loading_watch()
+
+func _loading_watch() -> void:
+	await get_tree().create_timer(8.0).timeout
+	if not is_inside_tree() or last_idx >= 0 or over_shown: return
+	for ch in body.get_children(): ch.queue_free()
+	body.add_child(UI.nav("Klasik merdiven" if mode == "ladder" else "Blitz", _quit))
+	body.add_child(UI.toast("Sunucudan cevap gelmedi" if Net.is_connected_to_server() else "Sunucuya bağlanılamadı", "no"))
+	var retry := UI.button("Tekrar dene", "violet")
+	retry.pressed.connect(func():
+		for ch in body.get_children(): ch.queue_free()
+		body.add_child(UI.nav("Klasik merdiven" if mode == "ladder" else "Blitz", _quit))
+		body.add_child(UI.label("Yükleniyor…", 14, 600, "muted"))
+		if not Net.is_connected_to_server(): Net.connect_to_server(); await Net.connected; Game.c_hello()
+		Game.c_single_start(mode); _loading_watch())
+	body.add_child(retry)
 
 func _exit_tree() -> void:
 	if Game.single_changed.is_connected(_on_state): Game.single_changed.disconnect(_on_state)
