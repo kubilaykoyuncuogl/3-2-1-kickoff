@@ -23,10 +23,24 @@ const SCOPE_LABELS := ["Tümü", "Üst ligler", "5 büyük lig"]
 var _root: Control
 var _stack: Array[Control] = []
 
+const BASE_W := 400.0
+const MAX_SCALE := 1.5
+
 func _ready() -> void:
 	load_settings()
 	ensure_device_id()
 	apply_theme()
+	if not Net.is_server:
+		get_tree().root.size_changed.connect(_fit_scale)
+		_fit_scale()
+
+## Ölçek yalnızca genişlikten: telefon = 1.0, masaüstü en çok 1.5. Yükseklik (klavye açılınca kısalır) ölçeği etkilemez.
+func _fit_scale() -> void:
+	var root := get_tree().root
+	var w := float(root.size.x); var h := float(root.size.y)
+	if w <= 0 or h <= 0: return
+	var scale := clampf(w / BASE_W, 1.0, MAX_SCALE)
+	root.content_scale_size = Vector2i(int(round(w / scale)), int(round(h / scale)))
 
 # ---------- ayarlar ----------
 func load_settings() -> void:
