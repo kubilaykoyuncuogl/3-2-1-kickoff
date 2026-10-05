@@ -7,9 +7,11 @@ func _ready() -> void:
 	var top := UI.hbox()
 	var wm := UI.wordmark(); wm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(wm)
-	var who := UI.chip(App.nickname if App.nickname != "" else "misafir", "line")
-	who.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	top.add_child(who)
+	var right := UI.vbox(6); right.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	var beta := UI.chip("BETA", "amber"); beta.size_flags_horizontal = Control.SIZE_SHRINK_END
+	var who := UI.chip(App.nickname if App.nickname != "" else "misafir", "line"); who.size_flags_horizontal = Control.SIZE_SHRINK_END
+	right.add_child(beta); right.add_child(who)
+	top.add_child(right)
 	v.add_child(top)
 	v.add_child(UI.spacer(16))
 	var online := UI.button("Online oyna", "violet", str(App.elo))
@@ -24,7 +26,7 @@ func _ready() -> void:
 	var elo_label: Label = online.get_child(0)
 	Game.profile_changed.connect(func(_d): if is_instance_valid(elo_label): elo_label.text = str(App.elo))
 	v.add_child(UI.spacer())
-	var ver := UI.label("v0.1", 11, 600, "muted"); ver.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var ver := UI.label("v0.1 beta · hatalar olabilir, bildir", 11, 600, "muted"); ver.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(ver)
 	if App.nickname == "":
 		call_deferred("_ask_nickname")

@@ -72,7 +72,7 @@ func _render_menu() -> void:
 	var e := UI.label(str(App.elo), 32, 800); h.add_child(n); h.add_child(e); cv.add_child(h)
 	cv.add_child(UI.label("Elo · satranç gibi, yalnızca Ara maçları işler", 11, 500, "muted"))
 	card.add_child(cv); body.add_child(card)
-	body.add_child(UI.scope_picker(func(_v): pass))
+	body.add_child(UI.scope_picker(func(_v): _render()))
 	var ara := UI.button("Ara", "violet", ">")
 	ara.disabled = not Net.is_connected_to_server()
 	ara.pressed.connect(func(): _since = Time.get_ticks_msec(); Game.c_find_match())
