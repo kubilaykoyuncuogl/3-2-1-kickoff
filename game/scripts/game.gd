@@ -16,7 +16,7 @@ const ELO_K_NEW := 40
 
 # ---------- istemci tarafı ----------
 signal room_changed(d: Dictionary)
-signal suggestions(kind: String, list: Array)
+signal suggestions(kind: String, q: String, list: Array)
 signal single_changed(d: Dictionary)
 signal error(msg: String)
 signal profile_changed(d: Dictionary)
@@ -151,7 +151,7 @@ func guess(player_id: int, name: String) -> void:
 func suggest(kind: String, q: String) -> void:
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
-	if q.length() < 2 or not _allow(pid, 6, 1000): return
+	if q.length() < 2 or not _allow(pid, 12, 1000): return
 	var list: Array
 	if kind == "team": list = await IndexAPI.suggest_teams(q)
 	else: list = await IndexAPI.suggest_players(q)
@@ -235,7 +235,7 @@ func room_state(d: Dictionary) -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func suggest_result(kind: String, q: String, list: Array) -> void:
-	suggestions.emit(kind, list)
+	suggestions.emit(kind, q, list)
 
 @rpc("authority", "call_remote", "reliable")
 func single_state(d: Dictionary) -> void:

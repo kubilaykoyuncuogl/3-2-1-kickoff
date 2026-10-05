@@ -40,7 +40,7 @@ func _on_room(d: Dictionary) -> void:
 		print("[%s] GAME OVER winner=%s elo_delta=%s" % [nick, d.get("winner"), Game.me().get("elo_delta")])
 		get_tree().quit()
 
-func _on_sugg(kind: String, list: Array) -> void:
+func _on_sugg(kind: String, _q: String, list: Array) -> void:
 	if list.is_empty(): print("[%s] no suggestions for %s" % [nick, kind]); return
 	print("[%s] sugg %s: %s" % [nick, kind, list.slice(0, 3).map(func(x): return x.name)])
 	if kind == "team" and not picked:

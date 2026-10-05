@@ -8,6 +8,7 @@ var input: LineEdit
 var list: VBoxContainer
 var locked := false
 var _last_q := ""
+var _debounce: Timer
 
 func _init(k: String, placeholder: String) -> void:
 	kind = k
@@ -30,6 +31,9 @@ func _init(k: String, placeholder: String) -> void:
 
 func _ready() -> void:
 	Game.suggestions.connect(_on_suggestions)
+	_debounce = Timer.new(); _debounce.one_shot = true; _debounce.wait_time = 0.12
+	_debounce.timeout.connect(func(): if _last_q.length() >= 2 and not locked: Game.c_suggest(kind, _last_q))
+	add_child(_debounce)
 
 func focus() -> void:
 	input.grab_focus()
@@ -54,10 +58,11 @@ func _on_text(t: String) -> void:
 		for ch in list.get_children(): ch.queue_free()
 		return
 	_last_q = q
-	Game.c_suggest(kind, q)
+	_debounce.start()   # yazma bitince tek istek; sıradaki tuşlar isteği erteler
 
-func _on_suggestions(k: String, items: Array) -> void:
+func _on_suggestions(k: String, q: String, items: Array) -> void:
 	if k != kind or not is_inside_tree(): return
+	if q != _last_q: return   # eski cevap, yok say
 	for ch in list.get_children(): ch.queue_free()
 	for it in items.slice(0, 6):
 		var b := Button.new()
