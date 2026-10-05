@@ -177,7 +177,7 @@ const SCOPE_INFO := {
 static func scope_button(scope: String, selected: bool, on_press: Callable, compact := false) -> Button:
 	var info: Array = SCOPE_INFO[scope]
 	var b := Button.new()
-	b.custom_minimum_size.y = 56 if compact else 84
+	b.custom_minimum_size.y = 72 if compact else 84
 	b.add_theme_stylebox_override("normal", box("violet_soft" if selected else "surface", "violet_fill" if selected else "line_strong", 14 if compact else 16))
 	b.add_theme_stylebox_override("hover", box("violet_soft", "violet_fill", 14 if compact else 16))
 	b.add_theme_stylebox_override("pressed", box("violet_soft", "violet_fill", 14 if compact else 16))
@@ -191,8 +191,7 @@ static func scope_button(scope: String, selected: bool, on_press: Callable, comp
 	h.add_child(ic)
 	var tv := vbox(2); tv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; tv.alignment = BoxContainer.ALIGNMENT_CENTER
 	tv.add_child(label(info[0], 16 if compact else 18, 800, ink))
-	if not compact:
-		var s := label(info[1], 12, 500, "violet_ink" if selected else "muted"); s.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; tv.add_child(s)
+	var s := label(info[1], 12, 500, "violet_ink" if selected else "muted"); s.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; tv.add_child(s)
 	h.add_child(tv)
 	var tail := label("seçili" if (selected and compact) else (">" if not compact else ""), 13 if compact else 22, 700, "violet_ink" if selected else "muted")
 	tail.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(tail)
