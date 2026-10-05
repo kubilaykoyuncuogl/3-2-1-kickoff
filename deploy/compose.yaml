@@ -1,0 +1,13 @@
+# Sunucuda: docker compose -f deploy/compose.yaml up -d --build   (bağlam repo kökü)
+services:
+  kickoff:
+    build: { context: .., dockerfile: deploy/Dockerfile }
+    image: kickoff:latest
+    restart: unless-stopped
+    env_file: ../.env            # KICKOFF_INDEX_KEY, KICKOFF_DAILY_SALT
+    ports: ["127.0.0.1:8080:8080"]
+    volumes:
+      - ../data/index/index.enc:/app/data/index/index.enc:ro
+      - kickoff-state:/app/.local   # Godot user:// (accounts.json)
+volumes:
+  kickoff-state:
