@@ -4,8 +4,7 @@ extends Control
 func _ready() -> void:
 	var v := UI.page(); add_child(v)
 	v.add_child(UI.nav("Tek oyna", App.pop))
-	v.add_child(UI.label("Her koşu farklı. Puanın ve en iyin cihazında kalır.", 13, 500, "muted"))
-	v.add_child(UI.scope_picker(func(_v): pass))
+	v.add_child(UI.label("Önce mod, sonra kulüp kapsamı. Her koşu farklı; en iyin cihazında kalır.", 13, 500, "muted"))
 	v.add_child(_mode_card("Klasik merdiven", "İki kulüp, oyuncuyu yaz · 3 can · basamak 20 sn", "ladder"))
 	v.add_child(_mode_card("Blitz", "5 isim, doğruya dokun · tek can · hızlanır", "blitz"))
 	v.add_child(UI.spacer())
@@ -28,7 +27,6 @@ func _mode_card(title: String, sub: String, mode: String) -> Control:
 	for ch in h.get_children(): ch.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(v)
 	b.pressed.connect(func():
-		if not Net.is_connected_to_server(): Game.error.emit("Sunucuya bağlanılıyor…"); Net.connect_to_server(); return
-		var play = load("res://scripts/screens/single_play.gd").new(); play.mode = mode
-		App.push(play); Game.c_single_start(mode))
+		var sc = load("res://scripts/screens/single_scope.gd").new(); sc.mode = mode
+		App.push(sc))
 	return b

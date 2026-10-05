@@ -65,8 +65,9 @@ def pick_pair(rng, sc: str, ta: int, tb: int, used: set, min_n: int, max_n: int 
     rng.shuffle(cand_a)
     tb_set = set(tiers[sc][tb])
     for a in cand_a[:40]:
-        rows = db.execute("""SELECT CASE WHEN club_a=? THEN club_b ELSE club_a END AS other, n FROM pair_counts
-                             WHERE (club_a=? OR club_b=?) AND n BETWEEN ? AND ?""", (a, a, a, min_n, max_n)).fetchall()
+        rows = db.execute("""SELECT club_b AS other, n FROM pair_counts WHERE club_a=? AND n BETWEEN ? AND ?
+                             UNION ALL
+                             SELECT club_a, n FROM pair_counts WHERE club_b=? AND n BETWEEN ? AND ?""", (a, min_n, max_n, a, min_n, max_n)).fetchall()
         opts = [(o, n) for o, n in rows if o in tb_set and o not in used and o != a]
         if opts:
             b, n = rng.choice(opts)
@@ -78,6 +79,7 @@ def _load():
     global db
     db = sqlite3.connect(":memory:", check_same_thread=False)
     db.deserialize(decrypt_bytes(INDEX, key_from_env()))   # diske düz kopya yazılmaz
+    db.execute("CREATE INDEX IF NOT EXISTS ix_pair_b ON pair_counts(club_b)")   # bellekte; club_b aramaları tam tarama yapmasın
     db.execute("PRAGMA query_only=1")
     _build_scopes()
 

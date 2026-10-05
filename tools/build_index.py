@@ -168,6 +168,7 @@ def main():
     CREATE INDEX ix_pc_club ON player_clubs(club_id);
     CREATE INDEX ix_st_player ON stints(player_id, seq);
     CREATE INDEX ix_st_club ON stints(club_id);
+    CREATE INDEX ix_pair_b ON pair_counts(club_b);
     UPDATE players SET fame = (mv_max/1000000.0) + n_clubs*0.5;
     UPDATE clubs SET fame = COALESCE((SELECT SUM(p.mv_max)/1000000.0 + COUNT(*)*0.2 FROM player_clubs pc JOIN players p ON p.id=pc.player_id WHERE pc.club_id=clubs.id), 0);
     DELETE FROM clubs WHERE fame = 0;
