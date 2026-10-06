@@ -246,11 +246,11 @@ export function Kv({ k, v, kind = "violet" }: { k: string; v: string; kind?: "vi
 }
 
 // Yazı kutusu
-export function Input(props: TextInputProps & { big?: boolean; accent?: boolean }) {
+export const Input = React.forwardRef<TextInput, TextInputProps & { big?: boolean; accent?: boolean }>(function Input(props, ref) {
   const { c, s } = useTheme();
   const { big, accent = true, style, ...rest } = props;
   return (
-    <TextInput
+    <TextInput ref={ref}
       placeholderTextColor={c.muted} selectionColor={c.violet_fill} autoCorrect={false} autoCapitalize="none"
       style={[{
         backgroundColor: c.surface, borderRadius: s(big ? 14 : 12), borderWidth: BORDER, borderColor: accent ? c.violet_fill : c.line_strong,
@@ -260,7 +260,7 @@ export function Input(props: TextInputProps & { big?: boolean; accent?: boolean 
       {...rest}
     />
   );
-}
+});
 
 // Can göstergesi: dolu daireler kalan, boş daireler giden
 export function Lives({ n, total = 3 }: { n: number; total?: number }) {
