@@ -173,12 +173,12 @@
  "loading": "Yükleniyor…",
  "locked_fmt": "Yanlış · %d",
  "lost": "Kaybettin",
- "match.away_short": "Bağlantısı koptu, 10 sn bekleniyor…",
+ "match.away_short": "Bağlantısı koptu · %d",
  "match.gg": "İyi oyundu",
  "match.more": " … +%d oyuncu daha",
  "match.no_common": "Bu iki takımın ortak oyuncusu yok",
  "match.nobody": "Kimse bilemedi",
- "match.opp_away": "Rakibin bağlantısı koptu, 10 sn bekleniyor",
+ "match.opp_away": "Rakibin bağlantısı koptu, bekleniyor · %d",
  "match.opp_left": "Rakip ayrıldı",
  "match.opp_picked": "Takımını seçti",
  "match.opp_ready": "Hazır, seni bekliyor",
@@ -317,5 +317,6 @@
  "era.short.00": "00'lar",
  "era.short.10": "10'lar",
  "era.short.20": "20'ler",
- "match.back_to_pick": "Takım seçimine dönülüyor"
+ "match.back_to_pick": "Takım seçimine dönülüyor",
+ "match.returning": "Menüye dönülüyor · %d"
 }

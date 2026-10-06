@@ -173,12 +173,12 @@
  "loading": "Loading…",
  "locked_fmt": "Wrong · %d",
  "lost": "You lost",
- "match.away_short": "Disconnected, waiting 10 s…",
+ "match.away_short": "Disconnected · %d",
  "match.gg": "Good game",
  "match.more": " … +%d more",
  "match.no_common": "These two teams share no player",
  "match.nobody": "Nobody got it",
- "match.opp_away": "Opponent disconnected, waiting 10 s",
+ "match.opp_away": "Opponent disconnected, waiting · %d",
  "match.opp_left": "Opponent left",
  "match.opp_picked": "Picked a team",
  "match.opp_ready": "Ready, waiting for you",
@@ -317,5 +317,6 @@
  "era.short.00": "00s",
  "era.short.10": "10s",
  "era.short.20": "20s",
- "match.back_to_pick": "Back to team pick"
+ "match.back_to_pick": "Back to team pick",
+ "match.returning": "Back to menu · %d"
 }

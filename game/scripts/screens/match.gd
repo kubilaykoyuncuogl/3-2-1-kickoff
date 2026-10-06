@@ -18,6 +18,11 @@ var pick_timer: Label
 var quick_slot: VBoxContainer
 var quick_shown := false
 var notice: Control
+var away_since := 0          # rakibin bağlantısı koptuğu an (yerel saat); 0 = bağlı
+var away_label: Label
+var return_label: Label
+var return_at := 0
+const RETURN_MS := 5000      # rakip ayrılınca bu kadar sonra kendiliğinden çıkılır
 const FADE_OUT := 0.12
 const FADE_IN := 0.20
 const NOTICE_MS := 3.0
@@ -75,6 +80,8 @@ func _on_room(d: Dictionary) -> void:
 	phase_end = now + int(d.get("phase_ms", 0))
 	var me := Game.me()
 	penalty_until = now + int(me.get("penalty_ms", 0))
+	if not Game.opponent().get("away", false): away_since = 0
+	elif away_since == 0: away_since = now
 	if int(d.state) != state:
 		state = int(d.state); _render(d)
 	else:
@@ -83,6 +90,14 @@ func _on_room(d: Dictionary) -> void:
 func _process(_dt: float) -> void:
 	var now := Time.get_ticks_msec()
 	var rem := maxi(0, phase_end - now)
+	if away_since > 0:
+		if state == Game.State.PICK_TEAMS and opp_label: opp_label.text = T.t("match.away_short") % _away_secs()
+		if away_label and is_instance_valid(away_label): away_label.text = T.t("match.opp_away") % _away_secs()
+	if return_at > 0 and state == Game.State.GAME_OVER:
+		if return_label: return_label.text = T.t("match.returning") % ceili(maxi(0, return_at - now) / 1000.0)
+		if now >= return_at:
+			return_at = 0; Game.c_leave()
+			if App.top() == self: App.pop()
 	if state == Game.State.ROUND and timer_label:
 		var s := ceili(rem / 1000.0)
 		timer_label.text = str(s)
@@ -115,7 +130,8 @@ func _render(d: Dictionary) -> void:
 			body.modulate.a = 0.0
 			var tin := body.create_tween(); tin.tween_interval(FADE_OUT * 0.7); tin.tween_property(body, "modulate:a", 1.0, FADE_IN)
 	timer_label = null; timer_bar = null; countdown_label = null; ac = null; strip = null; opp_label = null; toast_slot = null
-	pick_timer = null; quick_slot = null; quick_shown = false
+	pick_timer = null; quick_slot = null; quick_shown = false; away_label = null; return_label = null
+	if state != Game.State.GAME_OVER: return_at = 0
 	match state:
 		Game.State.PICK_TEAMS: _render_pick(d)
 		Game.State.COUNTDOWN: _render_countdown(d)
@@ -136,7 +152,7 @@ func _update(d: Dictionary) -> void:
 			var last: Dictionary = d.get("last", {})
 			if toast_slot and Game.opponent().get("away", false):
 				for ch in toast_slot.get_children(): ch.queue_free()
-				toast_slot.add_child(UI.toast(T.t("match.opp_away"), "muted"))
+				var at := UI.toast(T.t("match.opp_away") % _away_secs(), "muted"); away_label = at.get_child(0); toast_slot.add_child(at)
 			if toast_slot and last.get("type", "") == "wrong":
 				for ch in toast_slot.get_children(): ch.queue_free()
 				if int(last.pid) == multiplayer.get_unique_id():
@@ -202,8 +218,11 @@ func _render_pick(d: Dictionary) -> void:
 	opp.add_child(ov); body.add_child(opp)
 	strip = UI.label("", 12, 600, "no"); body.add_child(strip)
 
+func _away_secs() -> int:
+	return ceili(maxi(0, Game.RECONNECT_MS - (Time.get_ticks_msec() - away_since)) / 1000.0)
+
 func _opp_pick_text(op: Dictionary) -> String:
-	if op.get("away", false): return T.t("match.away_short")
+	if op.get("away", false): return T.t("match.away_short") % _away_secs()
 	if op.get("ready", false): return T.t("match.opp_ready")
 	return T.t("match.opp_picked") if op.get("picked", false) else T.t("match.opp_thinking")
 
@@ -342,10 +361,15 @@ func _render_over(d: Dictionary) -> void:
 		var de: int = int(me.elo_delta)
 		var el := UI.label("Elo %d  (%s%d)" % [App.elo, "+" if de > 0 else "", de], 13, 600, "violet_ink"); el.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; tv.add_child(el)
 	top.add_child(tv); body.add_child(top)
-	var bot := UI.panel("amber"); bot.modulate.a = 0.8; var bv := UI.vbox(2)
-	bv.add_child(UI.eyebrow(str(op.get("nick", "")) + " · " + str(op.get("elo", "")), "amber_ink"))
-	bv.add_child(UI.label(T.t("match.wants_rematch") if op.get("rematch", false) else T.t("match.gg"), 20, 800, "amber_ink"))
-	bot.add_child(bv); body.add_child(bot)
+	if last.get("type", "") == "left":      # rakip yok: alt kart yerine geri sayım, süre dolunca kendiliğinden çıkılır
+		return_label = UI.label("", 14, 600, "muted"); return_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		body.add_child(return_label)
+		if return_at == 0: return_at = Time.get_ticks_msec() + RETURN_MS
+	else:
+		var bot := UI.panel("amber"); bot.modulate.a = 0.8; var bv := UI.vbox(2)
+		bv.add_child(UI.eyebrow(str(op.get("nick", "")) + " · " + str(op.get("elo", "")), "amber_ink"))
+		bv.add_child(UI.label(T.t("match.wants_rematch") if op.get("rematch", false) else T.t("match.gg"), 20, 800, "amber_ink"))
+		bot.add_child(bv); body.add_child(bot)
 	if last.get("type", "") != "left":
 		var rv := UI.button(T.t("rematch") + (T.t("match.waiting_paren") if me.get("rematch", false) else ""), "violet"); rv.disabled = me.get("rematch", false)
 		rv.pressed.connect(func(): Game.c_rematch()); body.add_child(rv)
