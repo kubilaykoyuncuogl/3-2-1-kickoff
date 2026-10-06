@@ -82,11 +82,11 @@ DSN'leri girdikten sonra test ortamında `EXPO_PUBLIC_TELEMETRY_IN_DEV=true` ile
 
 6 Ekim 2026 doğrulaması:
 
-- Son `origin/main` (`6380ad1`) branch'e alındı. Yeni round alanları ve weekly mesajları korunuyor; socket testi bunları da doğruluyor.
+- Son `origin/main` (`c61d246`) branch'e alındı. Yeni round alanları ve weekly mesajları korunuyor; socket testi bunları da doğruluyor. Yukarıdaki web artifact bundle önceki main sync'inde üretildi; yeni release için `export:web:sentry` yeniden çalıştırılır.
 - Chrome'da `http://127.0.0.1:18084` production export'u açıldı. Takma ad → ana ekran → ayarlar → dil değişikliği çalıştı; framework hata overlay'i yok. Console'da yalnız üçüncü taraf Acrobat extension hataları görüldü.
 - Web DOM kökünde `data-clarity-mask="true"` ve doğru `https://www.clarity.ms/tag/ytk0sewicz?ref=npm` script adresi doğrulandı. Kontrol anında Clarity tag endpoint'i `204 No Content` döndü ve panel hâlâ Başlarken ekranındaydı. SDK script eklenmesi doğrulandı; gerçek collect isteği, kayıt teslimatı ve maskeli replay henüz doğrulanmadı. Microsoft FAQ, dashboard verilerinin görünmesinin birkaç saat sürebileceğini belirtiyor. Sonraki kontrol: tag'in JavaScript döndürmesi, web'de yeniden bir session açılması, ardından Kayıtlar ekranında maskeli metinlerin incelenmesi.
 - iOS Expo prebuild ve `pod install --repo-update` başarılı; Clarity 4.1.2 ve Sentry 8.58.0 native pod'ları kuruldu. Mevcut Xcode'da kullanılabilir iOS 26.5 platform/destination bulunmadığından native binary derlemesi ve gerçek cihaz kaydı doğrulanamadı. Expo Go kaydı test etmek için yeterli değildir.
-- Typecheck, 7 client testi ve 5 server testi geçti. Full lint, aynı config ile ölçülen güncel main baseline'ıyla aynı 27 error / 29 warning veriyor; değişen dosyalarda ek lint hatası yok.
+- Typecheck, 7 client testi ve 5 server testi geçti. Full lint, aynı config ile ölçülen güncel main baseline'ıyla aynı 27 error / 31 warning veriyor; değişen dosyalarda ek lint hatası yok.
 - Tam oyun akışı bu worktree'de eksik encrypted index/backend yapılandırması nedeniyle test edilmedi. Merge ve deployment yapılmadı.
 
 Resmî kaynaklar:
