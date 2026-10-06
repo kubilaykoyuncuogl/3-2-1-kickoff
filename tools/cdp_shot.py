@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Başsız Chrome'u gerçek zamanlı sürüp ekran görüntüsü alır (CDP). Süresi dolan koşu, maç sonu gibi beklemek gereken ekranlar için.
 
-  .venv/bin/python tools/cdp_shot.py OUT.png URL [--wait 12] [--size 400x880] [--click "x,y@saniye" ...] [--type "metin@saniye" ...]
+  .venv/bin/python tools/cdp_shot.py OUT.png URL [--wait 12] [--size 400x880] [--click "x,y@saniye" ...] [--tap "Metin@saniye" ...] [--type "metin@saniye" ...]
 Önce Expo web çalışıyor olmalı (./run_local.sh). --click / --type verilen saniyede uygulanır (sayfa açılışından itibaren)."""
 import argparse, asyncio, base64, json, subprocess, tempfile, time, urllib.request, shutil
 
@@ -10,6 +10,7 @@ import websockets
 ap = argparse.ArgumentParser()
 ap.add_argument("out"); ap.add_argument("url"); ap.add_argument("--wait", type=float, default=8); ap.add_argument("--size", default="400x880")
 ap.add_argument("--click", action="append", default=[]); ap.add_argument("--type", action="append", default=[], dest="types")
+ap.add_argument("--tap", action="append", default=[], help='ekranda tam bu metni taşıyan öğeye dokun: "Metin@saniye"')
 ap.add_argument("--port", type=int, default=9333)
 A = ap.parse_args()
 W, H = map(int, A.size.split("x"))
@@ -37,8 +38,14 @@ async def main():
             await cmd("Page.navigate", url=A.url)
             t0 = time.time()
             events = [(float(c.rsplit("@", 1)[1]), "click", c.rsplit("@", 1)[0]) for c in A.click] + [(float(c.rsplit("@", 1)[1]), "type", c.rsplit("@", 1)[0]) for c in A.types]
+            events += [(float(c.rsplit("@", 1)[1]), "tap", c.rsplit("@", 1)[0]) for c in A.tap]
             for at, kind, arg in sorted(events):
                 await asyncio.sleep(max(0, at - (time.time() - t0)))
+                if kind == "tap":      # metni taşıyan en içteki öğenin ortasına dokun
+                    js = "(() => { const t = %s; const el = [...document.querySelectorAll('div,span')].reverse().find(e => e.childElementCount === 0 && (e.textContent || '').trim() === t); if (!el) return ''; const r = el.getBoundingClientRect(); return (r.x + r.width / 2) + ',' + (r.y + r.height / 2); })()" % json.dumps(arg)
+                    res = (await cmd("Runtime.evaluate", expression=js, returnByValue=True)).get("result", {}).get("value", "")
+                    if not res: print("  dokunulacak metin bulunamadı:", arg); continue
+                    kind, arg = "click", res
                 if kind == "click":
                     x, y = map(float, arg.split(","))
                     for typ in ("mousePressed", "mouseReleased"):

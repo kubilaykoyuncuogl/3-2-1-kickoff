@@ -6,6 +6,7 @@ import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { Platform, Share, View } from "react-native";
 import { remaining, useNow } from "./hooks";
 import { getLang, has, t } from "./i18n";
+import { devSingle } from "./dev/mocks";
 import { api, connect } from "./net/socket";
 import { Single, useGame, useSettings } from "./store";
 import { useTheme } from "./theme";
@@ -28,6 +29,11 @@ export function useSingle(mode: string, hold?: (prev: Single, next: Single) => n
 
   const start = () => {
     setFailed(false); setShown(null); shownRef.current = null; setPending(null);
+    const mock = devSingle(mode);      // yalnızca geliştirme: ?mock= ile hazır durum (ekran görüntüsü)
+    if (mock) {
+      if (mock !== "none") { const m = { d: mock, at: Date.now() }; shownRef.current = m; setShown(m); return; }
+      loadTimer.current = setTimeout(() => setFailed(true), 2500); return;
+    }
     useGame.getState().set({ single: null });
     if (!useGame.getState().connected) connect();
     if (starter) starter(); else api.singleStart(mode);
