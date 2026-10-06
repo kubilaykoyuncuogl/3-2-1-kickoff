@@ -5,6 +5,7 @@ import asyncio, itertools, json, time
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from server.game.engine import Engine
+from server.telemetry import report_error
 
 router = APIRouter()
 _ids = itertools.count(1)
@@ -60,10 +61,12 @@ async def ws_endpoint(ws: WebSocket):
                 _send(pid, {"t": "err", "key": "err.too_many"}); continue
             try: await engine.handle(pid, m)
             except Exception as e:
+                report_error(e, "ws.handle")
                 print("[ws] handle error pid=%d t=%s: %r" % (pid, m.get("t"), e), flush=True)
     except WebSocketDisconnect:
         pass
     except Exception as e:
+        report_error(e, "ws.connection")
         print("[ws] connection error pid=%d: %r" % (pid, e), flush=True)
     finally:
         _conns.pop(pid, None)

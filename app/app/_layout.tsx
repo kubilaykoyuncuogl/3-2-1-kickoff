@@ -1,6 +1,6 @@
 // Kök düzen: font, ayarlar, bağlantı, tema; sayfa yığını (sağdan kayarak gelir, "hareketi azalt" açıksa anında).
 import { Sora_500Medium, Sora_600SemiBold, Sora_700Bold, Sora_800ExtraBold, useFonts } from "@expo-google-fonts/sora";
-import { Stack } from "expo-router";
+import { ErrorBoundary as RouterErrorBoundary, type ErrorBoundaryProps, Stack, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
@@ -9,11 +9,19 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { connect } from "@/net/socket";
 import { useSettings } from "@/store";
 import { useTheme } from "@/theme";
+import { initializeClarity, reportClientError, Sentry, trackScreen } from "@/telemetry";
 import { UpdateCard } from "@/ui/update";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-export default function RootLayout() {
+export function ErrorBoundary(props: ErrorBoundaryProps) {
+  useEffect(() => { reportClientError(props.error, "router.render"); }, [props.error]);
+  return <RouterErrorBoundary {...props} />;
+}
+
+function RootLayout() {
+  const segments = useSegments();
+  const screen = segments.length ? segments.join("/") : "home";
   const [fontsLoaded] = useFonts({ Sora_500Medium, Sora_600SemiBold, Sora_700Bold, Sora_800ExtraBold });
   const loaded = useSettings((s) => s.loaded);
   const reduce = useSettings((s) => s.reduce_motion);
@@ -22,6 +30,8 @@ export default function RootLayout() {
   useEffect(() => { useSettings.getState().load(); }, []);
   useEffect(() => { if (loaded) connect(); }, [loaded]);
   useEffect(() => { if (fontsLoaded && loaded) SplashScreen.hideAsync().catch(() => {}); }, [fontsLoaded, loaded]);
+  useEffect(() => { if (fontsLoaded && loaded) initializeClarity(); }, [fontsLoaded, loaded]);
+  useEffect(() => { trackScreen(screen); }, [screen]);
 
   if (!fontsLoaded || !loaded) return <View style={{ flex: 1, backgroundColor: c.bg }} />;
   return (
@@ -34,3 +44,5 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);

@@ -11,6 +11,7 @@ from typing import Callable
 
 from .consts import *
 from .singles import SinglesMixin
+from server.telemetry import report_error, watch_task
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "tools"))
 from normalize import normalize   # noqa: E402
@@ -46,7 +47,9 @@ class Engine(SinglesMixin):
         return normalize(s)
 
     def spawn(self, coro) -> asyncio.Task:
-        t = asyncio.create_task(coro); self._tasks.add(t); t.add_done_callback(self._tasks.discard); return t
+        t = asyncio.create_task(coro); self._tasks.add(t); t.add_done_callback(self._tasks.discard)
+        watch_task(t, "engine.task")
+        return t
 
     def err(self, pid: int, key: str) -> None:
         self.send(pid, {"t": "err", "key": key})
@@ -64,7 +67,9 @@ class Engine(SinglesMixin):
 
     async def index_answers(self, a: int, b: int, era: int) -> dict:
         try: return await asyncio.to_thread(self.index.pair_answers, a, b, 12, era)
-        except Exception: return {"names": [], "total": -1}
+        except Exception as e:
+            report_error(e, "index.answers")
+            return {"names": [], "total": -1}
 
     async def index_pack(self, mode: str, sc: str, era: int) -> list:
         try:
@@ -74,18 +79,22 @@ class Engine(SinglesMixin):
             if mode == "chain": return await asyncio.to_thread(self.index.chain_pack, 15, "", era, sc)
             if mode == "versus": return await asyncio.to_thread(self.index.versus_pack, 80, "", era, sc)
         except Exception as e:
+            report_error(e, "index.pack")
             print("[engine] pack failed", mode, e, flush=True)
         return []
 
     async def index_in_scope(self, club_id: int, sc: str) -> bool:
         try: return bool((await asyncio.to_thread(self.index.club, club_id, sc)).get("in_scope", False))
-        except Exception: return False
+        except Exception as e:
+            report_error(e, "index.scope")
+            return False
 
     async def acct_post(self, op: str, body: dict):
         fn = getattr(self.accounts, op, None)
         if fn is None: return None
         try: return await asyncio.to_thread(fn, body)
         except Exception as e:
+            report_error(e, "accounts.post")
             print("[engine] acct", op, "failed:", e, flush=True); return None
 
     async def acct_best(self, device: str, mode: str, score: int) -> None:
@@ -537,5 +546,6 @@ class Engine(SinglesMixin):
             try:
                 self._tick_queue(); self._tick_singles()
             except Exception as e:
+                report_error(e, "engine.tick")
                 print("[engine] tick error:", repr(e), flush=True)
             await asyncio.sleep(0.1)
