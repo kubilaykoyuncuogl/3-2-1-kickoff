@@ -190,17 +190,27 @@ class Engine(SinglesMixin, BotsMixin, WeeklyMixin):
         if team_id == 0:
             r["teams"].pop(pid, None); r["team_names"].pop(pid, None); self._broadcast(r); return
         if team_id in r["used_teams"]: self.err(pid, "err.team_used"); return
-        for other, tid in r["teams"].items():
-            if other != pid and tid == team_id: self.err(pid, "err.team_taken"); return
+        if self._team_clash(r, pid, team_id): return
         if r["scope"] != "all":
             ok = await self.index_in_scope(team_id, r["scope"])
             if not ok: self.err(pid, "err.out_of_scope"); return
             if r["state"] != State.PICK_TEAMS or r["ready"].get(pid, False): return
             # kapsam sorgusu beklerken rakip aynı takımı seçmiş olabilir: yeniden bak (iki oyuncu aynı anda aynı takımı alabiliyordu)
             if team_id in r["used_teams"]: self.err(pid, "err.team_used"); return
-            if any(other != pid and tid == team_id for other, tid in r["teams"].items()): self.err(pid, "err.team_taken"); return
+            if self._team_clash(r, pid, team_id): return
         r["teams"][pid] = team_id; r["team_names"][pid] = team_name
         self._broadcast(r)
+
+    def _team_clash(self, r: dict, pid: int, team_id: int) -> bool:
+        """İki oyuncu aynı takımı seçti: ikisinin seçimi de iptal olur ve ikisi de yeniden seçer.
+        (Yalnızca ikinciyi reddetmek, ona rakibin ne seçtiğini söylerken rakibin seçimini yerinde bırakıyordu.)"""
+        other = next((o for o, tid in r["teams"].items() if o != pid and tid == team_id), None)
+        if other is None: return False
+        for p in (pid, other):
+            r["teams"].pop(p, None); r["team_names"].pop(p, None); r["ready"].pop(p, None)
+            self.err(p, "err.team_clash")
+        self._broadcast(r)
+        return True
 
     def set_ready(self, pid: int) -> None:
         r = self._room_of(pid)
@@ -232,10 +242,10 @@ class Engine(SinglesMixin, BotsMixin, WeeklyMixin):
         if kind == "team":
             lst = await asyncio.to_thread(self.index.teams_suggest, q, 8, r["scope"] if r else "all")
             if r is not None:
-                taken = set(r["teams"].values())
+                # yalnızca önceki turlarda kullanılmış takımlar işaretlenir; rakibin O ANKİ seçimi işaretlenmez (öneri listesi rakibin seçimini sızdırıyordu)
                 for item in lst:
                     if isinstance(item, dict) and item.get("id") is not None:
-                        tid = int(item["id"]); item["used"] = tid in r["used_teams"] or tid in taken
+                        item["used"] = int(item["id"]) in r["used_teams"]
         else:
             sp = self.singles.get(pid)      # dönem seçiliyse yalnızca o dönemin oyuncuları önerilir
             era = int(r["era"]) if r else (int(sp.get("era", 0)) if sp else 0)
