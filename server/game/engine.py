@@ -12,6 +12,7 @@ from typing import Callable
 from .consts import *
 from .bots import BOT_WAIT_MS, BotsMixin
 from .singles import SinglesMixin
+from .endinfo import EndInfoMixin
 from .weekly import WeeklyMixin
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "tools"))
@@ -20,7 +21,7 @@ from normalize import normalize   # noqa: E402
 WORDS_PATH = pathlib.Path(__file__).resolve().parents[1] / "words.txt"
 
 
-class Engine(SinglesMixin, BotsMixin, WeeklyMixin):
+class Engine(SinglesMixin, BotsMixin, WeeklyMixin, EndInfoMixin):
     def __init__(self, send: Callable[[int, dict], None], index, accounts):
         self.send = send              # send(pid, msg): bağlı değilse sessizce düşer
         self.index = index            # server.index_service modülü (fonksiyonları doğrudan çağrılır)
@@ -291,7 +292,7 @@ class Engine(SinglesMixin, BotsMixin, WeeklyMixin):
     @staticmethod
     def _reset_match(r: dict) -> None:
         r.update(teams={}, team_names={}, ready={}, score={}, penalty_until={}, used_teams={}, invalid_streak=0, phase_end=0, answers=[],
-                 answers_total=0, winner=0, rematch={}, last={}, elo_delta={}, away={}, quick_picks=[])
+                 answers_total=0, winner=0, rematch={}, last={}, elo_delta={}, away={}, quick_picks=[], history=[])
         r["gen"] += 1
 
     def _new_code(self) -> str:
@@ -392,6 +393,7 @@ class Engine(SinglesMixin, BotsMixin, WeeklyMixin):
     async def _no_common(self, r: dict, gen: int) -> None:
         r["invalid_streak"] += 1
         r["answers"] = []; r["answers_total"] = 0; r["last"] = {"type": "timeout", "no_common": True}
+        self._log_round(r, r["last"])
         if r["invalid_streak"] >= MAX_INVALID_PAIRS:
             r["state"] = State.GAME_OVER; r["winner"] = 0; r["last"]["draw"] = True; self._broadcast(r); return
         r["state"] = State.ROUND_END; r["phase_end"] = self.now() + NO_COMMON_MS
@@ -400,6 +402,13 @@ class Engine(SinglesMixin, BotsMixin, WeeklyMixin):
         if r["gen"] != gen or r["state"] != State.ROUND_END: return
         self._clear_round(r)
         await self._start_pick(r)
+
+    @staticmethod
+    def _log_round(r: dict, last: dict, total: int = 0) -> None:
+        """Maç sonu kartı için tur kaydı. Takımlar ve cevaplayan, r["players"] sırasına göre tutulur (yeniden bağlanmada pid değişse de sıra aynı kalır)."""
+        ps = r["players"]
+        r.setdefault("history", []).append({"t": [r["team_names"].get(p, "") for p in ps], "type": last.get("type"), "no_common": bool(last.get("no_common")),
+                                            "by": ps.index(last["pid"]) if last.get("pid") in ps else None, "name": last.get("name"), "n": total})
 
     @staticmethod
     def _clear_round(r: dict) -> None:
@@ -424,6 +433,7 @@ class Engine(SinglesMixin, BotsMixin, WeeklyMixin):
             r["score"][winner] = r["score"].get(winner, 0) + 1
             r["gen"] += 1
             r["answers"] = []; r["answers_total"] = 0; r["last"] = {"type": "pick_timeout", "pid": slow}
+            self._log_round(r, r["last"])
             for p in r["players"]:
                 if r["score"].get(p, 0) >= WIN_SCORE:
                     r["state"] = State.GAME_OVER; r["winner"] = p
@@ -451,6 +461,8 @@ class Engine(SinglesMixin, BotsMixin, WeeklyMixin):
         r["answers"] = ans.get("names", []); r["answers_total"] = int(ans.get("total", 0)); r["last"] = last
         if r["answers_total"] == 0:
             r["invalid_streak"] += 1; r["last"]["no_common"] = True
+        self._log_round(r, r["last"], max(0, r["answers_total"]))
+        if r["answers_total"] == 0:
             if r["invalid_streak"] >= MAX_INVALID_PAIRS:
                 r["state"] = State.GAME_OVER; r["winner"] = 0; r["last"]["draw"] = True; self._broadcast(r); return
         else:
@@ -485,6 +497,11 @@ class Engine(SinglesMixin, BotsMixin, WeeklyMixin):
             d = {"me": viewer, "code": r["code"], "ranked": r["ranked"], "scope": r["scope"], "era": r["era"], "round_ms": r["round_ms"], "state": r["state"], "players": players,
                  "phase_ms": max(0, r["phase_end"] - now), "last": r["last"], "answers": r["answers"], "answers_total": r["answers_total"],
                  "winner": r["winner"], "used_teams": list(r["used_teams"]), "quick_picks": r.get("quick_picks", [])}
+            if r["state"] == State.GAME_OVER and len(r["players"]) == 2:      # maç sonu kartı (rakip ayrıldıysa sıra kaydığı için gönderilmez) tur tur özet, izleyene göre
+                me_i = r["players"].index(viewer)
+                d["history"] = [{"mine": h["t"][me_i] if me_i < len(h["t"]) else "", "theirs": next((x for k, x in enumerate(h["t"]) if k != me_i), ""),
+                                 "type": h["type"], "no_common": h["no_common"], "by": None if h["by"] is None else ("me" if h["by"] == me_i else "opp"),
+                                 "name": h["name"], "n": h["n"]} for h in r.get("history", [])]
             self.send(viewer, {"t": "room_state", "d": d})
 
     # ---------- eşleşme ----------

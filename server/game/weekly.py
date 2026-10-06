@@ -27,7 +27,8 @@ def make_pack(data: dict, rng: random.Random, n: int = ROUNDS) -> list:
             if va is None or vb is None or va == vb or max(va, vb) < 3: continue
             if min(va, vb) > 0 and max(va, vb) / min(va, vb) < need: continue
             item = {"cat": "w_" + cat, "fmt": "int", "names": [a["name"], b["name"]], "born": [a.get("born"), b.get("born")], "shown": [None, None],
-                    "new_cat": False, "_values": [va, vb], "_answer": 0 if va > vb else 1}
+                    "new_cat": False, "_values": [va, vb], "_answer": 0 if va > vb else 1,
+                    "_p": [a, b], "_clubs": [data["a"]["short"], data["b"]["short"]]}
             recent = (recent + [a["name"], b["name"]])[-16:]
             break
         if item is None: break

@@ -1,4 +1,5 @@
 // O mu bu mu: iki futbolcu, bir kategori. Değeri büyük olana dokun; doğruysa sürer, ilk yanlışta biter.
+import { runChips } from "@/ui/pickers";
 import React, { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { api } from "@/net/socket";
@@ -25,7 +26,7 @@ export default function Versus() {
   useEffect(() => { setPressed(-1); }, [d?.idx]);
   const title = t("mode.versus");
   if (!d) return <SingleLoading title={title} failed={failed} onRetry={restart} />;
-  if (d.over) return <SingleOver mode="versus" title={title} d={d} summary={t("versus.summary", d.done ?? 0)} note={lastLine(d, String(d.item?.fmt ?? "int"))} onAgain={restart} />;
+  if (d.over) return <SingleOver mode="versus" title={title} d={d} summary={t("versus.summary", d.done ?? 0)} note={lastLine(d, String(d.item?.fmt ?? "int"))} onAgain={restart} chips={runChips()} />;
   const it = d.item; const fmt = String(it.fmt ?? "int");
   const val = (v: unknown) => (v === null || v === undefined ? "?" : fmt === "money" ? money(Number(v)) : String(Math.trunc(Number(v))));
   const pl = pending?.last ?? {};

@@ -1,5 +1,6 @@
 // Kariyer yolu: kulüpler ilk kulüpten başlayarak tek tek açılır; oyuncuyu ne kadar erken bilirsen o kadar puan.
 // Liste en yeni kulüp üstte (klavye açıkken görünür kalsın).
+import { runChips } from "@/ui/pickers";
 import React, { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { api } from "@/net/socket";
@@ -15,7 +16,7 @@ export default function Career() {
   const title = t("mode.career");
   if (!d) return <SingleLoading title={title} failed={failed} onRetry={restart} />;
   const last = d.last ?? {};
-  if (d.over) return <SingleOver mode="career" title={title} d={d} summary={t("career.summary", d.done ?? 0)} note={last.answer ? t("career.was", last.answer) : undefined} onAgain={restart} />;
+  if (d.over) return <SingleOver mode="career" title={title} d={d} summary={t("career.summary", d.done ?? 0)} note={last.answer ? t("career.was", last.answer) : undefined} onAgain={restart} chips={runChips()} />;
   const clubs: any[] = d.item.clubs ?? []; const total: number = d.item.total ?? clubs.length;
   const toast = last.type === "correct" ? { text: `${last.name ?? ""}  +${last.gained ?? 0}`, kind: "ok" as const }
     : last.type === "wrong" ? { text: t("career.wrong", last.name ?? ""), kind: "no" as const }

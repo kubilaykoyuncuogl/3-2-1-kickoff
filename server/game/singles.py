@@ -157,6 +157,7 @@ class SinglesMixin:
         dev = self.profiles.get(pid, {}).get("device", "")
         if dev and int(s["score"]) > 0: self.spawn(self.acct_best(dev, s["mode"], int(s["score"])))
         if s["mode"] == "weekly": self.spawn(self._weekly_finish(pid, s))
+        self.spawn(self._single_end(pid, s))      # koşu sonu kartı: "seni yakan soru" ve "biliyor muydun" (hazır olunca durum yeniden gider)
         self._single_send(pid)
 
     def _single_send(self, pid: int) -> None:
@@ -183,4 +184,4 @@ class SinglesMixin:
         self.send(pid, {"t": "single_state", "d": {
             "mode": mode, "idx": s["idx"], "total": len(s["items"]), "lives": s["lives"], "score": s["score"], "combo": s["combo"],
             "done": int(s.get("done", 0)), "best_combo": s["best_combo"], "remaining_ms": max(0, s["deadline"] - now), "per_ms": s.get("per_ms", 0),
-            "lock_ms": 0, "over": s["over"], "item": pub, "last": s.get("last", {}), "era": int(s.get("era", 0))}})
+            "lock_ms": 0, "over": s["over"], "item": pub, "last": s.get("last", {}), "era": int(s.get("era", 0)), "end": s.get("end") if s["over"] else None}})

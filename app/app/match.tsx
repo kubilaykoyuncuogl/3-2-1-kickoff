@@ -2,14 +2,15 @@
 // Durum değişince içerik sönüp yenisi belirir; uyarılar (takım alınmış, kapsam dışı) ortada kart; rakip ayrılınca 5 sn sonra çıkılır.
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, Pressable, View } from "react-native";
+import { Animated, Pressable, ScrollView, View } from "react-native";
 import { remaining, useNow } from "@/hooks";
 import { api } from "@/net/socket";
 import { Player, Room, State, useGame, useSettings } from "@/store";
 import { useTheme } from "@/theme";
 import { Btn, Chip, Eyebrow, ListCard, Nav, Page, Panel, Progress, Spacer, TimerBox, Toast, Txt, t } from "@/ui";
 import { Autocomplete } from "@/ui/autocomplete";
-import { scopeLabel } from "@/ui/pickers";
+import { eraLabel, scopeLabel } from "@/ui/pickers";
+import { ResultCard, Section } from "@/ui/result";
 
 const PICK_MS = 45000, QUICK_AT_MS = 20000, RECONNECT_MS = 10000, RETURN_MS = 5000, NOTICE_MS = 3000;
 
@@ -276,35 +277,35 @@ function Over({ room, mine, opp, me, returnAt, now }: { room: Room; mine?: Playe
   let title = winner === 0 ? t("draw") : winner === my ? t("won") : t("lost");
   if (last.type === "left") title = t("match.opp_left");
   const de = mine?.elo_delta ?? 0;
-  // maçı bitiren turun cevabı ve diğer olası cevaplar (tur sonu ekranı atlandığı için burada gösterilir)
+  // tur tur özet (sunucudan izleyene göre gelir) ve maçı bitiren çiftin diğer cevapları
+  const hist: any[] = (room as any).history ?? [];
+  const rounds = hist.slice(-6).map((h) => {
+    const pair = `${h.mine || "—"} × ${h.theirs || "—"}`;
+    const res = h.no_common ? t("end.round_nocommon") : h.type === "pick_timeout" ? t("end.round_pick") : h.type === "correct" ? (h.by === "me" ? t("end.round_me", h.name) : t("end.round_opp", h.name)) : t("end.round_none");
+    return `${pair}  ·  ${res}`;
+  });
   const answerName = last.type === "correct" ? String(last.name ?? "") : "";
-  const iScored = last.type === "correct" && last.pid === my;
-  const ans = room.answers ?? []; const total = room.answers_total ?? 0;
-  const others = last.type === "left" ? [] : ans.filter((n) => n !== answerName).slice(0, 5);
-  const rest = Math.max(0, total - others.length - (answerName ? 1 : 0));
+  const others = last.type === "left" ? [] : (room.answers ?? []).filter((n) => n !== answerName).slice(0, 4);
+  const lastRound = hist[hist.length - 1];
+  const sections: Section[] = [];
+  if (rounds.length) sections.push({ title: t("end.rounds"), lines: rounds, kind: "plain" });
+  if (others.length && lastRound) sections.push({ title: t("end.fact"), lines: [t("fact.pair_players", lastRound.mine, lastRound.theirs, room.answers_total ?? others.length, [answerName, ...others].filter(Boolean).slice(0, 4).join(", ") + ((room.answers_total ?? 0) > 4 ? "…" : ""))], kind: "fact" });
   const leave = () => { api.leave(); router.canGoBack() ? router.back() : router.replace("/online"); };
+  const chips = [scopeLabel(room.scope ?? "all"), ...(room.era ? [eraLabel(room.era)] : []), t("online.round_fmt", Math.round((room.round_ms ?? 15000) / 1000))];
   return (
-    <>
-      <Panel kind="violet" style={{ flex: 1, justifyContent: "center" }}>
-        <Eyebrow color="violet_ink" center>{title}</Eyebrow>
-        <Txt size={64} w={800} color="violet_ink" center>{`${mine?.score ?? 0} : ${opp?.score ?? 0}`}</Txt>
-        {room.ranked && de !== 0 ? <Txt size={13} w={600} color="violet_ink" center>{`Elo ${elo}  (${de > 0 ? "+" : ""}${de})`}</Txt> : null}
-      </Panel>
-      {answerName ? <Toast text={`${answerName}  +1`} kind={iScored ? "ok" : "no"} /> : null}
-      {others.length > 0 ? <ListCard title={(answerName ? t("match.others") : t("match.possible")).trim().replace(/:$/, "")} items={others}
-        footer={rest > 0 ? t("match.more", rest).trim().replace(/^…/, "").trim() : undefined} /> : null}
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, gap: 12 }} keyboardShouldPersistTaps="handled">
+      <ResultCard mode={t("menu.online")} chips={chips} big={`${mine?.score ?? 0} : ${opp?.score ?? 0}`} label={title} record={winner === my}
+        sub={`${mine?.nick ?? ""} – ${opp?.nick ?? ""}` + (room.ranked && de !== 0 ? `  ·  Elo ${elo} (${de > 0 ? "+" : ""}${de})` : "")} sections={sections} />
+      <View style={{ flex: 1 }} />
       {last.type === "left" ? (
         <Txt size={14} w={600} color="muted" center>{t("match.returning", Math.ceil(Math.max(0, returnAt - now) / 1000))}</Txt>
       ) : (
         <>
-          <Panel kind="amber" style={{ opacity: 0.8 }}>
-            <Eyebrow color="amber_ink">{`${opp?.nick ?? ""} · ${opp?.elo ?? ""}`}</Eyebrow>
-            <Txt size={20} w={800} color="amber_ink">{opp?.rematch ? t("match.wants_rematch") : t("match.gg")}</Txt>
-          </Panel>
+          <Txt size={13} w={700} color="amber_ink" center>{opp?.rematch ? `${opp?.nick ?? ""}: ${t("match.wants_rematch")}` : ""}</Txt>
           <Btn text={t("rematch") + (mine?.rematch ? t("match.waiting_paren") : "")} disabled={!!mine?.rematch} onPress={() => api.rematch()} />
         </>
       )}
       <Btn text={t("leave")} kind="ghost" onPress={leave} />
-    </>
+    </ScrollView>
   );
 }

@@ -30,7 +30,7 @@ export default function WeeklyPlay() {
   if (!d || !w) return <SingleLoading title={title} failed={failed} onRetry={restart} />;
   const mine = w[w.me?.side ?? (side === "b" ? "b" : "a")];
   if (d.over) return <SingleOver mode="weekly" title={title} d={d} summary={t("versus.summary", d.done ?? 0)} extra={d.score > 0 ? t("weekly.added", mine.short, num(d.score)) : undefined}
-    note={lastLine(d)} onAgain={restart} />;
+    note={lastLine(d)} onAgain={restart} chips={[`${w.a.short} – ${w.b.short}`]} />;
   const it = d.item;
   const pl = pending?.last ?? {};
   const values: unknown[] | null = pending && pl.values ? pl.values : null;

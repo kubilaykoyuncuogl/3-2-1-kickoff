@@ -331,7 +331,7 @@ def blitz_pack(day: str = "", n: int = 40, reveal: int = 0, seed: str = "", scop
         qs = _pool_take("blitz", sc)
     if qs is None: qs = _blitz(seed or day or f"live-{time.time_ns()}", n, sc, e)
     # reveal=1 yalnızca oyun sunucusu için (localhost); cevap indeksi istemciye asla iletilmez
-    return {"scope": sc, "questions": [{k: v for k, v in q.items() if not k.startswith("_") or (reveal and k == "_answer")} for q in qs]}
+    return {"scope": sc, "questions": [{k: v for k, v in q.items() if not k.startswith("_") or (reveal and k in ("_answer", "_answer_id"))} for q in qs]}
 
 def _blitz(seed: str, n: int, sc: str, era: int = 0):
     """5 isim: 2 yalnız A, 2 yalnız B, 1 ikisi. Çift tier ilerleyişiyle seçilir; çeldiriciler ≥3 kulüplü ünlü oyunculardan."""
@@ -559,11 +559,25 @@ def versus_pack(rounds: int = 80, seed: str = "", era: int = 0, scope: str = "al
             ans = 0 if v[0] > v[1] else 1
             out.append({"cat": cat, "fmt": CATS[cat][1], "names": [pinfo[x][0] for x in pair], "born": [pinfo[x][1] for x in pair],
                         "shown": [None if (first or i != side) else v[i] for i in (0, 1)], "new_cat": first and len(out) > 0,
-                        "_values": v, "_answer": ans})
+                        "_values": v, "_answer": ans, "_ids": list(pair)})
             first = False
             streak = streak + 1 if pair[ans] == stayer else 1
             stayer = pair[ans]; side = ans
             if rank[stayer] < TOP_RESET_RANK or streak >= STREAK_RESET: break
+    return out
+
+# ---- koşu sonu kartı için küçük bilgiler (yalnızca oyun sunucusu çağırır; HTTP ucu yok)
+def player_summary(pid: int):
+    """Oyuncunun kariyer özeti: maç, gol, kulüp sayısı. Kayıt yoksa None."""
+    row = db.execute("""SELECT p.name, p.n_clubs, s.apps, s.goals FROM players p LEFT JOIN player_stats s ON s.player_id = p.id WHERE p.id = ?""", (pid,)).fetchone()
+    if not row: return None
+    return {"name": row[0], "n_clubs": row[1] or 0, "apps": row[2] or 0, "goals": row[3] or 0}
+
+def club_join_years(pid: int, club_ids) -> dict:
+    """Oyuncunun verilen kulüplere ilk katıldığı yıl: {club_id: yıl | None}."""
+    out = {int(c): None for c in club_ids}
+    for cid, date in db.execute(f"SELECT club_id, MIN(date) FROM stints WHERE player_id = ? AND club_id IN ({','.join(str(int(c)) for c in club_ids) or '0'}) AND kind != 'loan_end' GROUP BY club_id", (pid,)):
+        out[cid] = int(date[:4]) if date else None
     return out
 
 # ---- bot rakipler için yardımcılar (yalnızca oyun sunucusu çağırır; HTTP ucu yok)

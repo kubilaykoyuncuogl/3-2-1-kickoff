@@ -99,3 +99,9 @@ export function RoundPicker() {
     </View>
   );
 }
+
+// Koşu sonu kartındaki çipler: seçili kapsam ve (varsa) dönem
+export function runChips(): string[] {
+  const st = useSettings.getState();
+  return [scopeLabel(st.scope), ...(st.era ? [eraLabel(st.era)] : [])];
+}
