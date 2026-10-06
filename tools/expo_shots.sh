@@ -12,4 +12,13 @@ shot 02_nickname /nickname
 shot 07_settings /settings
 shot 08_account /account
 shot 09_howto /howto
+shot 02_online /online
+shot 05_single /single
+shot 06_scope /single/scope "&mode=ladder"
+shot 06b_era /single/era "&mode=ladder"
+shot 20_ladder /single/play "&mode=ladder"
+shot 21_blitz /single/play "&mode=blitz"
+shot 22_career /single/career
+shot 23_chain /single/chain
+shot 24_versus /single/versus
 ls "$OUT" | wc -l
