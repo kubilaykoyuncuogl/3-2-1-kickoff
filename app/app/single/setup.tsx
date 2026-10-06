@@ -5,6 +5,7 @@ import React from "react";
 import { connect } from "@/net/socket";
 import { useGame, useSettings } from "@/store";
 import { Btn, Nav, Page, Spacer, Txt, t } from "@/ui";
+import { LearnCard } from "@/ui/learn";
 import { EraPicker, ScopePicker, eraLabel, scopeLabel } from "@/ui/pickers";
 
 export default function SingleSetup() {
@@ -19,6 +20,7 @@ export default function SingleSetup() {
     router.push({ pathname: (pairs ? "/single/play" : `/single/${mode}`) as any, params: { mode } });
   };
   return (
+    <>
     <Page scroll>
       <Nav title={t("mode." + mode)} />
       <ScopePicker />
@@ -28,5 +30,7 @@ export default function SingleSetup() {
       <Btn text={t("era.start")} right=">" onPress={start} />
       <Spacer />
     </Page>
+    <LearnCard id={mode} title={t("mode." + mode)} />
+    </>
   );
 }

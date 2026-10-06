@@ -19,7 +19,7 @@ export default function SingleMenu() {
       <Nav title={t("menu.single")} />
       <Txt size={13} color="muted">{t("single.intro")}</Txt>
       {MODES.map((m) => (
-        <OptionCard key={m} kind="amber" height={92} title={t("mode." + m)} sub={t(`mode.${m}_sub`)}
+        <OptionCard key={m} kind="amber" height={68} title={t("mode." + m)}
           tail={<View style={{ flexDirection: "row", alignItems: "center", gap: s(8) }}>
             {(best[m] ?? 0) > 0 ? <Chip text={`${t("single.best_short")} ${best[m]}`} kind="line" style={{ alignSelf: "center" }} /> : null}
             <Chevron color="amber_ink" />

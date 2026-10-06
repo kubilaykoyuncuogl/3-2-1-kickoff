@@ -9,6 +9,7 @@ import { api, connect } from "@/net/socket";
 import { State, useGame, useProfile, useSettings } from "@/store";
 import { useTheme } from "@/theme";
 import { Btn, Chip, Eyebrow, Input, Nav, Page, Panel, Spacer, Txt, t } from "@/ui";
+import { LearnCard } from "@/ui/learn";
 import { EraPicker, ScopePicker, eraLabel, scopeLabel } from "@/ui/pickers";
 
 type Mode = "menu" | "searching" | "room" | "join";
@@ -54,6 +55,7 @@ export default function Online() {
   };
 
   return (
+    <>
     <Page scroll>
       <Nav title={t("menu.online")} onBack={back} />
       {mode === "menu" && (
@@ -129,6 +131,8 @@ export default function Online() {
         </>
       )}
     </Page>
+    {mode === "menu" && !params.oda ? <LearnCard id="online" title={t("menu.online")} /> : null}
+    </>
   );
 }
 

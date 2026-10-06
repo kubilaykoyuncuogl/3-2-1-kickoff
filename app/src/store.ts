@@ -15,10 +15,10 @@ export const ERAS: [string, number][] = [["80", 1], ["90", 2], ["00", 4], ["10",
 export type ThemeMode = "system" | "light" | "dark";
 
 export type Settings = {
-  nickname: string; theme_mode: ThemeMode; lang: string; sound: boolean; haptics: boolean; reduce_motion: boolean;
+  nickname: string; theme_mode: ThemeMode; lang: string; sound: boolean; haptics: boolean; reduce_motion: boolean; learn: boolean;
   scope: Scope; era: number; best: Record<string, number>; elo: number; device_id: string;
 };
-const DEFAULTS: Settings = { nickname: "", theme_mode: "system", lang: "tr", sound: true, haptics: true, reduce_motion: false,
+const DEFAULTS: Settings = { nickname: "", theme_mode: "system", lang: "tr", sound: true, haptics: true, reduce_motion: false, learn: true,
   scope: "all", era: 0, best: {}, elo: 1000, device_id: "" };
 
 type SettingsStore = Settings & {
@@ -35,8 +35,8 @@ function persist(s: Settings) {
   saveTimer = setTimeout(() => { AsyncStorage.setItem(KEY, JSON.stringify(s)).catch(() => {}); }, 150);
 }
 function pick(s: SettingsStore): Settings {
-  const { nickname, theme_mode, lang, sound, haptics, reduce_motion, scope, era, best, elo, device_id } = s;
-  return { nickname, theme_mode, lang, sound, haptics, reduce_motion, scope, era, best, elo, device_id };
+  const { nickname, theme_mode, lang, sound, haptics, reduce_motion, learn, scope, era, best, elo, device_id } = s;
+  return { nickname, theme_mode, lang, sound, haptics, reduce_motion, learn, scope, era, best, elo, device_id };
 }
 function randomId(): string {
   let out = "";

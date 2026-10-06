@@ -38,6 +38,7 @@ export default function Settings() {
       <SettingRow title={t("set.theme")}>
         <Segment<ThemeMode> values={["system", "light", "dark"]} labels={[t("theme.system"), t("theme.light"), t("theme.dark")]} current={st.theme_mode} onChange={(v) => st.set({ theme_mode: v })} />
       </SettingRow>
+      <SettingRow title={t("set.learn")}><Toggle value={st.learn} onChange={(v) => st.set({ learn: v })} /></SettingRow>
       <SettingRow title={t("set.reduce_motion")}><Toggle value={st.reduce_motion} onChange={(v) => st.set({ reduce_motion: v })} /></SettingRow>
       <SettingRow title={t("set.lang")}>
         <Segment values={LANGS} labels={LANGS.map((l) => l.toUpperCase())} current={st.lang} onChange={(v) => st.set({ lang: v })} />
