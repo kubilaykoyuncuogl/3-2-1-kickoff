@@ -2,6 +2,8 @@
 
 Kubilay'ın kişisel projesi. **3-2-1**: iki oyuncu birer kulüp söyler, 3'ten geri sayılır, 15 saniyede iki kulüpte de oynamış futbolcuyu bulan puan alır. 2 kişilik online versiyon. Hedef: **Android + iOS (telefon ve tablet) + Web**. PC hedef değil; Linux build yalnızca headless sunucu ve yerel test için. iOS build için Mac + Xcode gerekir (bu makineden çıkmaz).
 
+> **Geçiş kararı (2026-10-06):** ürün mobil uygulama; Godot istemcisi ve Godot oyun sunucusu **Expo / React Native + Python** ile değiştirilecek. Plan ve fazlar: `docs/expo-plan.md`. Geçiş bitene kadar Godot kodu referans olarak kalır; yeni kural/özellik Godot sürümüne eklenmez, `docs/TODO.md`'ye yazılır.
+
 ## Kurallar (ürün)
 - 2 oyuncu bağlanır (oda kodu ile). Her biri bir takım yazar; yazdıkça autocomplete listesi gelir.
 - İkisi de hazır → 3-2-1 geri sayım → 15 sn tur.
