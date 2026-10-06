@@ -10,7 +10,7 @@ import { Chip, Eyebrow, Lives, Nav, Page, Row, Toast, Txt, t } from "@/ui";
 import { Autocomplete } from "@/ui/autocomplete";
 
 export default function Career() {
-  const { s } = useTheme();
+  const { s, kb } = useTheme();
   const { d, at, failed, restart } = useSingle("career");
   const [clearKey, setClearKey] = useState(0);
   const title = t("mode.career");
@@ -26,9 +26,11 @@ export default function Career() {
       <Page>
         <Nav title={title} />
         <SingleHeader d={d} at={at} hotMs={0} score={d.score} left={<><Eyebrow>{t("career.player_n", d.idx + 1)}</Eyebrow><Lives n={d.lives} /></>} />
-        <Txt size={20} w={800}>{t("career.prompt")}</Txt>
-        {toast ? <Toast text={toast.text} kind={toast.kind} /> : null}
-        <Autocomplete kind="player" clearKey={`${d.idx}-${clearKey}`} onPick={(id, name) => { api.singleGuess(id, name); setClearKey((k) => k + 1); }} />
+        {kb ? null : <Txt size={20} w={800}>{t("career.prompt")}</Txt>}
+        {toast && !kb ? <Toast text={toast.text} kind={toast.kind} /> : null}
+        {/* klavye açıkken en çok 3 öneri: kulüp listesi (sorunun kendisi) görünür kalsın */}
+        <Autocomplete kind="player" max={kb ? 3 : 6} clearKey={`${d.idx}-${clearKey}`} onPick={(id, name) => { api.singleGuess(id, name); setClearKey((k) => k + 1); }}
+          below={kb && toast ? <Toast text={toast.text} kind={toast.kind} /> : undefined} />
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: s(6) }} keyboardShouldPersistTaps="handled">
           {total > clubs.length ? <Row index="?" title={t("career.more", total - clubs.length)} state="hidden" /> : null}
           {clubs.map((c, i) => ({ c, i })).reverse().map(({ c, i }) => (

@@ -116,17 +116,18 @@ function Side({ p, side, children, flex, ratio }: { p?: Player; side: "violet" |
 
 // ---------- takım seçimi ----------
 function Pick({ room, mine, opp, rem, awaySecs }: { room: Room; mine?: Player; opp?: Player; rem: number; awaySecs: number }) {
-  const { s } = useTheme();
+  const { s, kb: kbOpen } = useTheme();
+  const kb = kbOpen && !mine?.team;      // sıkı düzen yalnızca yazarken
   const router = useRouter();
   const secs = Math.ceil(rem / 1000);
   const showQuick = rem <= PICK_MS - QUICK_AT_MS && !mine?.team && (room.quick_picks?.length ?? 0) > 0;
   const oppText = opp?.away ? t("match.away_short", awaySecs) : opp?.ready ? t("match.opp_ready") : opp?.picked ? t("match.opp_picked") : t("match.opp_thinking");
   return (
     <>
-      <Nav title={t("match.pick_title", scopeLabel(room.scope ?? "all"), room.code ?? "")} onBack={() => { api.leave(); router.canGoBack() ? router.back() : router.replace("/online"); }}
+      <Nav keep title={t("match.pick_title", scopeLabel(room.scope ?? "all"), room.code ?? "")} onBack={() => { api.leave(); router.canGoBack() ? router.back() : router.replace("/online"); }}
         right={<Txt size={20} w={800} color={rem <= 10000 ? "no" : "muted"}>{String(secs)}</Txt>} />
-      <ScoreRow mine={mine} opp={opp} />
-      <Panel kind="violet" style={{ flex: 1, gap: s(8) }}>
+      {kb ? null : <ScoreRow mine={mine} opp={opp} />}
+      <Panel kind="violet" pad={kb ? 10 : 16} style={{ flex: 1, minHeight: 0, gap: s(kb ? 6 : 8) }}>
         <Eyebrow color="violet_ink">{t("you") + " · " + (mine?.nick ?? "")}</Eyebrow>
         {mine?.ready ? (
           <>
@@ -144,8 +145,8 @@ function Pick({ room, mine, opp, rem, awaySecs }: { room: Room; mine?: Player; o
           </>
         ) : (
           <>
-            <Autocomplete kind="team" onPick={(id, name) => api.pickTeam(id, name)} />
-            {showQuick && (
+            <Autocomplete kind="team" fill={kb} onPick={(id, name) => api.pickTeam(id, name)} />
+            {showQuick && !kb && (
               <View style={{ gap: s(6) }}>
                 <Txt size={13} w={600} color="violet_ink">{t("match.quick")}</Txt>
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: s(6) }}>
@@ -156,9 +157,9 @@ function Pick({ room, mine, opp, rem, awaySecs }: { room: Room; mine?: Player; o
           </>
         )}
       </Panel>
-      <Panel kind="amber">
+      <Panel kind="amber" pad={kb ? 10 : 16}>
         <Eyebrow color="amber_ink">{t("opponent") + " · " + (opp?.nick ?? "?")}</Eyebrow>
-        <Txt size={24} w={800} color="amber_ink">{oppText}</Txt>
+        <Txt size={kb ? 16 : 24} w={800} color="amber_ink" lines={kb ? 1 : undefined}>{oppText}</Txt>
       </Panel>
     </>
   );
@@ -191,7 +192,7 @@ function Reveal({ mine, opp }: { mine?: Player; opp?: Player }) {
 
 // ---------- tur ----------
 function Round({ room, mine, opp, rem, me, awaySecs }: { room: Room; mine?: Player; opp?: Player; rem: number; me: number; awaySecs: number }) {
-  const { s } = useTheme();
+  const { s, kb } = useTheme();
   const hot = rem <= 5000;
   const pen = mine?.penalty_ms ?? 0;
   const penaltyAt = useRef(0); const penAt = useGame((g) => g.roomAt);
@@ -212,12 +213,14 @@ function Round({ room, mine, opp, rem, me, awaySecs }: { room: Room; mine?: Play
         <TimerBox text={String(Math.ceil(rem / 1000))} hot={hot} />
       </View>
       <Progress value={rem} max={room.round_ms ?? 15000} hot={hot} />
-      <View style={{ flex: 1 }}>
-        <Autocomplete kind="player" locked={penRem > 0} lockedText={t("locked_fmt", Math.ceil(penRem / 1000))} clearKey={clearKey}
-          onPick={(id, name) => { api.guess(id, name); setClearKey((k) => k + 1); }} />
+      {/* klavye açıkken: bildirim kutunun altında, skor satırı tek satır özet */}
+      <View style={{ flex: 1, minHeight: 0 }}>
+        <Autocomplete kind="player" fill locked={penRem > 0} lockedText={t("locked_fmt", Math.ceil(penRem / 1000))} clearKey={clearKey}
+          onPick={(id, name) => { api.guess(id, name); setClearKey((k) => k + 1); }}
+          below={kb && toast ? <Toast text={toast.text} kind={toast.kind} /> : undefined} />
       </View>
-      {toast ? <Toast text={toast.text} kind={toast.kind} /> : null}
-      <ScoreRow mine={mine} opp={opp} />
+      {toast && !kb ? <Toast text={toast.text} kind={toast.kind} /> : null}
+      {kb ? <Txt size={13} w={700} color="muted" center lines={1}>{`${mine?.nick ?? ""}  ${mine?.score ?? 0} : ${opp?.score ?? 0}  ${opp?.nick ?? ""}`}</Txt> : <ScoreRow mine={mine} opp={opp} />}
     </>
   );
 }

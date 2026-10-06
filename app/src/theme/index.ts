@@ -1,6 +1,7 @@
 // Tema kancası: renkler (açık/koyu) + ölçek (400 px tasarım genişliği; 0.8–1.5).
 import { useColorScheme, useWindowDimensions } from "react-native";
 import { DARK, LIGHT, Colors, Token } from "./palette";
+import { useKeyboard } from "../keyboard";
 import { useSettings } from "../store";
 
 export const BASE_W = 400;
@@ -16,6 +17,7 @@ export function useTheme() {
   const scheme = useColorScheme();
   const mode = useSettings((s) => s.theme_mode);
   const { width, height } = useWindowDimensions();
+  const kb = useKeyboard((k) => k.open);      // klavye açık: ekranlar sıkı düzene geçer (başlık, geçmiş listesi gibi ikincil parçalar gizlenir)
   const dark = mode === "dark" || (mode === "system" && scheme === "dark");
   const c: Colors = dark ? DARK : LIGHT;
   // Telefonda yalnızca genişlikten (klavye açılınca yükseklik oynar, ölçek zıplamasın); 400'den dar ekranda küçülür (en az 0.8).
@@ -25,7 +27,7 @@ export function useTheme() {
   scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
   const s = (n: number) => Math.round(n * scale);
   const col = Math.min(MAX_COL * scale, width - s(40));     // sayfa sütunu: 20 px kenar, tablet/masaüstünde ortalanır
-  return { c, s, dark, scale, width, height, col };
+  return { c, s, dark, scale, width, height, col, kb };
 }
 export type Theme = ReturnType<typeof useTheme>;
 export type { Token, Colors };

@@ -31,7 +31,11 @@ export function useSingle(mode: string, hold?: (prev: Single, next: Single) => n
     setFailed(false); setShown(null); shownRef.current = null; setPending(null);
     const mock = devSingle(mode);      // yalnızca geliştirme: ?mock= ile hazır durum (ekran görüntüsü)
     if (mock) {
-      if (mock !== "none") { const m = { d: mock, at: Date.now() }; shownRef.current = m; setShown(m); return; }
+      if (mock !== "none") {
+        const m = { d: mock, at: Date.now() }; shownRef.current = m; setShown(m);
+        if ((mock as any)._pending) setPending({ ...mock, ...(mock as any)._pending });
+        return;
+      }
       loadTimer.current = setTimeout(() => setFailed(true), 2500); return;
     }
     useGame.getState().set({ single: null });
