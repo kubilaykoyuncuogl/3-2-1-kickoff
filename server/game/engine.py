@@ -10,6 +10,7 @@ import asyncio, math, pathlib, random, sys, time
 from typing import Callable
 
 from .consts import *
+from .bots import BOT_WAIT_MS, BotsMixin
 from .singles import SinglesMixin
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "tools"))
@@ -18,7 +19,7 @@ from normalize import normalize   # noqa: E402
 WORDS_PATH = pathlib.Path(__file__).resolve().parents[1] / "words.txt"
 
 
-class Engine(SinglesMixin):
+class Engine(SinglesMixin, BotsMixin):
     def __init__(self, send: Callable[[int, dict], None], index, accounts):
         self.send = send              # send(pid, msg): bağlı değilse sessizce düşer
         self.index = index            # server.index_service modülü (fonksiyonları doğrudan çağrılır)
@@ -35,6 +36,12 @@ class Engine(SinglesMixin):
         self.words = [w for w in WORDS_PATH.read_text().split() if w.isalpha()] if WORDS_PATH.exists() else []
         self._tasks: set[asyncio.Task] = set()
         self._queue_tick = 0
+        self._pid_seq = 10 ** 6
+        self.alloc_pid = self._alloc_pid_default      # ws.setup bunu bağlantı sayacıyla değiştirir
+        self._init_bots()
+
+    def _alloc_pid_default(self) -> int:
+        self._pid_seq += 1; return self._pid_seq
 
     # ---------- yardımcılar ----------
     @staticmethod
@@ -162,6 +169,7 @@ class Engine(SinglesMixin):
         p = self.profiles[pid]; p["scope"] = scope_ok(scope); p["era"] = era_ok(era)
         if pid not in self.queue:
             self.queue.append(pid); self.queue_since[pid] = self.now()
+            p["bot_after"] = random.uniform(*BOT_WAIT_MS)      # gerçek rakip çıkmazsa bu kadar sonra bot
         self._send_queue(pid)
 
     def cancel_find(self, pid: int) -> None:
@@ -498,6 +506,9 @@ class Engine(SinglesMixin):
                     code = self._new_code(); self.rooms[code] = self._new_room(code, True, widen_scope(pa.get("scope", "all"), pb.get("scope", "all")), era)
                     self._join(code, a); self._join(code, b); matched = True; break
             if not matched:
+                # öncelik gerçek oyuncu: ancak bu turda kimseyle eşleşemedi ve yeterince bekledi ise bot
+                if self._waited(a) >= self.profiles[a].get("bot_after", 10 ** 9) and not self.profiles[a].get("verified", False):
+                    self._start_bot_match(a); continue
                 self._send_queue(a); i += 1
 
     # ---------- Elo ve profil ----------

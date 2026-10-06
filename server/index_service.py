@@ -395,6 +395,7 @@ def quick_picks(scope: str = "all", n: int = 5, exclude: str = ""):
 famous: list = []          # player id'leri, ün sırasıyla (kariyeri çoğunlukla üst liglerde geçmiş bilinen oyuncular)
 famous_all: list = []      # doğum yılı süzgeci olmadan; dönem havuzları buradan türetilir
 pdec: dict = {}            # pid -> on yıl maskesi
+fame_rank: dict = {}       # pid -> ün sırası (0 = en ünlü); bot zorluk hesabı için
 fame2: dict = {}
 pinfo: dict = {}           # pid -> (name, birth_year, position)
 CATS = {                   # O mu bu mu kategorileri: anahtar -> (SQL ifadesi, biçim)
@@ -436,6 +437,7 @@ def _build_famous():
                       + (mv or 0) / 1e6 * 3.0 + in_top.get(pid, 0) * 80)
         pinfo[pid] = (name, by, pos); pdec[pid] = dec or 0
     famous_all.extend(sorted(fame2, key=lambda x: -fame2[x]))
+    fame_rank.update({pid: i for i, pid in enumerate(famous_all)})
     famous.extend([p for p in famous_all if (pinfo[p][1] or 0) >= MIN_BIRTH][:FAMOUS_SIZE])     # "tümü": bugünün oyuncusunun tanıyacağı dönem
     v, srt, rk = _cat_tables(tuple(famous[:VERSUS_POOL]))
     cat_values.update(v); cat_sorted.update(srt); cat_rank.update(rk)
@@ -563,6 +565,39 @@ def versus_pack(rounds: int = 80, seed: str = "", era: int = 0, scope: str = "al
             stayer = pair[ans]; side = ans
             if rank[stayer] < TOP_RESET_RANK or streak >= STREAK_RESET: break
     return out
+
+# ---- bot rakipler için yardımcılar (yalnızca oyun sunucusu çağırır; HTTP ucu yok)
+def bot_pair_info(a: int, b: int, era: int = 0, limit: int = 8) -> dict:
+    """Çiftin ortak oyuncuları (ün sırasıyla) ve en bilinenin ün sırası; botun bilip bilmeyeceğini bununla hesaplarız."""
+    e = _era(era)
+    rows = db.execute("""SELECT p.id, p.name FROM player_clubs x JOIN player_clubs y ON x.player_id=y.player_id JOIN players p ON p.id=x.player_id
+                         WHERE x.club_id=? AND y.club_id=?""" + era_sql("x.player_id", e) + " ORDER BY p.fame DESC LIMIT ?", (a, b, limit)).fetchall()
+    ranks = [fame_rank[i] for i, _ in rows if i in fame_rank]
+    return {"total": pair_n(a, b, e) if rows else 0, "players": [{"id": i, "name": n} for i, n in rows], "best_rank": min(ranks) if ranks else None}
+
+def bot_wrong(a: int, b: int, era: int = 0, r: float = 0.0):
+    """İnandırıcı yanlış tahmin: iki kulüpten yalnızca birinde oynamış bilinen bir oyuncu."""
+    if r >= 0.5: a, b = b, a
+    rows = db.execute("""SELECT p.id, p.name FROM player_clubs x JOIN players p ON p.id=x.player_id
+                         WHERE x.club_id=? AND NOT EXISTS(SELECT 1 FROM player_clubs y WHERE y.player_id=x.player_id AND y.club_id=?)"""
+                      + era_sql("p.id", _era(era)) + " ORDER BY p.fame DESC LIMIT 12", (a, b)).fetchall()
+    if not rows: return None
+    i, n = rows[int((r * 2 % 1) * len(rows)) % len(rows)]
+    return {"id": i, "name": n}
+
+def bot_pick(scope: str, exclude, max_tier: int, r: float = 0.0):
+    """Botun seçeceği kulüp: kapsamda, kullanılmamış, en çok max_tier derinliğinde; bilinen tier'lar daha olası."""
+    sc = scope if scope in SCOPES else "all"
+    rnd = random.Random(r)
+    avail = [t for t in range(1, N_TIERS + 1) if tiers[sc][t]][:max(1, max_tier)]
+    for _ in range(12):
+        t = rnd.choices(avail, weights=[1.0 / (1 + k) for k in range(len(avail))])[0]
+        cand = [c for c in tiers[sc][t] if c not in exclude]
+        if cand:
+            cid = rnd.choice(cand)
+            row = db.execute("SELECT id, name FROM clubs WHERE id=?", (cid,)).fetchone()
+            if row: return {"id": row[0], "name": row[1], "tier": t}
+    return None
 
 @app.get("/famous")
 def famous_list(offset: int = 0, limit: int = 30):

@@ -28,6 +28,7 @@ def _send(pid: int, msg: dict) -> None:
 def setup(index_mod, accounts_mod) -> Engine:
     global engine
     engine = Engine(_send, index_mod, accounts_mod)
+    engine.alloc_pid = lambda: next(_ids)      # bot rakipler de bağlantılarla aynı kimlik sayacından alır
     return engine
 
 

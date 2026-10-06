@@ -78,7 +78,17 @@ def _err(code: str, device: str = "") -> dict:
         if row: out["profile"] = _profile(row)
     return out
 
+# Bot rakiplerin görünen adları: gerçek oyuncular hesap adı olarak alamaz (yoksa botla karışır)
+_bot_names = pathlib.Path(__file__).with_name("bot_names.txt")
+RESERVED = {normalize(w) for w in (_bot_names.read_text().splitlines() if _bot_names.exists() else []) if w.strip() and not w.startswith("#")}
+
+def nick_registered(norm: str) -> bool:
+    """Bu ad bir hesaba ait mi? (bot adı seçerken sorulur)"""
+    with lock:
+        return db().execute("SELECT 1 FROM users WHERE nick_norm = ? AND linked_at IS NOT NULL", (norm,)).fetchone() is not None
+
 def _nick_taken(norm: str, except_id: int) -> bool:
+    if norm in RESERVED: return True
     return db().execute("SELECT 1 FROM users WHERE nick_norm = ? AND linked_at IS NOT NULL AND id != ?", (norm, except_id)).fetchone() is not None
 
 def _too_many(device: str) -> bool:
