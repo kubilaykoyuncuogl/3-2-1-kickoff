@@ -47,6 +47,7 @@ def widen_scope(a: str, b: str) -> str:
     fa, fb = floor(a), floor(b)
     return SCOPE_ORDER[max(rank(fa), rank(fb))]
 SINGLE_LIVES = {"ladder": 3, "blitz": 1, "career": 3, "chain": 3, "versus": 1}
+VERSUS_LIKE = ("versus", "weekly")      # iki seçenekten büyüğünü seç; "weekly" = haftanın maçı (server/game/weekly.py)
 CAREER_REVEAL_MS = 8000        # kariyer yolu: bu aralıkla bir kulüp daha açılır
 CAREER_LAST_MS = 15000         # hepsi açıldıktan sonra son tahmin süresi
 CHAIN_STEP_MS = 20000

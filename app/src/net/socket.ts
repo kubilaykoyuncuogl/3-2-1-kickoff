@@ -40,7 +40,7 @@ export function connect() {
   const url = serverUrl();
   try { ws = new WebSocket(url); } catch { schedule(); return; }
   const sock = ws;
-  sock.onopen = () => { retry = 0; useGame.getState().set({ connected: true }); hello(); };
+  sock.onopen = () => { retry = 0; useGame.getState().set({ connected: true }); hello(); send({ t: "weekly_info" }); };
   sock.onmessage = (ev) => { try { handle(JSON.parse(String(ev.data))); } catch {} };
   sock.onerror = () => {};
   sock.onclose = () => {
@@ -75,6 +75,7 @@ function handle(m: any) {
       useProfile.getState().apply(m.d);
       if (m.d.proto !== undefined && m.d.proto !== PROTO) g.set({ updateNeeded: true });
       break;
+    case "weekly_state": g.set({ weekly: m.d ?? null }); break;
     case "acct_result": g.set({ acctResult: { ...m.d, at: Date.now() } }); break;
     case "err":
       if (m.key === "err.proto") g.set({ updateNeeded: true });
@@ -101,4 +102,6 @@ export const api = {
   singleTeam: (team_id: number, name: string) => send({ t: "single_team", team_id, name }),
   singleQuit: () => send({ t: "single_quit" }),
   acct: (op: string, a = "", b = "") => send({ t: "acct", op, a, b }),
+  weeklyInfo: () => send({ t: "weekly_info" }),
+  weeklyStart: (side: "a" | "b") => send({ t: "weekly_start", side }),
 };

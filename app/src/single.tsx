@@ -14,7 +14,8 @@ import { Btn, Chip, Eyebrow, Nav, Page, Panel, Progress, Spacer, TimerBox, Toast
 const LOAD_TIMEOUT = 8000;
 
 // `hold(prev, next)`: yeni durum gösterilmeden önce eski ekranın kaç ms daha kalacağı (şık/sonuç gösterimi için); 0 = hemen
-export function useSingle(mode: string, hold?: (prev: Single, next: Single) => number) {
+// `starter`: oturumu başlatan istek; verilmezse standart single_start (haftanın maçı kendi isteğini gönderir)
+export function useSingle(mode: string, hold?: (prev: Single, next: Single) => number, starter?: () => void) {
   const raw = useGame((g) => g.single);
   const rawAt = useGame((g) => g.singleAt);
   const [shown, setShown] = useState<{ d: Single; at: number } | null>(null);
@@ -28,7 +29,7 @@ export function useSingle(mode: string, hold?: (prev: Single, next: Single) => n
     setFailed(false); setShown(null); shownRef.current = null; setPending(null);
     useGame.getState().set({ single: null });
     if (!useGame.getState().connected) connect();
-    api.singleStart(mode);
+    if (starter) starter(); else api.singleStart(mode);
     if (loadTimer.current) clearTimeout(loadTimer.current);
     loadTimer.current = setTimeout(() => { if (!shownRef.current) setFailed(true); }, LOAD_TIMEOUT);
   };

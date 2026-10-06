@@ -12,6 +12,7 @@ from typing import Callable
 from .consts import *
 from .bots import BOT_WAIT_MS, BotsMixin
 from .singles import SinglesMixin
+from .weekly import WeeklyMixin
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "tools"))
 from normalize import normalize   # noqa: E402
@@ -19,7 +20,7 @@ from normalize import normalize   # noqa: E402
 WORDS_PATH = pathlib.Path(__file__).resolve().parents[1] / "words.txt"
 
 
-class Engine(SinglesMixin, BotsMixin):
+class Engine(SinglesMixin, BotsMixin, WeeklyMixin):
     def __init__(self, send: Callable[[int, dict], None], index, accounts):
         self.send = send              # send(pid, msg): bağlı değilse sessizce düşer
         self.index = index            # server.index_service modülü (fonksiyonları doğrudan çağrılır)
@@ -132,6 +133,8 @@ class Engine(SinglesMixin, BotsMixin):
         elif t == "single_team": self.single_team(pid, i("team_id"), s("name", 80))
         elif t == "single_quit": self.single_quit(pid)
         elif t == "acct": await self.acct(pid, s("op", 12), s("a", 64), s("b", 64))
+        elif t == "weekly_info": await self.weekly_info(pid)
+        elif t == "weekly_start": await self.weekly_start(pid, s("side", 1))
 
     # ---------- istemci → sunucu ----------
     async def hello(self, pid: int, nick: str, device: str, proto: int) -> None:

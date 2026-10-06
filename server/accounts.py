@@ -43,6 +43,8 @@ def db() -> sqlite3.Connection:
         CREATE INDEX IF NOT EXISTS ix_devices_user ON devices(user_id);
         CREATE TABLE IF NOT EXISTS identities(provider TEXT NOT NULL, subject TEXT NOT NULL, user_id INTEGER NOT NULL, PRIMARY KEY(provider, subject));
         CREATE TABLE IF NOT EXISTS bests(user_id INTEGER NOT NULL, mode TEXT NOT NULL, score INTEGER NOT NULL, PRIMARY KEY(user_id, mode));
+        CREATE TABLE IF NOT EXISTS weekly_side(slug TEXT NOT NULL, side TEXT NOT NULL, total INTEGER NOT NULL DEFAULT 0, runs INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(slug, side));
+        CREATE TABLE IF NOT EXISTS weekly_user(slug TEXT NOT NULL, device TEXT NOT NULL, side TEXT NOT NULL, points INTEGER NOT NULL DEFAULT 0, runs INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(slug, device));
         """)
     return _db
 
@@ -219,3 +221,25 @@ def import_legacy(p: dict = Body(...)):
                 db().execute("UPDATE users SET elo = ?, games = ? WHERE id = ?", (int(acc.get("elo", 1000)), int(acc.get("games", 0)), u[0])); n += 1
         db().commit()
     return {"ok": True, "imported": n}
+
+# ---- haftanın maçı: taraf toplamları (oyun sunucusu doğrudan çağırır; HTTP ucu yok)
+def weekly_state(slug: str, device: str = "") -> dict:
+    """İki tarafın toplam puanı ve koşu sayısı; cihaz taraf seçtiyse onun tarafı ve katkısı."""
+    with lock:
+        d = db()
+        totals = {"a": {"total": 0, "runs": 0}, "b": {"total": 0, "runs": 0}}
+        for side, total, runs in d.execute("SELECT side, total, runs FROM weekly_side WHERE slug = ?", (slug,)):
+            if side in totals: totals[side] = {"total": total, "runs": runs}
+        me = d.execute("SELECT side, points, runs FROM weekly_user WHERE slug = ? AND device = ?", (slug, device)).fetchone() if device else None
+        return {"totals": totals, "me": {"side": me[0], "points": me[1], "runs": me[2]} if me else None}
+
+def weekly_add(slug: str, device: str, side: str, points: int) -> None:
+    """Koşu puanını tarafın toplamına ekler. Cihazın tarafı ilk koşuda sabitlenir; sonraki koşular hep o tarafa yazılır."""
+    if side not in ("a", "b") or points <= 0 or not device: return
+    with lock:
+        d = db()
+        row = d.execute("SELECT side FROM weekly_user WHERE slug = ? AND device = ?", (slug, device)).fetchone()
+        if row: side = row[0]
+        d.execute("INSERT INTO weekly_user VALUES(?,?,?,?,1) ON CONFLICT(slug, device) DO UPDATE SET points = points + excluded.points, runs = runs + 1", (slug, device, side, points))
+        d.execute("INSERT INTO weekly_side VALUES(?,?,?,1) ON CONFLICT(slug, side) DO UPDATE SET total = total + excluded.total, runs = runs + 1", (slug, side, points))
+        d.commit()

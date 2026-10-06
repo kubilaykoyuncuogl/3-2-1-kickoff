@@ -118,8 +118,12 @@ export type Single = { mode: string; idx: number; total: number; lives: number; 
   remaining_ms: number; per_ms: number; over: boolean; item: Record<string, any>; last: Record<string, any>; era: number };
 export type Suggestion = { id: number; name: string; born?: number; used?: boolean; in_scope?: boolean; defunct?: boolean };
 
+// Haftanın maçı: iki taraf (ad, kısa ad, [zemin, yazı] renkleri, toplam puan, koşu sayısı) ve oyuncunun seçtiği taraf
+export type WeeklySide = { name: string; short: string; colors: [string, string]; total: number; runs: number };
+export type Weekly = { slug: string; date: string; a: WeeklySide; b: WeeklySide; me: { side: "a" | "b"; points: number; runs: number } | null };
+
 type GameStore = {
-  connected: boolean; pid: number; updateNeeded: boolean;
+  connected: boolean; pid: number; updateNeeded: boolean; weekly: Weekly | null;
   room: Room | null; roomAt: number;          // roomAt: son oda durumunun geldiği an (phase_ms'i yerel saate bağlamak için)
   single: Single | null; singleAt: number;
   suggestions: { kind: string; q: string; list: Suggestion[] } | null;
@@ -128,7 +132,7 @@ type GameStore = {
   set: (patch: Partial<Omit<GameStore, "set">>) => void;
 };
 export const useGame = create<GameStore>((set) => ({
-  connected: false, pid: 0, updateNeeded: false, room: null, roomAt: 0, single: null, singleAt: 0, suggestions: null, error: null, acctResult: null,
+  connected: false, pid: 0, updateNeeded: false, weekly: null, room: null, roomAt: 0, single: null, singleAt: 0, suggestions: null, error: null, acctResult: null,
   set: (patch) => set(patch),
 }));
 

@@ -5,6 +5,7 @@ import { View } from "react-native";
 import { useProfile, useSettings } from "@/store";
 import { useTheme } from "@/theme";
 import { Btn, Chip, Page, Spacer, Txt, Wordmark, t } from "@/ui";
+import { WeeklyButton } from "@/ui/weekly";
 
 export default function Menu() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function Menu() {
       <Spacer h={16} flex={false} />
       <Btn text={t("menu.online")} kind="violet" right={String(elo)} onPress={() => router.push("/online")} />
       <Btn text={t("menu.single")} kind="amber" right=">" onPress={() => router.push("/single")} />
+      <WeeklyButton />
       <Btn text={t("menu.settings")} kind="line" onPress={() => router.push("/settings")} />
       <Spacer />
       <Txt size={11} w={600} color="muted" center>{t("menu.footer")}</Txt>
