@@ -96,7 +96,9 @@ async def run(ws, drop_once, rejoin=False):
                     await asyncio.sleep(A.delay)
                     await ws.send(json.dumps({"t": "suggest", "kind": "player", "q": A.guess}))
             elif d["state"] == 6:
-                log("over winner=%s me=%s" % (d.get("winner"), me)); return
+                log("over winner=%s me=%s" % (d.get("winner"), me))
+                for h in d.get("history") or []: log("  tur:", json.dumps(h, ensure_ascii=False))
+                return
 
 
 async def on_single(ws, d):

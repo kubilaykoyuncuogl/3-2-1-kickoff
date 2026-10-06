@@ -31,10 +31,10 @@ EQUAL_SPREAD, STEP_RANGE = 40, (60, 140)
 MIN_ANSWER_MS, MIN_MEDIAN_MS = 2800.0, 3600.0      # telefonda bir adı yazıp öneriye dokunmanın alt sınırı: bot bundan hızlı cevap vermez
 BOT_GAMES = 50                    # Elo K katsayısı için: bot "yeni oyuncu" sayılmaz
 
-# S_K: bilme olasılığının eğimi · T_EL: güç farkının cevap süresine etkisi · T_BASE / T_SIGMA: cevap süresi (ms) ve dağılımı
+# S_K: bir oyuncuyu tanıma olasılığının eğimi (küçük = keskin; 350'den büyük seçilmez, yoksa orta seviye bot kolay çiftleri kaçırır) · T_EL: güç farkının cevap süresine etkisi · T_BASE / T_SIGMA: cevap süresi (ms) ve dağılımı
 # OFFSET: botların gerçek oyunculara göre topluca güçlendirilmesi / zayıflatılması (Elo). Canlı sonuçlara göre elle ayarlanır:
 #         loglardaki [bot] result satırlarında denk botlara karşı oyuncular %50'den çok kazanıyorsa artır.
-DEFAULT_PARAMS = {"S_K": 400.0, "T_EL": 1200.0, "T_BASE": 7000.0, "T_SIGMA": 0.40, "OFFSET": 0.0}
+DEFAULT_PARAMS = {"S_K": 250.0, "T_EL": 1200.0, "T_BASE": 7000.0, "T_SIGMA": 0.50, "OFFSET": 0.0}
 
 
 def load_params() -> dict:
@@ -50,10 +50,27 @@ def load_names() -> list:
 
 
 # ---------- model (saf fonksiyonlar; simülasyon da bunları kullanır) ----------
+def player_difficulty(rank) -> float:
+    """Bir oyuncuyu tanımanın zorluğu, Elo biriminde: ün sırası 0 = herkesin bildiği; None = ünlü havuzunda yok."""
+    return 1450.0 if rank is None else 760.0 + 230.0 * math.log10(1.0 + rank / 15.0)
+
+
 def difficulty(best_rank, total: int) -> float:
-    """Çiftin zorluğu, Elo biriminde: en bilinen ortak oyuncunun ün sırası (0 = en ünlü; None = ünlü havuzunda yok) ve ortak oyuncu sayısı."""
-    d = 1450.0 if best_rank is None else 760.0 + 230.0 * math.log10(1.0 + best_rank / 15.0)
-    return d - 50.0 * math.log10(max(1, total))
+    """Çiftin kaba zorluğu (yalnızca log ve özet için)."""
+    return player_difficulty(best_rank) - 50.0 * math.log10(max(1, total))
+
+
+def know_probs(theta: float, info: dict, P: dict) -> list:
+    """Ortak oyuncuların her birini botun tanıma olasılığı. Çifti bilmek = en az birini tanımak:
+    Real Madrid × Liverpool gibi çok ünlü ortak oyuncusu olan çiftleri orta seviye bot da neredeyse hep bilir,
+    tek tük tanınmış ismi olan çiftlerde ise seviye belirleyici olur."""
+    return [1.0 / (1.0 + 10.0 ** ((player_difficulty(c.get("rank")) - theta) / P["S_K"])) for c in info.get("players") or []]
+
+
+def p_know(theta: float, d: float, info: dict, P: dict) -> float:
+    q = 1.0
+    for x in know_probs(theta, info, P): q *= 1.0 - x
+    return 1.0 - q
 
 
 def traits_of(code: str) -> dict:
@@ -62,26 +79,35 @@ def traits_of(code: str) -> dict:
     return {"speed": 1.0, "wrong": 1.0}
 
 
-def plan_round(theta: float, d: float, traits: dict, rng: random.Random, P: dict, round_ms: int = ROUND_MS) -> list:
-    """Bir turda botun yapacakları: [(ms, "wrong" | "right")], zamana göre sıralı. Boş liste = bilemedi.
-    Tur süresine göre: kısa turda geç gelen cevap yetişmez; uzun turda ilk 15 sn'de bulamadığını sonradan hatırlama payı vardır."""
+def plan_round(theta: float, info: dict, traits: dict, rng: random.Random, P: dict, round_ms: int = ROUND_MS) -> list:
+    """Bir turda botun yapacakları: [(ms, "wrong" | "right", cevap_indeksi)], zamana göre sıralı. Boş liste = bilemedi.
+    Bot ortak oyunculardan tanıdıklarının en bilineniyle cevap verir; ne kadar rahat tanıyorsa o kadar çabuk.
+    Tur süresine göre: kısa turda geç gelen cevap yetişmez; uzun turda ilk anda aklına gelmeyeni sonradan hatırlama payı vardır."""
     events = []
     wrong_p = min(0.32, max(0.03, 0.26 - (theta - 800.0) / 3200.0)) * traits["wrong"]
     t_wrong = rng.uniform(2500, max(3000.0, min(10000.0, round_ms * 0.67))) if rng.random() < wrong_p else None
-    p_know = 1.0 / (1.0 + 10.0 ** ((d - theta) / P["S_K"]))
-    late = round_ms > ROUND_MS and rng.random() < 1.0 - (1.0 - p_know) ** ((round_ms / ROUND_MS - 1.0) * 0.5)
-    if rng.random() < p_know:
+    cands = info.get("players") or []
+    probs = know_probs(theta, info, P)
+    known = [k for k, q in enumerate(probs) if rng.random() < q]
+    late = None
+    if not known and round_ms > ROUND_MS:      # uzun tur: düşündükçe gelen
+        extra = (round_ms / ROUND_MS - 1.0) * 0.5
+        later = [k for k, q in enumerate(probs) if rng.random() < 1.0 - (1.0 - q) ** extra]
+        if later: late = later[0]
+    if known:
+        k = known[0]
+        d = player_difficulty(cands[k].get("rank"))
         med = min(13000.0, max(MIN_MEDIAN_MS, P["T_BASE"] * 10.0 ** ((d - theta) / P["T_EL"]) * traits["speed"]))
         t = max(MIN_ANSWER_MS, med * math.exp(rng.gauss(0.0, P["T_SIGMA"])))
         if t_wrong is not None:
             if t < t_wrong: t_wrong = None                      # doğruyu önce buldu
             else: t = max(t, t_wrong + PENALTY_MS + rng.uniform(300, 1500))   # yanlıştan sonra kilit biter, sonra doğru
-        if t < round_ms - 400: events.append((t, "right"))
-    elif late:      # uzun tur: düşündükçe aklına geldi
+        if t < round_ms - 400: events.append((t, "right", k))
+    elif late is not None:
         t = rng.uniform(ROUND_MS * 0.8, round_ms - 600)
         if t_wrong is not None: t = max(t, t_wrong + PENALTY_MS + rng.uniform(300, 1500))
-        if t < round_ms - 400: events.append((t, "right"))
-    if t_wrong is not None: events.append((t_wrong, "wrong"))
+        if t < round_ms - 400: events.append((t, "right", late))
+    if t_wrong is not None: events.append((t_wrong, "wrong", -1))
     return sorted(events)
 
 
@@ -186,17 +212,14 @@ class BotsMixin:
                         seen = key
                         t = list(r["teams"].values())
                         info = await asyncio.to_thread(self.index.bot_pair_info, t[0], t[1], int(r["era"]))
-                        d = difficulty(info.get("best_rank"), int(info.get("total", 0)))
-                        plan = {"start": r["phase_end"] - r["round_ms"], "events": plan_round(theta, d, traits, rng, P, r["round_ms"]), "info": info, "teams": t}
+                        plan = {"start": r["phase_end"] - r["round_ms"], "events": plan_round(theta, info, traits, rng, P, r["round_ms"]), "info": info, "teams": t}
                         continue
                     ev = plan.get("events") or []
                     if ev and now - plan["start"] >= ev[0][0] and r["penalty_until"].get(bot, 0) <= now:
-                        _t, kind = ev.pop(0)
+                        _t, kind, k = ev.pop(0)
                         if kind == "right":
                             cands = plan["info"].get("players") or []
-                            if cands:
-                                c = cands[min(len(cands) - 1, int(abs(rng.gauss(0, 1.2))))]      # çoğunlukla en bilinen isim
-                                await self.guess(bot, int(c["id"]), c["name"])
+                            if 0 <= k < len(cands): await self.guess(bot, int(cands[k]["id"]), cands[k]["name"])      # tanıdığı oyuncuyla cevap verir
                         else:
                             w = await asyncio.to_thread(self.index.bot_wrong, plan["teams"][0], plan["teams"][1], int(r["era"]), rng.random())
                             if w: await self.guess(bot, int(w["id"]), w["name"])

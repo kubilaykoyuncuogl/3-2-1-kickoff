@@ -1,4 +1,5 @@
 // O mu bu mu: iki futbolcu, bir kategori. Değeri büyük olana dokun; doğruysa sürer, ilk yanlışta biter.
+import { runChips } from "@/ui/pickers";
 import React, { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { api } from "@/net/socket";
@@ -10,6 +11,14 @@ import { Badge, Eyebrow, Nav, Page, Toast, Txt, t } from "@/ui";
 // sonuç gösterimi: doğruysa 0,9 sn, koşu bitiyorsa 1,5 sn değerler açık kalır
 const hold = (prev: Single, next: Single) => (next.over ? (next.last?.values ? 1500 : 0) : next.idx !== prev.idx && next.last?.type === "correct" ? 900 : 0);
 
+// Koşuyu bitiren sorunun dökümü: soru, iki oyuncu ve sayıları
+function lastLine(d: Single, fmt: string): string | undefined {
+  const v = d.last?.values; const it = d.item;
+  if (!v || !it?.names) return d.last?.type === "timeout" ? t("sp.time_up") : undefined;
+  const f = (x: unknown) => (fmt === "money" ? money(Number(x)) : String(Math.trunc(Number(x))));
+  return `${d.last?.type === "timeout" ? t("sp.time_up") + "  ·  " : ""}${t("cat." + it.cat)}\n${it.names[0]} ${f(v[0])}  ·  ${it.names[1]} ${f(v[1])}`;
+}
+
 export default function Versus() {
   const { c, s } = useTheme();
   const { d, at, pending, failed, restart } = useSingle("versus", hold);
@@ -17,7 +26,7 @@ export default function Versus() {
   useEffect(() => { setPressed(-1); }, [d?.idx]);
   const title = t("mode.versus");
   if (!d) return <SingleLoading title={title} failed={failed} onRetry={restart} />;
-  if (d.over) return <SingleOver mode="versus" title={title} d={d} summary={t("versus.summary", d.done ?? 0)} note={d.last?.type === "timeout" ? t("sp.time_up") : undefined} onAgain={restart} />;
+  if (d.over) return <SingleOver mode="versus" title={title} d={d} summary={t("versus.summary", d.done ?? 0)} note={lastLine(d, String(d.item?.fmt ?? "int"))} onAgain={restart} chips={runChips()} />;
   const it = d.item; const fmt = String(it.fmt ?? "int");
   const val = (v: unknown) => (v === null || v === undefined ? "?" : fmt === "money" ? money(Number(v)) : String(Math.trunc(Number(v))));
   const pl = pending?.last ?? {};

@@ -1,5 +1,6 @@
 // Sıradaki kulüp: oyuncu verilir; önce ilk profesyonel kulübü, sonra her transferin hedefi tahmin edilir.
 // İpuçları karo olarak: yıl, tür, bedel, gittiği ülke, lig.
+import { runChips } from "@/ui/pickers";
 import React, { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { api } from "@/net/socket";
@@ -23,7 +24,7 @@ export default function Chain() {
   const title = t("mode.chain");
   if (!d) return <SingleLoading title={title} failed={failed} onRetry={restart} />;
   const last = d.last ?? {};
-  if (d.over) return <SingleOver mode="chain" title={title} d={d} summary={t("chain.summary", d.done ?? 0)} note={last.answer ? t("chain.was", last.answer) : undefined} onAgain={restart} />;
+  if (d.over) return <SingleOver mode="chain" title={title} d={d} summary={t("chain.summary", d.done ?? 0)} note={last.answer ? t("chain.was", last.answer) : undefined} onAgain={restart} chips={runChips()} />;
   const it = d.item; const hint = it.hint ?? {}; const first = it.step === 0; const hist: any[] = it.history ?? [];
   const sub: string[] = [];
   if (it.born != null) sub.push(t("chain.born", it.born));

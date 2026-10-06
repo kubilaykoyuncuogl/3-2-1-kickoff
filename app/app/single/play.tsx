@@ -1,5 +1,6 @@
 // Klasik merdiven ve Beşte Bir: oynanış + koşu sonu.
 import { useLocalSearchParams } from "expo-router";
+import { runChips } from "@/ui/pickers";
 import React, { useEffect, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, View } from "react-native";
 import { api } from "@/net/socket";
@@ -52,7 +53,7 @@ export default function SinglePlay() {
     return <SingleOver mode={mode} title={blitz ? t("mode.blitz") : t("mode.ladder_short")} d={d}
       summary={blitz ? t("sp.blitz_summary", d.idx, d.best_combo) : t("sp.ladder_summary", d.idx)}
       extra={blitz && last.type === "wrong" ? t("sp.answer_was", d.item.options?.[last.answer] ?? "") : undefined}
-      onAgain={() => { prevScore.current = 0; history.current = []; setToast(null); restart(); }} />;
+      onAgain={() => { prevScore.current = 0; history.current = []; setToast(null); restart(); }} chips={runChips()} />;
   }
   const it = d.item;
   // şık vurgusu: bekleyen (henüz gösterilmeyen) durumun sonucuna göre

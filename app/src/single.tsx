@@ -3,13 +3,14 @@
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import React, { ReactNode, useEffect, useRef, useState } from "react";
-import { View } from "react-native";
+import { Platform, Share, View } from "react-native";
 import { remaining, useNow } from "./hooks";
 import { getLang, has, t } from "./i18n";
 import { api, connect } from "./net/socket";
 import { Single, useGame, useSettings } from "./store";
 import { useTheme } from "./theme";
 import { Btn, Chip, Eyebrow, Nav, Page, Panel, Progress, Spacer, TimerBox, Toast, Txt } from "./ui";
+import { ResultCard, SITE, Section, endSections, sectionsText } from "./ui/result";
 
 const LOAD_TIMEOUT = 8000;
 
@@ -84,25 +85,34 @@ export function SingleHeader({ left, score, d, at, hotMs }: { left: ReactNode; s
   );
 }
 
-export function SingleOver({ mode, title, d, summary, note, extra, onAgain }: { mode: string; title: string; d: Single; summary: string; note?: string; extra?: string; onAgain: () => void }) {
+// Koşu sonu: paylaşılabilir kart (skor, seni yakan soru, biliyor muydun) + Tekrar / Paylaş.
+// `note` ve `extra` kartın altına sade satır olarak eklenir (ör. "Trabzonspor hanesine +640 puan").
+export function SingleOver({ mode, title, d, summary, note, extra, onAgain, chips }: { mode: string; title: string; d: Single; summary: string; note?: string; extra?: string; onAgain: () => void; chips?: string[] }) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const before = useRef(useSettings.getState().best[mode] ?? 0).current;
   const record = d.score > before;
   useEffect(() => { if (record) { const st = useSettings.getState(); st.set({ best: { ...st.best, [mode]: d.score } }); } }, []);
+  const sections: Section[] = endSections((d as any).end);
+  if (!sections.some((x) => x.kind === "burn") && note) sections.unshift({ title: t("end.burn"), lines: note.split("\n"), kind: "burn" });
+  if (extra) sections.push({ title: t("end.side"), lines: [extra], kind: "plain" });
+  const share = async () => {
+    const text = `3-2-1 Kickoff · ${title} · ${t("sp.score", d.score)}\n${summary}\n${sectionsText(sections)}\n${SITE}`;
+    try {
+      if (Platform.OS === "web") {
+        if (typeof navigator !== "undefined" && (navigator as any).share) await (navigator as any).share({ title: "3-2-1 Kickoff", text });
+        else await Clipboard.setStringAsync(text);
+      } else await Share.share({ message: text });
+      setCopied(true);
+    } catch {}
+  };
   return (
-    <Page>
+    <Page scroll>
       <Nav title={t("sp.over")} onBack={() => (router.canGoBack() ? router.back() : router.replace("/single"))} />
-      <Panel kind="violet">
-        <Eyebrow color={record ? "ok" : "violet_ink"} center>{title + (record ? t("sp.record") : t("sp.best", Math.max(before, d.score)))}</Eyebrow>
-        <Txt size={64} w={800} color="violet_ink" center>{String(d.score)}</Txt>
-        <Txt size={14} w={600} color="violet_ink" center>{summary}</Txt>
-        {extra ? <Txt size={13} w={700} color="violet_ink" center>{extra}</Txt> : null}
-      </Panel>
-      {note ? <Toast text={note} kind="no" /> : null}
+      <ResultCard mode={title} chips={chips} big={String(d.score)} label={record ? t("end.record") : t("end.score_best", Math.max(before, d.score))} sub={summary} record={record} sections={sections} />
       <Spacer />
       <Btn text={t("again")} kind="amber" onPress={() => { setCopied(false); onAgain(); }} />
-      <Btn text={copied ? t("copied") : t("share")} kind="ghost" onPress={() => { Clipboard.setStringAsync(t("sp.share_text", title, d.score)); setCopied(true); }} />
+      <Btn text={copied ? t("shared") : t("share")} kind="ghost" onPress={share} />
     </Page>
   );
 }
