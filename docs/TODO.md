@@ -21,7 +21,7 @@ Güncelleme: 2026-10-06. Biten işler buradan silinir; ayrıntı ilgili doküman
 ## Oyun
 - [ ] Yeni üç modun çok oyunculusu (Kariyer yolu, Sıradaki kulüp, O mu bu mu): tek oyunculu test sonuçlarına göre.
 - [ ] Panel geçiş animasyonları (paneller ortaya kayar, chip'e küçülür); `docs/screens.md` geçiş tablosu.
-- [ ] Ses ve titreşim (geri sayım, düdük, doğru/yanlış). Ayarlar'daki kaydırıcılar hazır, ses yok.
+- [ ] Ses ve titreşim (geri sayım, düdük, doğru/yanlış). Ayarlar'da yalnızca aç/kapa duruyor; müzik ve efekt düzeyi kaydırıcıları ekrana sığdırmak için kaldırıldı (değerler `App.music_vol` / `App.sfx_vol`'da), ses gelince geri eklenecek.
 - [ ] "Nasıl oynanır"ı oynanabilir tura çevirmek (şu an beş adımlık anlatım).
 - [ ] Önerilerde aynı adlı kulüplere ülke etiketi (iki "Arsenal FC").
 - [ ] Daha fazla mod: Hangisi pahalı, Kiralık mı satış mı, Kariyeri sırala.

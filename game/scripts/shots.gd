@@ -28,6 +28,8 @@ func _ready() -> void:
 	await _scr("04b_online_search_era", "online", func(s): s.mode = "searching")
 	App.era = 0
 	await _scr("07_settings", "settings")
+	await _scr("07b_howto_ladder", "howto", func(x): x.i = 5)
+	await _scr("07c_howto_versus", "howto", func(x): x.i = 9)
 	App.linked = false
 	await _scr("08_account_guest", "account")
 	await _scr("08b_account_have", "account", func(x): x.view = "have")

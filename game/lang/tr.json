@@ -162,7 +162,7 @@
  "howto.4.b": "5 sn kilit",
  "howto.4.body": "5 saniye yazamazsın. Rakibin yanlışını da görürsün, kimi elediğini bilirsin.",
  "howto.4.title": "Yanlış dersen",
- "howto.5.body": "Bir maçta bir takım bir kez söylenir. Ortak oyuncusu olmayan çift seçilirse tur boş geçer; art arda üçünde maç berabere biter. 45 saniyede takım seçmeyen turu kaybeder.",
+ "howto.5.body": "Bir maçta bir takım bir kez söylenir. Ortak oyuncusu olmayan çift seçilirse tur oynanmaz, yeniden seçilir; art arda üçünde maç berabere biter. 45 saniyede takım seçmeyen turu kaybeder.",
  "howto.5.title": "3 puan maçı alır",
  "join": "Katıl",
  "kind.free": "Bedelsiz / açıklanmadı",
@@ -318,5 +318,18 @@
  "era.short.10": "10'lar",
  "era.short.20": "20'ler",
  "match.back_to_pick": "Takım seçimine dönülüyor",
- "match.returning": "Menüye dönülüyor · %d"
+ "match.returning": "Menüye dönülüyor · %d",
+ "howto.ladder": "İki kulüp gelir; ikisinde de oynamış bir futbolcu yaz. 3 canın var. Basamak 20 saniyeyle başlar, ilerledikçe süre kısalır ve kulüpler zorlaşır; hızlı bilen daha çok puan alır. Başlamadan kulüp kapsamını ve dönemi seçersin.",
+ "howto.blitz": "İki kulüp ve 5 isim gelir. Yalnızca biri iki kulüpte de oynamıştır: ona dokun. Klavye yok. Tek can, ilk yanlışta biter. Sorular gittikçe hızlanır.",
+ "howto.career": "Bir futbolcunun kulüpleri sırayla, birer birer açılır. Kim olduğunu yaz: ne kadar erken bilirsen o kadar çok puan. 3 can, yanlış tahmin bir can götürür.",
+ "howto.chain": "Futbolcu belli. Önce ilk kulübünü, sonra sırayla her transferini yaz. Her adım için 20 saniye, 3 can.",
+ "howto.versus": "İki futbolcu ve bir kategori gelir (maç, gol, asist…). Hangisinin sayısı daha yüksek? Doğru bildikçe sürer, ilk yanlışta biter.",
+ "howto.ex.clubs": "İki kulüp",
+ "howto.ex.answer": "Cevap",
+ "howto.ex.one_of_five": "5 isimden doğru olan",
+ "howto.ex.path": "Kariyer",
+ "howto.ex.player": "Futbolcu",
+ "howto.ex.next_club": "Sıradaki kulüp",
+ "howto.ex.more_goals": "Kim daha çok gol attı?",
+ "howto.ex.or": "yoksa"
 }

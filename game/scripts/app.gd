@@ -3,6 +3,7 @@ extends Node
 
 const SETTINGS_PATH := "user://settings.cfg"
 const SLIDE_MS := 0.22
+const MIN_H := 680.0                     # masaüstünde bir sayfanın sığması gereken mantıksal yükseklik
 
 var nickname := ""
 var theme_mode := "system"       # system | light | dark
@@ -65,6 +66,8 @@ func _fit_scale() -> void:
 	var w := float(root.size.x); var h := float(root.size.y)
 	if w <= 0 or h <= 0: return
 	var scale := clampf(w / BASE_W, 1.0, MAX_SCALE)
+	# masaüstü tarayıcıda geniş ve kısa pencere: sayfalar dikeyde de sığsın (telefonda klavye yüksekliği oynattığı için orada yalnız genişlik)
+	if not DisplayServer.is_touchscreen_available(): scale = clampf(minf(scale, h / MIN_H), 1.0, MAX_SCALE)
 	root.content_scale_size = Vector2i(int(round(w / scale)), int(round(h / scale)))
 
 # ---------- ayarlar ----------

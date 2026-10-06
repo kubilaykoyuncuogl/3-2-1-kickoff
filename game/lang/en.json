@@ -162,7 +162,7 @@
  "howto.4.b": "locked 5 s",
  "howto.4.body": "You're locked for 5 seconds. You also see your opponent's wrong guesses.",
  "howto.4.title": "If you're wrong",
- "howto.5.body": "A team can be used once per match. A pair with no shared player wastes the round; three in a row ends in a draw. Fail to pick within 45 seconds and you lose the round.",
+ "howto.5.body": "A team can be named once per match. If the two teams share no player, the round isn't played and you pick again; three in a row ends the match in a draw. Not picking a team within 45 seconds loses the round.",
  "howto.5.title": "First to 3 wins",
  "join": "Join",
  "kind.free": "Free / undisclosed",
@@ -318,5 +318,18 @@
  "era.short.10": "10s",
  "era.short.20": "20s",
  "match.back_to_pick": "Back to team pick",
- "match.returning": "Back to menu · %d"
+ "match.returning": "Back to menu · %d",
+ "howto.ladder": "Two clubs appear; type a player who played for both. You have 3 lives. Each step starts at 20 seconds, then time gets shorter and clubs get harder; faster answers score more. You pick the club scope and era before starting.",
+ "howto.blitz": "Two clubs and 5 names appear. Only one played for both clubs: tap it. No keyboard. One life, the first mistake ends the run. Questions keep getting faster.",
+ "howto.career": "A player's clubs are revealed one at a time, in order. Type who it is: the earlier you get it, the more points. 3 lives, a wrong guess costs one.",
+ "howto.chain": "The player is given. Type his first club, then each transfer in order. 20 seconds per step, 3 lives.",
+ "howto.versus": "Two players and a category appear (apps, goals, assists…). Who has the higher number? Keep going while you're right; the first mistake ends it.",
+ "howto.ex.clubs": "Two clubs",
+ "howto.ex.answer": "Answer",
+ "howto.ex.one_of_five": "The right one of 5 names",
+ "howto.ex.path": "Career",
+ "howto.ex.player": "Player",
+ "howto.ex.next_club": "Next club",
+ "howto.ex.more_goals": "Who scored more goals?",
+ "howto.ex.or": "or"
 }
