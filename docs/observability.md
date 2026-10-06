@@ -36,7 +36,7 @@ Sentry projeleri 6 Ekim 2026'da `grande-corpo` organizasyonunda oluşturuldu: `k
 
 Sunucu entegrasyonu üzerinden bir test exception'ı ve uygulamanın raporlama/temizleme kodu üzerinden web SDK transport'u ile bir test exception'ı gönderildi. İki kayıt Sentry panelinde `KICKOFF-SERVER-1` ve `KICKOFF-APP-1` olarak doğrulandı; mesajlar `[redacted]`. Bu kontrol gerçek native cihaz veya tam web arayüzü testi değildir.
 
-Sentry CLI kimlik doğrulaması tamamlandı. Token gerçek kullanıcı home'undaki `.sentryclirc` dosyasında yalnız kullanıcıya açık (`0600`) saklanır; repoda veya uygulama paketinde bulunmaz. `npm run export:web:sentry` ile DSN ve web Clarity ID'sinin JS içine gömüldüğü kontrol edilerek web export'u yeniden üretildi. 3 JS dosyası ve 3 source map `kickoff-app` projesine yüklendi; Sentry sunucusunda işleme tamamlandı (artifact bundle: `ee096cfb-4125-5709-90b8-1ec20bb0b65f`). Web map'leri dağıtım klasöründen `.expo/sentry-sourcemaps/` altında git dışı arşive taşındı; public `dist` içinde map kalmadı. Gerçek hata stack'inin source map ile çözülmesi ayrıca doğrulanmalıdır.
+Sentry CLI kimlik doğrulaması tamamlandı. Token gerçek kullanıcı home'undaki `.sentryclirc` dosyasında yalnız kullanıcıya açık (`0600`) ve şirket EAS projesinde Secret olarak saklanır; repoda veya uygulama paketinde bulunmaz. Şirket EAS bağlantısı ve SDK patch güncellemelerinden sonra `npm run export:web:sentry` ile web export'u yeniden üretildi. 3 JS dosyası ve 3 source map `kickoff-app` projesine yüklendi; Sentry sunucusunda işleme tamamlandı (artifact bundle: `b2444ced-e5f3-585e-a84f-97cc72cdeaf8`). Web map'leri dağıtım klasöründen `.expo/sentry-sourcemaps/` altında git dışı arşive taşındı; public `dist` içinde map kalmadı. Gerçek hata stack'inin source map ile çözülmesi ayrıca doğrulanmalıdır.
 
 ## Kaydedilen veriler
 
@@ -65,7 +65,7 @@ Dinamik Expo config Sentry build plugin'ini `grande-corpo` / `kickoff-app` varsa
 | EAS proje slug'ı | `kickguess` |
 | EAS Project ID | `5f7fe87b-03f6-4f51-b735-695239e9c54e` |
 
-`app/app.json` owner/slug/projectId bilgilerini içerir. Development build için SDK'ya uygun `expo-dev-client` kuruldu. `app/eas.json` ortam seçimini açıkça belirtir: development → development, preview ve simulator → preview, production → production. Simulator profili iOS için imza gerektirmeyen simülatör çıktısı üretmek üzere yapılandırıldı. iOS simulator, iOS production ve Android preview profilleri `eas config` ile şirket owner/project ID'si üzerinden doğrulandı.
+`app/app.json` owner/slug/projectId bilgilerini içerir. Development build için SDK'ya uygun `expo-dev-client` kuruldu. Expo'nun uyumluluk kontrolünün önerdiği SDK 57 patch güncellemeleri uygulandı; `expo install --check` geçiyor. `app/eas.json` ortam seçimini açıkça belirtir: development → development, preview ve simulator → preview, production → production. Simulator profili iOS için imza gerektirmeyen simülatör çıktısı üretmek üzere yapılandırıldı. iOS simulator, iOS production ve Android preview profilleri `eas config` ile şirket owner/project ID'si üzerinden doğrulandı.
 
 CLI komutlarını `app/` altında güncel sürümle çalıştırın:
 
@@ -109,11 +109,11 @@ DSN'leri girdikten sonra test ortamında `EXPO_PUBLIC_TELEMETRY_IN_DEV=true` ile
 
 6 Ekim 2026 doğrulaması:
 
-- Son `origin/main` (`c61d246`) branch'e alındı. Yeni round alanları ve weekly mesajları korunuyor; socket testi bunları da doğruluyor. Yukarıdaki web artifact bundle önceki main sync'inde üretildi; yeni release için `export:web:sentry` yeniden çalıştırılır.
+- Son `origin/main` (`6f5f7cf`) branch'e alındı. Yeni round alanları ve weekly mesajları korunuyor; socket testi bunları da doğruluyor. Yukarıdaki web artifact bundle bu main sync'i ve şirket EAS bağlantısından sonra üretildi.
 - Chrome'da `http://127.0.0.1:18084` production export'u açıldı. Takma ad → ana ekran → ayarlar → dil değişikliği çalıştı; framework hata overlay'i yok. Console'da yalnız üçüncü taraf Acrobat extension hataları görüldü.
 - Web DOM kökünde `data-clarity-mask="true"` ve doğru `https://www.clarity.ms/tag/ytk0sewicz?ref=npm` script adresi doğrulandı. Kontrol anında Clarity tag endpoint'i `204 No Content` döndü ve panel hâlâ Başlarken ekranındaydı. SDK script eklenmesi doğrulandı; gerçek collect isteği, kayıt teslimatı ve maskeli replay henüz doğrulanmadı. Microsoft FAQ, dashboard verilerinin görünmesinin birkaç saat sürebileceğini belirtiyor. Sonraki kontrol: tag'in JavaScript döndürmesi, web'de yeniden bir session açılması, ardından Kayıtlar ekranında maskeli metinlerin incelenmesi.
 - iOS Expo prebuild ve `pod install --repo-update` başarılı; Clarity 4.1.2 ve Sentry 8.58.0 native pod'ları kuruldu. Mevcut Xcode'da kullanılabilir iOS 26.5 platform/destination bulunmadığından native binary derlemesi ve gerçek cihaz kaydı doğrulanamadı. Expo Go kaydı test etmek için yeterli değildir.
-- Typecheck, 7 client testi ve 5 server testi geçti. Full lint, aynı config ile ölçülen güncel main baseline'ıyla aynı 27 error / 31 warning veriyor; değişen dosyalarda ek lint hatası yok.
+- Typecheck, 7 client testi ve 5 server testi geçti. Full lint, aynı config ile ölçülen güncel main baseline'ıyla aynı 27 error / 33 warning veriyor; değişen dosyalarda ek lint hatası yok.
 - Tam oyun akışı bu worktree'de eksik encrypted index/backend yapılandırması nedeniyle test edilmedi. Merge ve deployment yapılmadı.
 
 Resmî kaynaklar:
