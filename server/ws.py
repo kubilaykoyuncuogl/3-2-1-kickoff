@@ -4,10 +4,7 @@ import asyncio, itertools, json, time
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-try:
-    from server.game.engine import Engine
-except ImportError:      # doğrudan çalıştırma
-    from game.engine import Engine
+from server.game.engine import Engine
 
 router = APIRouter()
 _ids = itertools.count(1)

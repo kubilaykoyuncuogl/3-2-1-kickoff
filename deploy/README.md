@@ -20,3 +20,5 @@ ssh root@SUNUCU 'cd /opt/kickoff && docker compose -f deploy/compose.yaml up -d 
 ```
 Konteyner 127.0.0.1:8080'de HTTP verir (statik + `/ws`). Dış proxy `kickoff.<alanadi>` → `127.0.0.1:8080`, WebSocket upgrade açık (`/ws`). Bellek ~650 MB.
 `.env` sunucuda `/opt/kickoff/.env` (anahtar + tuz), `index.enc` volume ile bağlı. Yerel test: `docker run --env-file .env -p 8090:8080 -v $PWD/data/index/index.enc:/app/data/index/index.enc:ro kickoff:latest`.
+
+- **rsync dışlamaları köke sabitlenmeli**: `--exclude /game --exclude /build`. Başında `/` olmadan `--exclude game` `server/game/`'i de dışlar; konteyner `ModuleNotFoundError` ile yeniden başlar ve site 502 verir (2026-10-06'da yaşandı).

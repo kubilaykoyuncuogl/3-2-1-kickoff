@@ -3,10 +3,7 @@
 Caddy /ws'yi buraya yönlendirir; HTTP uçları (index, /acct) dış dünyaya açılmaz."""
 import asyncio
 
-try:
-    from server import index_service, accounts, ws
-except ImportError:      # doğrudan çalıştırma
-    import index_service, accounts, ws
+from server import index_service, accounts, ws      # yedek içe aktarma yok: eksik dosyada asıl hata görünsün (2026-10-06'da server/game eksikken yanlış modülü suçladı)
 
 app = index_service.app
 app.include_router(ws.router)

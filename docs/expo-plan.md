@@ -198,3 +198,5 @@ Faz 1 (sunucu) → Faz 2 → Faz 3 → Faz 4 → Faz 5 arka arkaya; Faz 6 kullan
 - **Eşzamanlılık**: turu bitiren her yol `Engine._finish_round` üzerinden geçer (gen eşzamanlı artar); `set_ready` tekrar gelirse yok sayılır. Godot sürümünde bu iki yarış vardı, Python'da kapatıldı.
 - **Sözleşme sürümü**: `PROTO = 3` (`server/game/consts.py` ve `app/src/net/socket.ts` aynı olmalı).
 - Godot istemcisi yeni sunucuyla konuşamaz: Faz 5 canlıya alınınca eski APK ve açık sekmeler çalışmaz (web'de sayfa yenilenince yeni istemci gelir).
+
+- **rsync dışlamaları köke sabitlenmeli**: `--exclude /game --exclude /build`. Başında `/` olmadan `--exclude game` `server/game/`'i de dışlar; konteyner `ModuleNotFoundError` ile yeniden başlar ve site 502 verir (2026-10-06'da yaşandı).
