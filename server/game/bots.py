@@ -62,19 +62,25 @@ def traits_of(code: str) -> dict:
     return {"speed": 1.0, "wrong": 1.0}
 
 
-def plan_round(theta: float, d: float, traits: dict, rng: random.Random, P: dict) -> list:
-    """Bir turda botun yapacakları: [(ms, "wrong" | "right")], zamana göre sıralı. Boş liste = bilemedi."""
+def plan_round(theta: float, d: float, traits: dict, rng: random.Random, P: dict, round_ms: int = ROUND_MS) -> list:
+    """Bir turda botun yapacakları: [(ms, "wrong" | "right")], zamana göre sıralı. Boş liste = bilemedi.
+    Tur süresine göre: kısa turda geç gelen cevap yetişmez; uzun turda ilk 15 sn'de bulamadığını sonradan hatırlama payı vardır."""
     events = []
     wrong_p = min(0.32, max(0.03, 0.26 - (theta - 800.0) / 3200.0)) * traits["wrong"]
-    t_wrong = rng.uniform(2500, 10000) if rng.random() < wrong_p else None
+    t_wrong = rng.uniform(2500, max(3000.0, min(10000.0, round_ms * 0.67))) if rng.random() < wrong_p else None
     p_know = 1.0 / (1.0 + 10.0 ** ((d - theta) / P["S_K"]))
+    late = round_ms > ROUND_MS and rng.random() < 1.0 - (1.0 - p_know) ** ((round_ms / ROUND_MS - 1.0) * 0.5)
     if rng.random() < p_know:
         med = min(13000.0, max(MIN_MEDIAN_MS, P["T_BASE"] * 10.0 ** ((d - theta) / P["T_EL"]) * traits["speed"]))
         t = max(MIN_ANSWER_MS, med * math.exp(rng.gauss(0.0, P["T_SIGMA"])))
         if t_wrong is not None:
             if t < t_wrong: t_wrong = None                      # doğruyu önce buldu
             else: t = max(t, t_wrong + PENALTY_MS + rng.uniform(300, 1500))   # yanlıştan sonra kilit biter, sonra doğru
-        if t < ROUND_MS - 400: events.append((t, "right"))
+        if t < round_ms - 400: events.append((t, "right"))
+    elif late:      # uzun tur: düşündükçe aklına geldi
+        t = rng.uniform(ROUND_MS * 0.8, round_ms - 600)
+        if t_wrong is not None: t = max(t, t_wrong + PENALTY_MS + rng.uniform(300, 1500))
+        if t < round_ms - 400: events.append((t, "right"))
     if t_wrong is not None: events.append((t_wrong, "wrong"))
     return sorted(events)
 
@@ -112,8 +118,9 @@ class BotsMixin:
         names = list(self.bot_names) or ["kaan07", "emir_", "mertcan", "tolgaa"]
         rng.shuffle(names)
         taken = getattr(self.accounts, "nick_registered", lambda n: False)
+        in_use = {self.norm(str(p.get("nick", ""))) for p in self.profiles.values()}      # o an bağlı oyuncular ve diğer botlar
         for n in names[:40]:
-            if self.norm(n) != self.norm(human_nick) and not taken(self.norm(n)): return n
+            if self.norm(n) != self.norm(human_nick) and self.norm(n) not in in_use and not taken(self.norm(n)): return n
         return names[0]
 
     def _start_bot_match(self, human: int) -> None:
@@ -129,10 +136,10 @@ class BotsMixin:
         waited = self._waited(human)
         self.queue.remove(human); self.queue_since.pop(human, None)
         code = self._new_code()
-        self.rooms[code] = self._new_room(code, True, hp.get("scope", "all"), hp.get("era", 0))
+        self.rooms[code] = self._new_room(code, True, hp.get("scope", "all"), hp.get("era", 0), hp.get("round_ms", ROUND_MS))
         self.bot_stats["matches"] += 1
         print("[bot] match room=%s bot=%s skill=%d vs %r elo=%d waited=%.1fs scope=%s era=%s" %
-              (code, code_name, theta, hp.get("nick"), hp["elo"], waited / 1000, hp.get("scope"), hp.get("era")), flush=True)
+              (code, code_name, theta, hp.get("nick"), hp["elo"], waited / 1000, hp.get("scope"), "%s round=%ds" % (hp.get("era"), hp.get("round_ms", ROUND_MS) // 1000)), flush=True)
         order = [human, bot] if rng.random() < 0.5 else [bot, human]
         for p in order: self._join(code, p)
         self.spawn(self._bot_loop(code, bot))
@@ -180,7 +187,7 @@ class BotsMixin:
                         t = list(r["teams"].values())
                         info = await asyncio.to_thread(self.index.bot_pair_info, t[0], t[1], int(r["era"]))
                         d = difficulty(info.get("best_rank"), int(info.get("total", 0)))
-                        plan = {"start": r["phase_end"] - ROUND_MS, "events": plan_round(theta, d, traits, rng, P), "info": info, "teams": t}
+                        plan = {"start": r["phase_end"] - r["round_ms"], "events": plan_round(theta, d, traits, rng, P, r["round_ms"]), "info": info, "teams": t}
                         continue
                     ev = plan.get("events") or []
                     if ev and now - plan["start"] >= ev[0][0] and r["penalty_until"].get(bot, 0) <= now:

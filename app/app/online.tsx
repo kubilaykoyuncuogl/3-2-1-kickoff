@@ -10,7 +10,7 @@ import { State, useGame, useProfile, useSettings } from "@/store";
 import { useTheme } from "@/theme";
 import { Btn, Chip, Eyebrow, Input, Nav, Page, Panel, Spacer, Txt, t } from "@/ui";
 import { LearnSteps } from "@/ui/learn";
-import { EraPicker, ScopePicker, eraLabel, scopeLabel } from "@/ui/pickers";
+import { EraPicker, RoundPicker, ScopePicker, eraLabel, scopeLabel } from "@/ui/pickers";
 
 type Mode = "menu" | "searching" | "room" | "join";
 const PROD_WEB = "https://kickoff.grandecorpo.com";
@@ -75,6 +75,7 @@ export default function Online() {
           </Panel>
           <ScopePicker />
           <EraPicker />
+          <RoundPicker />
           <Btn text={t("online.find")} right=">" disabled={!connected} onPress={() => { setSince(Date.now()); api.findMatch(); }} />
           <View style={{ flexDirection: "row", gap: s(8) }}>
             <Btn text={t("online.create")} kind="line" disabled={!connected} onPress={() => api.createRoom()} style={{ flex: 1 }} />
@@ -93,6 +94,7 @@ export default function Online() {
             <Chip text={profile.verified ? t("online.pool_verified") : t("online.pool_general")} kind={profile.verified ? "ok" : "line"} />
             <Chip text={scopeLabel(settings.scope)} kind="violet" />
             {settings.era ? <Chip text={eraLabel(settings.era)} kind="amber" /> : null}
+            <Chip text={t("online.round_fmt", settings.round)} kind="line" />
           </View>
           <Spacer />
           <Btn text={t("cancel")} kind="ghost" onPress={back} />
@@ -108,6 +110,7 @@ export default function Online() {
           <View style={{ flexDirection: "row", gap: s(6), justifyContent: "center" }}>
             <Chip text={scopeLabel(room.scope ?? "all")} kind="violet" />
             {room.era ? <Chip text={eraLabel(room.era)} kind="amber" /> : null}
+            <Chip text={t("online.round_fmt", Math.round((room.round_ms ?? 15000) / 1000))} kind="line" />
           </View>
           <View style={{ flexDirection: "row", gap: s(8), justifyContent: "center" }}>
             <Btn text={copied ? t("copied_caps") : t("room.copy")} kind="line" style={{ minWidth: s(150) }} onPress={() => { Clipboard.setStringAsync(room.code ?? ""); setCopied(true); }} />

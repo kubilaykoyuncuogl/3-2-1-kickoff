@@ -116,9 +116,9 @@ class Engine(SinglesMixin, BotsMixin):
             try: return int(m.get(k, 0) or 0)
             except (TypeError, ValueError): return 0
         if t == "hello": await self.hello(pid, s("nick", 16), s("device", 64), i("proto"))
-        elif t == "create_room": self.create_room(pid, s("scope", 8), i("era"))
+        elif t == "create_room": self.create_room(pid, s("scope", 8), i("era"), i("round"))
         elif t == "join_room": self.join_room(pid, s("code", 24))
-        elif t == "find_match": self.find_match(pid, s("scope", 8), i("era"))
+        elif t == "find_match": self.find_match(pid, s("scope", 8), i("era"), i("round"))
         elif t == "cancel_find": self.cancel_find(pid)
         elif t == "leave_room": self.leave_room(pid)
         elif t == "pick_team": await self.pick_team(pid, i("team_id"), s("team_name", 80))
@@ -150,10 +150,10 @@ class Engine(SinglesMixin, BotsMixin):
             r = self.rooms.get(prc["code"])
             if r is not None and prc["pid"] in r["players"]: self._rebind(r, prc["pid"], pid)
 
-    def create_room(self, pid: int, scope: str, era: int) -> None:
+    def create_room(self, pid: int, scope: str, era: int, round_s: int = 0) -> None:
         self._leave_everything(pid)
         code = self._new_code()
-        self.rooms[code] = self._new_room(code, False, scope_ok(scope), era_ok(era))
+        self.rooms[code] = self._new_room(code, False, scope_ok(scope), era_ok(era), round_ok(round_s))
         self._join(code, pid)
 
     def join_room(self, pid: int, code: str) -> None:
@@ -164,9 +164,9 @@ class Engine(SinglesMixin, BotsMixin):
         self._leave_everything(pid)
         self._join(code, pid)
 
-    def find_match(self, pid: int, scope: str, era: int) -> None:
+    def find_match(self, pid: int, scope: str, era: int, round_s: int = 0) -> None:
         self._leave_everything(pid)
-        p = self.profiles[pid]; p["scope"] = scope_ok(scope); p["era"] = era_ok(era)
+        p = self.profiles[pid]; p["scope"] = scope_ok(scope); p["era"] = era_ok(era); p["round_ms"] = round_ok(round_s)
         if pid not in self.queue:
             self.queue.append(pid); self.queue_since[pid] = self.now()
             p["bot_after"] = random.uniform(*BOT_WAIT_MS)      # gerçek rakip çıkmazsa bu kadar sonra bot
@@ -267,8 +267,8 @@ class Engine(SinglesMixin, BotsMixin):
         self.send(pid, {"t": "acct_result", "d": out})
 
     # ---------- oda ----------
-    def _new_room(self, code: str, ranked: bool, scope: str = "all", era: int = 0) -> dict:
-        r = {"code": code, "ranked": ranked, "scope": scope, "era": era, "players": [], "state": State.LOBBY, "gen": 0, "rematch": {}, "last": {}}
+    def _new_room(self, code: str, ranked: bool, scope: str = "all", era: int = 0, round_ms: int = ROUND_MS) -> dict:
+        r = {"code": code, "ranked": ranked, "scope": scope, "era": era, "round_ms": round_ms, "players": [], "state": State.LOBBY, "gen": 0, "rematch": {}, "last": {}}
         self._reset_match(r)
         return r
 
@@ -367,9 +367,9 @@ class Engine(SinglesMixin, BotsMixin):
         self._broadcast(r)
         await asyncio.sleep(REVEAL_MS / 1000)
         if r["gen"] != gen or r["state"] != State.REVEAL: return
-        r["state"] = State.ROUND; r["phase_end"] = self.now() + ROUND_MS
+        r["state"] = State.ROUND; r["phase_end"] = self.now() + r["round_ms"]
         self._broadcast(r)
-        await asyncio.sleep(ROUND_MS / 1000)
+        await asyncio.sleep(r["round_ms"] / 1000)
         if r["gen"] != gen or r["state"] != State.ROUND: return
         self._finish_round(r, {"type": "timeout"})
 
@@ -466,7 +466,7 @@ class Engine(SinglesMixin, BotsMixin):
                                 "ready": r["ready"].get(pid, False), "score": r["score"].get(pid, 0),
                                 "penalty_ms": max(0, r["penalty_until"].get(pid, 0) - now), "rematch": r["rematch"].get(pid, False),
                                 "elo_delta": r["elo_delta"].get(pid, 0), "away": r["away"].get(pid, False)})
-            d = {"me": viewer, "code": r["code"], "ranked": r["ranked"], "scope": r["scope"], "era": r["era"], "state": r["state"], "players": players,
+            d = {"me": viewer, "code": r["code"], "ranked": r["ranked"], "scope": r["scope"], "era": r["era"], "round_ms": r["round_ms"], "state": r["state"], "players": players,
                  "phase_ms": max(0, r["phase_end"] - now), "last": r["last"], "answers": r["answers"], "answers_total": r["answers_total"],
                  "winner": r["winner"], "used_teams": list(r["used_teams"]), "quick_picks": r.get("quick_picks", [])}
             self.send(viewer, {"t": "room_state", "d": d})
@@ -496,14 +496,15 @@ class Engine(SinglesMixin, BotsMixin):
                 if pa.get("verified", False) != pb.get("verified", False): continue
                 cross = self._waited(a) >= CROSS_SCOPE_MS and self._waited(b) >= CROSS_SCOPE_MS
                 ea = pa.get("era", 0); eb = pb.get("era", 0)
-                if (pa.get("scope", "all") != pb.get("scope", "all") or ea != eb) and not cross: continue   # aynı kapsam ve dönem; 45 sn sonra serbest
+                ra = pa.get("round_ms", ROUND_MS); rb = pb.get("round_ms", ROUND_MS)
+                if (pa.get("scope", "all") != pb.get("scope", "all") or ea != eb or ra != rb) and not cross: continue   # aynı kapsam, dönem ve tur süresi; 45 sn sonra serbest
                 same_last = pa.get("last_opp", "") == pb.get("device", "") and pb.get("device", "") != ""
                 if same_last and (self._waited(a) < SAME_OPP_MS or self._waited(b) < SAME_OPP_MS): continue   # az önceki rakip, 20 sn bekle
                 if abs(int(pa["elo"]) - int(pb["elo"])) <= min(self._band(a), self._band(b)):
                     self.queue.remove(b); self.queue.remove(a); self.queue_since.pop(a, None); self.queue_since.pop(b, None)
                     pa["last_opp"] = pb.get("device", ""); pb["last_opp"] = pa.get("device", "")
                     era = ea if ea == eb else (0 if ea == 0 or eb == 0 else era_ok(ea | eb))
-                    code = self._new_code(); self.rooms[code] = self._new_room(code, True, widen_scope(pa.get("scope", "all"), pb.get("scope", "all")), era)
+                    code = self._new_code(); self.rooms[code] = self._new_room(code, True, widen_scope(pa.get("scope", "all"), pb.get("scope", "all")), era, max(ra, rb))
                     self._join(code, a); self._join(code, b); matched = True; break
             if not matched:
                 # öncelik gerçek oyuncu: ancak bu turda kimseyle eşleşemedi ve yeterince bekledi ise bot

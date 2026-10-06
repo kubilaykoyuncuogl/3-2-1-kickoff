@@ -85,9 +85,9 @@ function handle(m: any) {
 
 // ---------- istemci yardımcıları (Godot c_* karşılığı) ----------
 export const api = {
-  createRoom: () => { const s = useSettings.getState(); send({ t: "create_room", scope: s.scope, era: s.era }); },
+  createRoom: () => { const s = useSettings.getState(); send({ t: "create_room", scope: s.scope, era: s.era, round: s.round }); },
   joinRoom: (code: string) => send({ t: "join_room", code }),
-  findMatch: () => { const s = useSettings.getState(); send({ t: "find_match", scope: s.scope, era: s.era }); },
+  findMatch: () => { const s = useSettings.getState(); send({ t: "find_match", scope: s.scope, era: s.era, round: s.round }); },
   cancelFind: () => send({ t: "cancel_find" }),
   leave: () => send({ t: "leave_room" }),
   pickTeam: (team_id: number, team_name: string) => send({ t: "pick_team", team_id, team_name }),

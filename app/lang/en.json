@@ -154,7 +154,7 @@
  "guest": "guest",
  "howto.1.body": "You pick a team, so does your opponent. It starts when you're both ready. You can't see their pick until the countdown ends.",
  "howto.2.body": "A three-second countdown, then both teams are revealed and the keyboard opens.",
- "howto.3.body": "Type a player who played for both teams. Tapping a suggestion submits it. E.g. Sneijder, Icardi, Podolski.",
+ "howto.3.body": "Type a player who played for both teams. Tapping a suggestion sends it. You get the round time you picked. Example: Sneijder, Icardi, Podolski.",
  "howto.4.a": "Podolski is wrong",
  "howto.4.b": "locked 5 s",
  "howto.4.body": "You're locked for 5 seconds. You also see your opponent's wrong guesses.",
@@ -367,5 +367,7 @@
  "learn.ex.right_next": "Correct · new pair",
  "learn.ex.bonus": "Bonus",
  "learn.ex.fast_bonus": "Fast answer = bonus points",
- "learn.skip": "Skip"
+ "learn.skip": "Skip",
+ "online.round": "Round time",
+ "online.round_fmt": "%d s"
 }

@@ -11,7 +11,7 @@ import { Btn, Chip, Eyebrow, ListCard, Nav, Page, Panel, Progress, Spacer, Timer
 import { Autocomplete } from "@/ui/autocomplete";
 import { scopeLabel } from "@/ui/pickers";
 
-const ROUND_MS = 15000, PICK_MS = 45000, QUICK_AT_MS = 20000, RECONNECT_MS = 10000, RETURN_MS = 5000, NOTICE_MS = 3000;
+const PICK_MS = 45000, QUICK_AT_MS = 20000, RECONNECT_MS = 10000, RETURN_MS = 5000, NOTICE_MS = 3000;
 
 export default function Match() {
   const router = useRouter();
@@ -210,7 +210,7 @@ function Round({ room, mine, opp, rem, me, awaySecs }: { room: Room; mine?: Play
         </View>
         <TimerBox text={String(Math.ceil(rem / 1000))} hot={hot} />
       </View>
-      <Progress value={rem} max={ROUND_MS} hot={hot} />
+      <Progress value={rem} max={room.round_ms ?? 15000} hot={hot} />
       <View style={{ flex: 1 }}>
         <Autocomplete kind="player" locked={penRem > 0} lockedText={t("locked_fmt", Math.ceil(penRem / 1000))} clearKey={clearKey}
           onPick={(id, name) => { api.guess(id, name); setClearKey((k) => k + 1); }} />

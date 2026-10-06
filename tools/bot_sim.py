@@ -19,7 +19,7 @@ from server.game import bots                    # noqa: E402
 from server.game.consts import MAX_INVALID_PAIRS, ROUND_MS, WIN_SCORE   # noqa: E402
 
 ap = argparse.ArgumentParser()
-ap.add_argument("--scope", default="all"); ap.add_argument("--check", action="store_true")
+ap.add_argument("--scope", default="all"); ap.add_argument("--check", action="store_true"); ap.add_argument("--round", type=int, default=15, help="tur süresi (sn): 10, 15, 30")
 ap.add_argument("--grid-matches", type=int, default=250); ap.add_argument("--final-matches", type=int, default=2500)
 A = ap.parse_args()
 
@@ -64,7 +64,7 @@ def match(ta: float, tb: float, P: dict, rng: random.Random, tr=bots.traits_of("
             continue
         invalid = 0; used.update((ca, cb))
         d = bots.difficulty(rank, total)
-        fa = first_right(bots.plan_round(ta, d, tr, rng, P)); fb = first_right(bots.plan_round(tb, d, tr, rng, P))
+        fa = first_right(bots.plan_round(ta, d, tr, rng, P, A.round * 1000)); fb = first_right(bots.plan_round(tb, d, tr, rng, P, A.round * 1000))
         stats["rounds"] += 1
         if fa is None and fb is None: stats["nobody"] += 1; continue
         w = min(x for x in (fa, fb) if x is not None); stats["t_sum"] += w; stats["t_n"] += 1
@@ -113,7 +113,7 @@ else:
 
 for k in stats: stats[k] = 0
 sse, rows = evaluate(P, A.final_matches, 7)
-print(f"\ndoğrulama ({A.final_matches * len(DIFFS) * len(CENTERS)} maç, kapsam {A.scope}, hata {sse:.4f}):"); table(rows)
+print(f"\ndoğrulama ({A.final_matches * len(DIFFS) * len(CENTERS)} maç, kapsam {A.scope}, tur {A.round} sn, hata {sse:.4f}):"); table(rows)
 print(f"  tur başına: kimse bilemedi %{100*stats['nobody']/max(1,stats['rounds']):.0f} · ortalama doğru cevap süresi {stats['t_sum']/max(1,stats['t_n'])/1000:.1f} sn"
       f" · ortak oyuncusuz çift %{100*stats['no_common']/max(1,stats['rounds']+stats['no_common']):.0f} · farklı çift {len(_info)}")
 print("  güç başına (eşit rakibe karşı tur davranışı):")

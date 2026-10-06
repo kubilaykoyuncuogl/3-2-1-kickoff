@@ -154,7 +154,7 @@
  "guest": "misafir",
  "howto.1.body": "Sen bir takım seçersin, rakibin de. İkiniz de Hazırım deyince başlar. Rakibin seçimini geri sayım bitene kadar göremezsin.",
  "howto.2.body": "Üç saniye geri sayılır, sonra iki takım gösterilir ve klavye açılır.",
- "howto.3.body": "İki takımda da oynamış bir futbolcu yaz. Öneriye dokunmak gönderir. Örnek: Sneijder, Icardi, Podolski.",
+ "howto.3.body": "İki takımda da oynamış bir futbolcu yaz. Öneriye dokunmak gönderir. Süre seçtiğin tur süresi kadardır. Örnek: Sneijder, Icardi, Podolski.",
  "howto.4.a": "Podolski yanlış",
  "howto.4.b": "5 sn kilit",
  "howto.4.body": "5 saniye yazamazsın. Rakibin yanlışını da görürsün, kimi elediğini bilirsin.",
@@ -367,5 +367,7 @@
  "learn.ex.right_next": "Doğru · yeni ikili",
  "learn.ex.bonus": "Bonus",
  "learn.ex.fast_bonus": "Hızlı cevap = ek puan",
- "learn.skip": "Geç"
+ "learn.skip": "Geç",
+ "online.round": "Tur süresi",
+ "online.round_fmt": "%d sn"
 }
