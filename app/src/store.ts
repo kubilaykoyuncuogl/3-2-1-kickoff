@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 import { create } from "zustand";
 import { setLang } from "./i18n";
+import { applyMock } from "./dev/mocks";      // döngüsel içe aktarma: iki taraf da birbirini yalnızca fonksiyon içinde kullanır
 
 export const SCOPES = ["all", "top", "big5"] as const;      // genel kapsamlar
 // Tek lig kapsamı: değer lig kodu (server/game/consts.py LEAGUES ile aynı sıra). Adlar özel isim, çevrilmez.
@@ -70,6 +71,11 @@ export const useSettings = create<SettingsStore>((set, get) => ({
       if (q.get("scope")) patch.scope = q.get("scope")!;
       if (q.get("era")) patch.era = Number(q.get("era")) & 31;
       if (q.get("learn") === "0") patch.learn = false;
+      if (q.get("learn") === "1") { patch.learn = true; patch.learn_off = []; }
+      if (q.get("round")) patch.round = Number(q.get("round"));
+      if (q.get("best")) { const b = Number(q.get("best")); patch.best = { ladder: b, blitz: b, career: b, chain: b, versus: b, weekly: b }; }
+      const mock = q.get("mock");      // hazır ekran durumları (src/dev/mocks.ts; tools/all_shots.py)
+      if (mock) applyMock(mock);      // eşzamanlı: ekranlar ilk çizimde hazır durumu görsün
       set(patch);
     }
     setLang(get().lang);

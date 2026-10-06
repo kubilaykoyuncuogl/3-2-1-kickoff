@@ -70,5 +70,7 @@ def watch_task(task: asyncio.Task, operation: str) -> None:
             return
         error = completed.exception()
         if error is not None:
+            # exception() okununca asyncio kendi "never retrieved" uyarısını basmaz; Sentry kapalıyken de hata loga düşsün
+            print("[task] %s failed: %r" % (operation, error), flush=True)
             report_error(error, operation)
     task.add_done_callback(done)

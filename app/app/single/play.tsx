@@ -14,7 +14,7 @@ type Hist = { name: string; gained: number; bonus: number; idx: number };
 
 export default function SinglePlay() {
   const { mode = "ladder" } = useLocalSearchParams<{ mode?: string }>();
-  const { c, s } = useTheme();
+  const { c, s, kb } = useTheme();
   const blitz = mode === "blitz";
   // Beşte Bir: sonraki soruya / koşu sonuna geçmeden önce şıklar kısa süre renklenir
   const hold = (prev: Single, next: Single) => {
@@ -52,7 +52,6 @@ export default function SinglePlay() {
     const last = d.last ?? {};
     return <SingleOver mode={mode} title={blitz ? t("mode.blitz") : t("mode.ladder_short")} d={d}
       summary={blitz ? t("sp.blitz_summary", d.idx, d.best_combo) : t("sp.ladder_summary", d.idx)}
-      extra={blitz && last.type === "wrong" ? t("sp.answer_was", d.item.options?.[last.answer] ?? "") : undefined}
       onAgain={() => { prevScore.current = 0; history.current = []; setToast(null); restart(); }} chips={runChips()} />;
   }
   const it = d.item;
@@ -67,14 +66,14 @@ export default function SinglePlay() {
         <SingleHeader d={d} at={at} hotMs={blitz ? 2000 : 5000} score={d.score}
           left={blitz ? <><Eyebrow>{t("sp.question", d.idx + 1)}</Eyebrow><Chip text={`×${d.combo.toFixed(1)}`} kind="ok" style={{ alignSelf: "center" }} /></>
             : <><Eyebrow>{t("sp.step", d.idx + 1)}</Eyebrow><Lives n={d.lives} /></>} />
-        <Panel>
+        <Panel pad={kb ? 10 : 16}>
           {it.a_defunct ? <View style={{ alignItems: "center" }}><DefunctIcon color="violet_ink" /></View> : null}
-          <Txt size={22} w={800} color="violet_ink" center>{it.a_name}</Txt>
-          <Txt size={14} w={700} color="muted" center>×</Txt>
-          <Txt size={22} w={800} color="amber_ink" center>{it.b_name}</Txt>
+          <Txt size={kb ? 18 : 22} w={800} color="violet_ink" center lines={kb ? 1 : undefined}>{it.a_name}</Txt>
+          <Txt size={kb ? 11 : 14} w={700} color="muted" center>×</Txt>
+          <Txt size={kb ? 18 : 22} w={800} color="amber_ink" center lines={kb ? 1 : undefined}>{it.b_name}</Txt>
           {it.b_defunct ? <View style={{ alignItems: "center" }}><DefunctIcon color="amber_ink" /></View> : null}
         </Panel>
-        {toast ? <Toast text={toast.text} kind={toast.kind} /> : null}
+        {toast && !(kb && !blitz) ? <Toast text={toast.text} kind={toast.kind} /> : null}
         {blitz ? (
           <View style={{ flex: 1, justifyContent: "center", gap: s(8) }}>
             {(it.options as string[]).map((o, i) => {
@@ -91,10 +90,12 @@ export default function SinglePlay() {
           </View>
         ) : (
           <>
-            <View style={{ flex: 1 }}>
-              <Autocomplete kind="player" clearKey={`${d.idx}-${clearKey}`} onPick={(id, name) => { api.singleGuess(id, name); setClearKey((k) => k + 1); }} />
+            {/* klavye açıkken: sonuç bildirimi kutunun altında (öneri gelince çekilir), "Bildiklerin" gizli */}
+            <View style={{ flex: 1, minHeight: 0 }}>
+              <Autocomplete kind="player" fill clearKey={`${d.idx}-${clearKey}`} onPick={(id, name) => { api.singleGuess(id, name); setClearKey((k) => k + 1); }}
+                below={kb && toast ? <Toast text={toast.text} kind={toast.kind} /> : undefined} />
             </View>
-            {history.current.length > 0 && (
+            {!kb && history.current.length > 0 && (
               <View style={{ gap: s(6) }}>
                 <Eyebrow>{t("sp.history")}</Eyebrow>
                 {history.current.slice(0, 4).map((h, i) => (

@@ -305,9 +305,11 @@ export function HLine() {
 }
 
 // ---------- sayfa iskeleti ----------
-export function Nav({ title, onBack, right }: { title: string; onBack?: () => void; right?: ReactNode }) {
-  const { c, s } = useTheme();
+// `keep`: klavye açıkken de görünür (varsayılan: yer açmak için gizlenir)
+export function Nav({ title, onBack, right, keep }: { title: string; onBack?: () => void; right?: ReactNode; keep?: boolean }) {
+  const { c, s, kb } = useTheme();
   const router = useRouter();
+  if (kb && !keep) return null;
   const back = onBack ?? (() => (router.canGoBack() ? router.back() : router.replace("/")));
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: s(8) }}>
@@ -322,9 +324,9 @@ export function Nav({ title, onBack, right }: { title: string; onBack?: () => vo
 
 // Güvenli alan + 20 px kenar + ortalanmış sütun; gap 12. scroll: içerik ekrandan uzunsa kaydırılır (varsayılan kapalı: ekranlar tek sayfaya sığar)
 export function Page({ children, scroll, gap = 12, style }: PropsWithChildren<{ scroll?: boolean; gap?: number; style?: StyleProp<ViewStyle> }>) {
-  const { c, s, col } = useTheme();
+  const { c, s, col, kb } = useTheme();
   const insets = useSafeAreaInsets();
-  const inner = { width: col, alignSelf: "center" as const, gap: s(gap), flex: 1, paddingTop: Math.max(insets.top, s(16)), paddingBottom: Math.max(insets.bottom, s(16)) };
+  const inner = { width: col, alignSelf: "center" as const, gap: s(kb ? Math.min(gap, 8) : gap), flex: 1, paddingTop: Math.max(insets.top, s(kb ? 10 : 16)), paddingBottom: kb ? s(8) : Math.max(insets.bottom, s(16)) };
   if (scroll) {
     return (
       <ScrollView style={{ flex: 1, backgroundColor: c.bg }} contentContainerStyle={[{ flexGrow: 1 }]} keyboardShouldPersistTaps="handled">

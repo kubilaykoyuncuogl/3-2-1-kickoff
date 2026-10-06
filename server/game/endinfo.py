@@ -20,13 +20,15 @@ class EndInfoMixin:
         if mode == "ladder":
             ans = await asyncio.to_thread(ix.pair_answers, int(item["a"]), int(item["b"]), 5, int(s.get("era", 0)))
             if failed: out["burn"] = {"kind": "pair", "a": item.get("a_name", ""), "b": item.get("b_name", ""), "tried": last.get("name") if last.get("type") == "wrong" else None}
-            if ans.get("names"): out["fact"] = {"kind": "pair_players", "a": item.get("a_name", ""), "b": item.get("b_name", ""), "total": int(ans.get("total", 0)), "names": ans["names"][:4]}
+            if ans.get("names"): out["fact"] = {"kind": "pair_players", "a": item.get("a_name", ""), "b": item.get("b_name", ""), "total": int(ans.get("total", 0)), "names": ans["names"][:5]}
         elif mode == "blitz":
             opts = item.get("options") or []; ai = int(item.get("_answer", 0)); name = opts[ai] if ai < len(opts) else ""
             if failed: out["burn"] = {"kind": "pick", "a": item.get("a_name", ""), "b": item.get("b_name", ""), "answer": name,
                                       "picked": opts[int(last["option"])] if last.get("type") == "wrong" and int(last.get("option", -1)) in range(len(opts)) else None}
-            ys = await asyncio.to_thread(ix.club_join_years, int(item["_answer_id"]), [int(item["a"]), int(item["b"])])
-            out["fact"] = {"kind": "two_clubs", "name": name, "a": item.get("a_name", ""), "ay": ys.get(int(item["a"])), "b": item.get("b_name", ""), "by": ys.get(int(item["b"]))}
+            sp = await asyncio.to_thread(ix.club_spans, int(item["_answer_id"]), [int(item["a"]), int(item["b"])])
+            # yıl aralıkları [ilk, son]; son None = hâlâ orada. Kronolojik sırayla verilir.
+            parts = sorted(((item.get("a_name", ""), sp.get(int(item["a"])) or []), (item.get("b_name", ""), sp.get(int(item["b"])) or [])), key=lambda x: x[1][0][0] if x[1] else 9999)
+            out["fact"] = {"kind": "two_clubs", "name": name, "spells": [{"club": c, "spans": s_[:3]} for c, s_ in parts]}      # spans: [[ilk, son | None], …]
         elif mode == "career":
             if failed: out["burn"] = {"kind": "who", "answer": str(item["_name"]), "tried": last.get("name") if last.get("type") == "wrong" else None, "first": item["clubs"][0]["club"] if item.get("clubs") else ""}
             su = await asyncio.to_thread(ix.player_summary, int(item["_player_id"]))

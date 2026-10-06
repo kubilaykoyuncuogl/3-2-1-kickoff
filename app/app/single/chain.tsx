@@ -18,7 +18,7 @@ function moveText(st: any): string {
 }
 
 export default function Chain() {
-  const { s } = useTheme();
+  const { s, kb } = useTheme();
   const { d, at, failed, restart } = useSingle("chain");
   const [clearKey, setClearKey] = useState(0);
   const title = t("mode.chain");
@@ -39,12 +39,12 @@ export default function Chain() {
         <Nav title={title} />
         <SingleHeader d={d} at={at} hotMs={5000} score={d.score} left={<><Eyebrow>{t("career.player_n", d.idx + 1)}</Eyebrow><Lives n={d.lives} /></>} />
         <View>
-          <Txt size={26} w={800} lines={1}>{String(it.name)}</Txt>
-          <Txt size={13} w={600} color="muted">{sub.join("  ·  ")}</Txt>
+          <Txt size={kb ? 20 : 26} w={800} lines={1}>{String(it.name)}</Txt>
+          <Txt size={kb ? 12 : 13} w={600} color="muted" lines={1}>{sub.join("  ·  ")}</Txt>
         </View>
-        {toast ? <Toast text={toast.text} kind={toast.kind} /> : null}
-        <Panel kind="violet" style={{ gap: s(8) }}>
-          <Txt size={18} w={800} color="violet_ink">{first ? t("chain.first_q") : t("chain.next_q")}</Txt>
+        {toast && !kb ? <Toast text={toast.text} kind={toast.kind} /> : null}
+        <Panel kind="violet" pad={kb ? 10 : 16} style={{ gap: s(kb ? 6 : 8) }}>
+          <Txt size={kb ? 15 : 18} w={800} color="violet_ink">{first ? t("chain.first_q") : t("chain.next_q")}</Txt>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: s(6) }}>
             {hint.year != null ? <Kv k={t("chain.k_year")} v={String(hint.year)} /> : null}
             {!first ? <Kv k={t("chain.k_type")} v={t("kind." + (hint.kind ?? "free"))} /> : null}
@@ -53,8 +53,11 @@ export default function Chain() {
             {hint.league != null ? <Kv k={t("chain.league")} v={String(hint.league)} /> : null}
           </View>
         </Panel>
-        <Autocomplete kind="team" clearKey={`${d.idx}-${it.step}-${clearKey}`} onPick={(id, name) => { api.singleTeam(id, name); setClearKey((k) => k + 1); }} />
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: s(6) }} keyboardShouldPersistTaps="handled">
+        {/* klavye açıkken geçmiş adımlar gizli; kalan yer önerilere */}
+        {kb ? <Autocomplete kind="team" fill clearKey={`${d.idx}-${it.step}-${clearKey}`} onPick={(id, name) => { api.singleTeam(id, name); setClearKey((k) => k + 1); }}
+          below={toast ? <Toast text={toast.text} kind={toast.kind} /> : undefined} />
+          : <Autocomplete kind="team" clearKey={`${d.idx}-${it.step}-${clearKey}`} onPick={(id, name) => { api.singleTeam(id, name); setClearKey((k) => k + 1); }} />}
+        <ScrollView style={{ flex: 1, display: kb ? "none" : "flex" }} contentContainerStyle={{ gap: s(6) }} keyboardShouldPersistTaps="handled">
           {hist.map((st, i) => ({ st, i })).reverse().map(({ st, i }) => {
             const mt = moveText(st);
             return <Row key={i} index={String(i + 1)} title={String(st.club)} sub={country(st.country)} state={i === hist.length - 1 ? "new" : ""} defunct={!!st.defunct}

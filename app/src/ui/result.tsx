@@ -69,8 +69,17 @@ export function endSections(end: any): Section[] {
   }
   if (f) {
     let line = "";
-    if (f.kind === "pair_players") line = t("fact.pair_players", f.a, f.b, f.total, f.names.join(", ") + (f.total > f.names.length ? "…" : ""));
-    else if (f.kind === "two_clubs") line = f.ay && f.by ? t("fact.two_clubs", f.name, f.a, f.ay, f.b, f.by) : t("fact.two_clubs_plain", f.name, f.a, f.b);
+    if (f.kind === "pair_players") line = pairLines(f.a, f.b, f.total, f.names).join("\n");
+    else if (f.kind === "two_clubs") {
+      // "Pennant 2001-2005 yıllarında Arsenal, 2006-2009 yıllarında Liverpool forması giydi" (tek yılsa "2006 yılında", hâlâ oradaysa "2022 yılından beri")
+      // bir kulüpte birden çok dönem varsa "2006-2008 ve 2019-2020 yıllarında" diye birleşir
+      const one = (x: [number, number | null]) => (x[1] == null ? t("fact.since", x[0]) : x[1] === x[0] ? t("fact.year", x[0]) : t("fact.years", x[0], x[1]));
+      const span = (c: any) => (c.spans as [number, number | null][]).map(one).join(t("fact.and"));
+      const sp = f.spells ?? [];
+      line = sp.length === 2 && sp[0].spans?.length && sp[1].spans?.length
+        ? t("fact.two_spells", f.name, span(sp[0]), sp[0].club, span(sp[1]), sp[1].club)
+        : t("fact.two_clubs_plain", f.name, sp[0]?.club ?? "", sp[1]?.club ?? "");
+    }
     else if (f.kind === "career") line = (f.apps > 0 ? (f.goals > 0 ? t("fact.career_stats", f.name, nf(f.apps), nf(f.goals)) : t("fact.career_apps", f.name, nf(f.apps))) + "\n" : "") + f.clubs.join(" → ");
     else if (f.kind === "move") line = `${f.name} · ${f.year ?? ""}: ${f.from ? f.from + " → " : ""}${f.to}` + (f.move && f.move !== "start" ? ` · ${t("kind." + f.move)}` : "") + (f.fee ? ` · ${eur(Number(f.fee))}` : "");
     else if (f.kind === "player") line = f.goals > 0 ? t("fact.player", f.name, nf(f.apps), nf(f.goals), f.n_clubs) : t("fact.player_apps", f.name, nf(f.apps), f.n_clubs);
@@ -78,6 +87,14 @@ export function endSections(end: any): Section[] {
     if (line) out.push({ title: t("end.fact"), lines: line.split("\n"), kind: "fact" });
   }
   return out;
+}
+
+// "A ve B formasını N oyuncu giydi:" + numaralı ilk beş isim + "ve daha Y futbolcu"
+export function pairLines(a: string, b: string, total: number, names: string[]): string[] {
+  const shown = names.slice(0, 5);
+  const lines = [t("fact.pair_head", a, b, total), ...shown.map((n, i) => `${i + 1}  ${n}`)];
+  if (total > shown.length) lines.push(t("fact.pair_more", total - shown.length));
+  return lines;
 }
 
 export function sectionsText(sections: Section[]): string {

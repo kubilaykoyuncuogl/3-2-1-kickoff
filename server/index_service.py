@@ -580,6 +580,24 @@ def club_join_years(pid: int, club_ids) -> dict:
         out[cid] = int(date[:4]) if date else None
     return out
 
+def club_spans(pid: int, club_ids) -> dict:
+    """Oyuncunun verilen kulüplerde forma giydiği dönemler: {club_id: [[ilk yıl, son yıl | None], ...]} (son None = hâlâ orada).
+    Kalıcı geçişte dönem, başka bir kulübe kalıcı geçişe kadar sürer (aradaki kiralık gidiş-dönüşler dönemi bölmez);
+    kiralık gelişte dönem bir sonraki kayda (dönüşe) kadardır. Bitişik dönemler birleştirilir."""
+    want = {int(c) for c in club_ids}; out = {c: [] for c in want}
+    rows = [(cid, int(date[:4]) if date else None, kind) for cid, date, kind in
+            db.execute("SELECT club_id, date, kind FROM stints WHERE player_id = ? ORDER BY seq", (pid,))]
+    for i, (cid, yr, kind) in enumerate(rows):
+        if cid not in want or yr is None or kind == "loan_end": continue
+        rest = rows[i + 1:]
+        if kind == "loan": end = next((y for c, y, _k in rest if c != cid and y is not None), None)
+        else: end = next((y for c, y, k in rest if c != cid and y is not None and k not in ("loan", "loan_end")), None)
+        sp = out[cid]
+        if sp and (sp[-1][1] is None or sp[-1][1] >= yr):      # önceki dönemin içinde / bitişiğinde: birleştir
+            sp[-1][1] = None if (end is None or sp[-1][1] is None) else max(sp[-1][1], end)
+        else: sp.append([yr, end])
+    return out
+
 # ---- bot rakipler için yardımcılar (yalnızca oyun sunucusu çağırır; HTTP ucu yok)
 def bot_pair_info(a: int, b: int, era: int = 0, limit: int = 8) -> dict:
     """Çiftin ortak oyuncuları (ün sırasıyla) ve en bilinenin ün sırası; botun bilip bilmeyeceğini bununla hesaplarız."""
