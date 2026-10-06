@@ -102,8 +102,10 @@ function ScoreRow({ mine, opp }: { mine?: Player; opp?: Player }) {
 
 function Side({ p, side, children, flex, ratio }: { p?: Player; side: "violet" | "amber"; children?: React.ReactNode; flex?: boolean; ratio?: number }) {
   const ink = side === "violet" ? "violet_ink" : "amber_ink";
+  // içerik (cevap + liste) varsa panel en az içeriği kadar yer alır ve büzülmez; boş taraf kalan yeri paylaşır
+  const grow = children ? { flexGrow: ratio ?? 1, flexShrink: 0, flexBasis: "auto" as const } : { flex: ratio ?? 1, minHeight: 0 };
   return (
-    <Panel kind={side} style={flex ? { flex: ratio ?? 1 } : undefined}>
+    <Panel kind={side} style={flex ? grow : undefined}>
       <Eyebrow color={ink}>{(side === "violet" ? t("you") : t("opponent")) + " · " + (p?.nick ?? "")}</Eyebrow>
       <Txt size={26} w={800} color={ink} lines={2}>{p?.team_name || "—"}</Txt>
       {children}
@@ -225,7 +227,7 @@ function RoundEnd({ room, mine, opp, me }: { room: Room; mine?: Player; opp?: Pl
   const iWon = (tp === "correct" && last.pid === my) || (tp === "pick_timeout" && last.pid !== my);
   const theyWon = (tp === "correct" && last.pid !== my) || (tp === "pick_timeout" && last.pid === my);
   const ans = room.answers ?? []; const total = room.answers_total ?? 0; const answerName = String(last.name ?? "");
-  const others = ans.filter((n) => n !== answerName).slice(0, 6);
+  const others = ans.filter((n) => n !== answerName).slice(0, 5);
   const rest = Math.max(0, total - others.length - (answerName ? 1 : 0));
   const sub = (
     <View style={{ gap: s(8), marginTop: s(8) }}>

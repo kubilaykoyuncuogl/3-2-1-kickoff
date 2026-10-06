@@ -1,7 +1,7 @@
 // Online oyna: Elo kartı, kapsam ve dönem seçici, Ara / Oda kur / Odaya katıl. Arama ve oda bekleme de bu sayfada (mode).
 // Oda 2 kişi olunca /match açılır. ?oda=<kod> ile gelince doğrudan katılma denenir (web linki ve kickoff:// şeması).
 import * as Clipboard from "expo-clipboard";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, usePathname, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { Platform, Share, View } from "react-native";
 import { useNow, useServerError } from "@/hooks";
@@ -30,6 +30,8 @@ export default function Online() {
   const [copied, setCopied] = useState(false); const [shared, setShared] = useState(false);
   const now = useNow(500);
   const autoJoined = useRef(false);
+  const pathname = usePathname();
+  const onTop = useRef(true); onTop.current = pathname === "/online";
 
   useEffect(() => { if (!connected) connect(); }, []);
   useEffect(() => {      // oda linkiyle gelindi: bağlanınca katıl
@@ -39,7 +41,11 @@ export default function Online() {
     if (!room) return;
     if (room.left) { setMode("menu"); return; }
     if (room.searching) { setMode("searching"); return; }
-    if ((room.players?.length ?? 0) >= 2 && room.state !== State.LOBBY) { router.push("/match"); return; }
+    if ((room.players?.length ?? 0) >= 2 && room.state !== State.LOBBY) {
+      // maç ekranı zaten açıksa dokunma: her oda güncellemesinde yeni /match açılıyor, yazılan metin siliniyordu
+      if (onTop.current) { onTop.current = false; router.push("/match"); }
+      return;
+    }
     setMode("room"); setCopied(false); setShared(false);
   }, [room]);
 
