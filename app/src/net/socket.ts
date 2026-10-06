@@ -2,7 +2,8 @@
 // Mesaj sözleşmesi: docs/expo-plan.md §2 (server/game/engine.py ile aynı alan adları).
 import Constants from "expo-constants";
 import { AppState, Platform } from "react-native";
-import { useGame, useProfile, useSettings } from "../store";
+import { State, useGame, useProfile, useSettings } from "../store";
+import { reportClientError, trackGameEvent } from "../telemetry";
 
 export const PROTO = 3;
 export const PROD_URL = "wss://kickoff.grandecorpo.com/ws";
@@ -41,7 +42,11 @@ export function connect() {
   try { ws = new WebSocket(url); } catch { schedule(); return; }
   const sock = ws;
   sock.onopen = () => { retry = 0; useGame.getState().set({ connected: true }); hello(); send({ t: "weekly_info" }); };
-  sock.onmessage = (ev) => { try { handle(JSON.parse(String(ev.data))); } catch {} };
+  sock.onmessage = (ev) => {
+    let message: any;
+    try { message = JSON.parse(String(ev.data)); } catch { return; }
+    try { handle(message); } catch (error) { reportClientError(error, "socket.message"); }
+  };
   sock.onerror = () => {};
   sock.onclose = () => {
     if (ws !== sock) return;
@@ -68,8 +73,17 @@ function handle(m: any) {
   const g = useGame.getState();
   switch (m.t) {
     case "welcome": g.set({ pid: m.pid }); break;
-    case "room_state": g.set({ room: m.d, roomAt: Date.now() }); break;
-    case "single_state": g.set({ single: m.d, singleAt: Date.now() }); break;
+    case "room_state":
+      if (m.d.state === State.PICK_TEAMS &&
+          (!g.room || g.room.code !== m.d.code || g.room.state === State.LOBBY || g.room.state === State.GAME_OVER)) {
+        trackGameEvent("match_start");
+      }
+      if (m.d.state === State.GAME_OVER &&
+          (g.room?.code !== m.d.code || g.room?.state !== State.GAME_OVER)) trackGameEvent("match_complete");
+      g.set({ room: m.d, roomAt: Date.now() }); break;
+    case "single_state":
+      if (m.d.over && !g.single?.over) trackGameEvent("single_complete");
+      g.set({ single: m.d, singleAt: Date.now() }); break;
     case "suggest_result": g.set({ suggestions: { kind: m.kind, q: m.q, list: m.list } }); break;
     case "profile_state":
       useProfile.getState().apply(m.d);
@@ -86,17 +100,17 @@ function handle(m: any) {
 
 // ---------- istemci yardımcıları (Godot c_* karşılığı) ----------
 export const api = {
-  createRoom: () => { const s = useSettings.getState(); send({ t: "create_room", scope: s.scope, era: s.era, round: s.round }); },
-  joinRoom: (code: string) => send({ t: "join_room", code }),
-  findMatch: () => { const s = useSettings.getState(); send({ t: "find_match", scope: s.scope, era: s.era, round: s.round }); },
+  createRoom: () => { const s = useSettings.getState(); trackGameEvent("room_create"); send({ t: "create_room", scope: s.scope, era: s.era, round: s.round }); },
+  joinRoom: (code: string) => { trackGameEvent("room_join"); send({ t: "join_room", code }); },
+  findMatch: () => { const s = useSettings.getState(); trackGameEvent("match_search"); send({ t: "find_match", scope: s.scope, era: s.era, round: s.round }); },
   cancelFind: () => send({ t: "cancel_find" }),
   leave: () => send({ t: "leave_room" }),
   pickTeam: (team_id: number, team_name: string) => send({ t: "pick_team", team_id, team_name }),
   ready: () => send({ t: "set_ready" }),
   guess: (player_id: number, name: string) => send({ t: "guess", player_id, name }),
   suggest: (kind: "team" | "player", q: string) => send({ t: "suggest", kind, q }),
-  rematch: () => send({ t: "rematch" }),
-  singleStart: (mode: string) => { const s = useSettings.getState(); send({ t: "single_start", mode, scope: s.scope, era: s.era }); },
+  rematch: () => { trackGameEvent("rematch_request"); send({ t: "rematch" }); },
+  singleStart: (mode: string) => { const s = useSettings.getState(); trackGameEvent("single_start"); send({ t: "single_start", mode, scope: s.scope, era: s.era }); },
   singleGuess: (player_id: number, name: string) => send({ t: "single_guess", player_id, name }),
   singleAnswer: (option: number) => send({ t: "single_answer", option }),
   singleTeam: (team_id: number, name: string) => send({ t: "single_team", team_id, name }),

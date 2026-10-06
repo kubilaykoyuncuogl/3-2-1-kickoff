@@ -5,7 +5,10 @@
   "dependencies": {
     "@expo-google-fonts/sora": "^0.4.2",
     "@expo/metro-runtime": "~57.0.16",
+    "@microsoft/clarity": "^1.0.2",
+    "@microsoft/react-native-clarity": "^4.9.2",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@sentry/react-native": "~7.11.0",
     "expo": "~57.0.26",
     "expo-clipboard": "~57.0.2",
     "expo-constants": "~57.0.20",
@@ -29,7 +32,10 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@sentry/cli": "^3.8.0",
     "@types/react": "~19.2.2",
+    "eslint": "^9.39.5",
+    "eslint-config-expo": "~57.0.2",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -37,7 +43,10 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "export:web": "expo export --platform web",
+    "export:web": "expo export --platform web --clear",
+    "export:web:sentry": "node scripts/export-web-sentry.cjs",
+    "lint": "expo lint",
+    "test:telemetry": "node --test tests/telemetry.test.cjs",
     "typecheck": "tsc --noEmit"
   },
   "private": true

@@ -12,7 +12,7 @@ case "${1:-}" in
     pkill -f "[e]xpo start" || true
     echo "durduruldu"; exit 0;;
   export)
-    (cd app && CI=1 npx expo export --platform web | tail -3); du -sh app/dist; exit 0;;
+    (cd app && CI=1 npm run export:web | tail -3); du -sh app/dist; exit 0;;
 esac
 set -a; . ./.env; set +a
 pgrep -f "[u]vicorn server.main" >/dev/null || (nohup .venv/bin/uvicorn server.main:app --host 127.0.0.1 --port 9081 > data/service.log 2>&1 &)
