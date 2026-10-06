@@ -1,5 +1,6 @@
 extends Node
 ## Uçtan uca test botu: `godot --headless --path game -- --bot ali --team galatasaray --guess sneijder`
+## `--era <maske>` dönem (1=80'ler, 2=90'lar, 4=00'lar, 8=10'lar, 16=20'ler; toplanır).
 ## Ara ile eşleşir, takım seçer, hazır der, turda tahmin eder. Durumları stdout'a yazar.
 var nick := "bot"; var team_q := "galatasaray"; var guess_q := "sneijder"
 var picked := false; var guessed := false; var single_mode := ""; var delay := 0.0
@@ -10,7 +11,7 @@ func _ready() -> void:
 	var secs := float(_arg(args, "--seconds", "0"))
 	if secs > 0: get_tree().create_timer(secs).timeout.connect(func(): print("[%s] time up" % nick); get_tree().quit())
 	nick = _arg(args, "--bot", nick); team_q = _arg(args, "--team", team_q); guess_q = _arg(args, "--guess", guess_q); single_mode = _arg(args, "--single", ""); delay = float(_arg(args, "--delay", "0"))
-	App.nickname = nick; App.device_id = "dev-" + nick
+	App.nickname = nick; App.device_id = "dev-" + nick; App.era = int(_arg(args, "--era", "0"))
 	Game.room_changed.connect(_on_room); Game.suggestions.connect(_on_sugg); Game.error.connect(func(m): print("[%s] ERR %s" % [nick, m]))
 	Game.single_changed.connect(_on_single)
 	if "--acct" in args:       # hesap senaryosu: oluştur → bağlama kodu → çıkış → sil

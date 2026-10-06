@@ -121,19 +121,48 @@ def tier_pair_for(step: int, per: int, sc: str, rng=None):
     a_i, b_i = (k // 2, k // 2) if k % 2 == 0 else (k // 2, k // 2 + 1)
     return avail[min(a_i, len(avail) - 1)], avail[min(b_i, len(avail) - 1)]
 
-def pick_pair(rng, sc: str, ta: int, tb: int, used: set, min_n: int, max_n: int = 10**9):
-    """ta tier'ından rastgele A, tb tier'ından ortak oyuncusu min_n..max_n olan rastgele B."""
+# ---- dönem (era): oyuncunun en az bir maça çıktığı on yılların bit maskesi. 0 = tümü.
+ERA_BITS = {"80": 1, "90": 2, "00": 4, "10": 8, "20": 16}
+ERA_SQL = " AND EXISTS(SELECT 1 FROM player_stats es WHERE es.player_id = {col} AND (es.decades & {era}) != 0)"
+has_decades = False
+
+def _era(v) -> int:
+    """İstekten gelen dönem maskesi; sütun yoksa ya da 5 on yılın hepsi seçiliyse 0 (süzme yok)."""
+    try: e = int(v or 0) & 31
+    except (TypeError, ValueError): e = 0
+    return 0 if (e == 31 or not has_decades) else e
+
+def era_sql(col: str, era: int) -> str:
+    return ERA_SQL.format(col=col, era=int(era)) if era else ""
+
+def pair_n(a: int, b: int, era: int) -> int:
+    """İki kulübün ortak oyuncu sayısı; dönem verilmişse yalnızca o dönemde maça çıkmış olanlar."""
+    if not era:
+        row = db.execute("SELECT n FROM pair_counts WHERE club_a=? AND club_b=?", (min(a, b), max(a, b))).fetchone()
+        return row[0] if row else 0
+    return db.execute("SELECT COUNT(*) FROM player_clubs x JOIN player_clubs y ON x.player_id=y.player_id WHERE x.club_id=? AND y.club_id=?"
+                      + era_sql("x.player_id", era), (a, b)).fetchone()[0]
+
+def pick_pair(rng, sc: str, ta: int, tb: int, used: set, min_n: int, max_n: int = 10**9, era: int = 0):
+    """ta tier'ından rastgele A, tb tier'ından ortak oyuncusu min_n..max_n olan rastgele B.
+    Dönem seçiliyse aday çiftler tüm zamanlar tablosundan gelir, sayı o dönem için ayrıca doğrulanır."""
     cand_a = [c for c in tiers[sc][ta] if c not in used]
     rng.shuffle(cand_a)
     tb_set = set(tiers[sc][tb])
     for a in cand_a[:40]:
         rows = db.execute("""SELECT club_b AS other, n FROM pair_counts WHERE club_a=? AND n BETWEEN ? AND ?
                              UNION ALL
-                             SELECT club_a, n FROM pair_counts WHERE club_b=? AND n BETWEEN ? AND ?""", (a, min_n, max_n, a, min_n, max_n)).fetchall()
+                             SELECT club_a, n FROM pair_counts WHERE club_b=? AND n BETWEEN ? AND ?""",
+                          (a, min_n, max_n if not era else 10**9, a, min_n, max_n if not era else 10**9)).fetchall()
         opts = [(o, n) for o, n in rows if o in tb_set and o not in used and o != a]
-        if opts:
+        if not opts: continue
+        if not era:
             b, n = rng.choice(opts)
             return a, b, n
+        rng.shuffle(opts)
+        for b, _n in opts[:6]:
+            n = pair_n(a, b, era)
+            if min_n <= n <= max_n: return a, b, n
     return None
 
 class _Rows(list):
@@ -155,6 +184,8 @@ def _load():
     raw = sqlite3.connect(":memory:", check_same_thread=False)
     raw.deserialize(decrypt_bytes(INDEX, key_from_env()))   # diske düz kopya yazılmaz
     db = LockedDB(raw)
+    global has_decades
+    has_decades = any(r[1] == "decades" for r in db.execute("PRAGMA table_info(player_stats)"))
     db.execute("CREATE INDEX IF NOT EXISTS ix_pair_b ON pair_counts(club_b)")   # bellekte; club_b aramaları tam tarama yapmasın
     db.execute("CREATE VIRTUAL TABLE IF NOT EXISTS team_names USING fts5(club_id UNINDEXED, text, tokenize='unicode61')")
     if db.execute("SELECT COUNT(*) FROM team_names").fetchone()[0] == 0:
@@ -193,29 +224,29 @@ def club(club_id: int, scope: str = "all"):
             "in_scope": sc == "all" or row[0] in scope_clubs[sc], "tier": club_tier.get(row[0], N_TIERS)}
 
 @functools.lru_cache(maxsize=100000)
-def _players_suggest(n: str, limit: int):
+def _players_suggest(n: str, limit: int, era: int = 0):
     m = fts_prefix(n)
     if not m: return []
     rows = db.execute("""SELECT p.id, p.name, p.birth_year FROM names n JOIN players p ON p.id = n.player_id
-                         WHERE names MATCH ? ORDER BY p.fame DESC LIMIT ?""", (m, limit)).fetchall()
+                         WHERE names MATCH ?""" + era_sql("p.id", era) + " ORDER BY p.fame DESC LIMIT ?", (m, limit)).fetchall()
     return [{"id": i, "name": nm, "born": by} for i, nm, by in rows]
 
 @app.get("/players/suggest")
-def players_suggest(q: str = Query(min_length=2), limit: int = 8):
-    return _players_suggest(normalize(q), limit)
+def players_suggest(q: str = Query(min_length=2), limit: int = 8, era: int = 0):
+    return _players_suggest(normalize(q), limit, _era(era))
 
 @app.get("/check")
-def check(player_id: int, club_a: int, club_b: int):
-    ok = db.execute("SELECT 1 FROM player_clubs x JOIN player_clubs y ON x.player_id=y.player_id WHERE x.player_id=? AND x.club_id=? AND y.club_id=?",
-                    (player_id, club_a, club_b)).fetchone() is not None
+def check(player_id: int, club_a: int, club_b: int, era: int = 0):
+    ok = db.execute("SELECT 1 FROM player_clubs x JOIN player_clubs y ON x.player_id=y.player_id WHERE x.player_id=? AND x.club_id=? AND y.club_id=?"
+                    + era_sql("x.player_id", _era(era)), (player_id, club_a, club_b)).fetchone() is not None
     return {"ok": ok}
 
 @app.get("/pair/answers")
-def pair_answers(club_a: int, club_b: int, limit: int = 12):
+def pair_answers(club_a: int, club_b: int, limit: int = 12, era: int = 0):
+    e = _era(era)
     rows = db.execute("""SELECT p.name FROM player_clubs x JOIN player_clubs y ON x.player_id=y.player_id JOIN players p ON p.id=x.player_id
-                         WHERE x.club_id=? AND y.club_id=? ORDER BY p.fame DESC LIMIT ?""", (club_a, club_b, limit)).fetchall()
-    total = db.execute("SELECT n FROM pair_counts WHERE club_a=? AND club_b=?", (min(club_a, club_b), max(club_a, club_b))).fetchone()
-    return {"names": [r[0] for r in rows], "total": total[0] if total else 0}
+                         WHERE x.club_id=? AND y.club_id=?""" + era_sql("x.player_id", e) + " ORDER BY p.fame DESC LIMIT ?", (club_a, club_b, limit)).fetchall()
+    return {"names": [r[0] for r in rows], "total": pair_n(club_a, club_b, e)}
 
 def _seeded(day: str, salt: str) -> random.Random:
     return random.Random(hashlib.sha256(f"{day}:{salt}:{os.environ.get('KICKOFF_DAILY_SALT','')}".encode()).digest())
@@ -244,56 +275,60 @@ def _pool_take(kind: str, sc: str):
         return lst.pop() if lst else None
 
 @app.get("/ladder")
-def ladder(day: str = "", steps: int = 27, seed: str = "", scope: str = "all"):
-    sc = scope if scope in SCOPES else "all"
-    if not seed and not day and steps == 27:
+def ladder(day: str = "", steps: int = 27, seed: str = "", scope: str = "all", era: int = 0):
+    sc = scope if scope in SCOPES else "all"; e = _era(era)
+    if not seed and not day and steps == 27 and not e:
         got = _pool_take("ladder", sc)
         if got: return got
-    return _ladder(seed or day, steps, sc)
+    return _ladder(seed or day or f"live-{time.time_ns()}", steps, sc, e)
 
-def _ladder(seed: str, steps: int, sc: str):
+def _ladder(seed: str, steps: int, sc: str, era: int = 0):
     """Klasik merdiven: basamak tipi T1×T1 → T1×T2 → T2×T2 → … → T4×T4 (her tip 3 basamak). Kulüp koşuda bir kez."""
-    rng = _seeded(seed, "ladder:" + sc)
+    rng = _seeded(seed, "ladder:%s:%d" % (sc, era))
     out, used = [], set()
     for i in range(steps):
         ta, tb = tier_pair_for(i, 1, sc, rng)
         min_n = min_common_for(ta, tb)
-        got = pick_pair(rng, sc, ta, tb, used, min_n) or pick_pair(rng, sc, ta, tb, used, 1) \
-              or pick_pair(rng, sc, min(ta, tb), min(ta, tb), used, 1)
-        if not got: break
+        got = pick_pair(rng, sc, ta, tb, used, min_n, era=era) or pick_pair(rng, sc, ta, tb, used, 1, era=era) \
+              or pick_pair(rng, sc, min(ta, tb), min(ta, tb), used, 1, era=era)
+        if not got:
+            if era: continue      # dar dönemde bu tier çiftinde ortak oyuncu yok: tipi atla, merdiven kısalır
+            break
         a, b, n = got; used.update((a, b))
         out.append({"a": a, "b": b, "n": n, "tiers": [ta, tb]})
     info = {i: (nm, bool(df)) for i, nm, df in db.execute(f"SELECT id, name, defunct FROM clubs WHERE id IN ({','.join(str(c) for c in used) or '0'})")}
     for st in out:
         st["a_name"], st["a_defunct"] = info[st["a"]]; st["b_name"], st["b_defunct"] = info[st["b"]]
-    return {"seed": seed, "scope": sc, "steps": out}
+    return {"seed": seed, "scope": sc, "era": era, "steps": out}
 
 @app.get("/blitz/pack")
-def blitz_pack(day: str = "", n: int = 40, reveal: int = 0, seed: str = "", scope: str = "all"):
-    sc = scope if scope in SCOPES else "all"
+def blitz_pack(day: str = "", n: int = 40, reveal: int = 0, seed: str = "", scope: str = "all", era: int = 0):
+    sc = scope if scope in SCOPES else "all"; e = _era(era)
     qs = None
-    if not seed and not day and n == 40:
+    if not seed and not day and n == 40 and not e:
         qs = _pool_take("blitz", sc)
-    if qs is None: qs = _blitz(seed or day, n, sc)
+    if qs is None: qs = _blitz(seed or day or f"live-{time.time_ns()}", n, sc, e)
     # reveal=1 yalnızca oyun sunucusu için (localhost); cevap indeksi istemciye asla iletilmez
     return {"scope": sc, "questions": [{k: v for k, v in q.items() if not k.startswith("_") or (reveal and k == "_answer")} for q in qs]}
 
-def _blitz(seed: str, n: int, sc: str):
+def _blitz(seed: str, n: int, sc: str, era: int = 0):
     """5 isim: 2 yalnız A, 2 yalnız B, 1 ikisi. Çift tier ilerleyişiyle seçilir; çeldiriciler ≥3 kulüplü ünlü oyunculardan."""
-    rng = _seeded(seed, "blitz:" + sc)
+    rng = _seeded(seed, "blitz:%s:%d" % (sc, era))
     qs, used = [], set()
     only_sql = """SELECT p.id, p.name FROM player_clubs x JOIN players p ON p.id=x.player_id
-                  WHERE x.club_id=? AND p.n_clubs>=3 AND NOT EXISTS(SELECT 1 FROM player_clubs y WHERE y.player_id=x.player_id AND y.club_id=?)
-                  ORDER BY p.fame DESC LIMIT 40"""
+                  WHERE x.club_id=? AND p.n_clubs>=3 AND NOT EXISTS(SELECT 1 FROM player_clubs y WHERE y.player_id=x.player_id AND y.club_id=?)""" \
+               + era_sql("p.id", era) + " ORDER BY p.fame DESC LIMIT 40"
     tries = 0
     while len(qs) < n and tries < n * 6:
         tries += 1
         ta, tb = tier_pair_for(len(qs), 2, sc, rng)
-        got = pick_pair(rng, sc, ta, tb, used, max(2, min_common_for(ta, tb)), 60) or pick_pair(rng, sc, ta, tb, used, 1, 200)
-        if not got: break
+        got = pick_pair(rng, sc, ta, tb, used, max(2, min_common_for(ta, tb)), 60, era=era) or pick_pair(rng, sc, ta, tb, used, 1, 200, era=era)
+        if not got:
+            if era and tries < n * 3: continue
+            break
         ca, cb, _ = got
         both = db.execute("""SELECT p.id, p.name FROM player_clubs x JOIN player_clubs y ON x.player_id=y.player_id JOIN players p ON p.id=x.player_id
-                             WHERE x.club_id=? AND y.club_id=? AND p.n_clubs>=3 ORDER BY p.fame DESC LIMIT 20""", (ca, cb)).fetchall()
+                             WHERE x.club_id=? AND y.club_id=? AND p.n_clubs>=3""" + era_sql("p.id", era) + " ORDER BY p.fame DESC LIMIT 20", (ca, cb)).fetchall()
         oa, ob = db.execute(only_sql, (ca, cb)).fetchall(), db.execute(only_sql, (cb, ca)).fetchall()
         if not both or len(oa) < 2 or len(ob) < 2:
             used.update((ca, cb)); continue
@@ -328,6 +363,8 @@ def quick_picks(scope: str = "all", n: int = 5, exclude: str = ""):
 
 # ============================================================ ünlü oyuncu havuzu ve yeni tek oyunculu modlar
 famous: list = []          # player id'leri, ün sırasıyla (kariyeri çoğunlukla üst liglerde geçmiş bilinen oyuncular)
+famous_all: list = []      # doğum yılı süzgeci olmadan; dönem havuzları buradan türetilir
+pdec: dict = {}            # pid -> on yıl maskesi
 fame2: dict = {}
 pinfo: dict = {}           # pid -> (name, birth_year, position)
 CATS = {                   # O mu bu mu kategorileri: anahtar -> (SQL ifadesi, biçim)
@@ -359,21 +396,41 @@ def _build_famous():
     tr_cols = "s.apps_tr, s.goals_tr" if "apps_tr" in cols else "0, 0"
     top_ids = ",".join(str(c) for c, t in club_tier.items() if t <= 3) or "0"
     in_top = dict(db.execute(f"SELECT player_id, COUNT(*) FROM player_clubs WHERE club_id IN ({top_ids}) GROUP BY player_id"))
-    rows = db.execute(f"""SELECT p.id, p.name, p.birth_year, p.position, p.mv_max, s.apps_league, s.apps_top, s.apps_big5, s.goals_top, s.goals_big5, {tr_cols}
+    dec_col = "s.decades" if "decades" in cols else "0"
+    rows = db.execute(f"""SELECT p.id, p.name, p.birth_year, p.position, p.mv_max, s.apps_league, s.apps_top, s.apps_big5, s.goals_top, s.goals_big5, {tr_cols}, {dec_col}
                           FROM players p JOIN player_stats s ON s.player_id = p.id
-                          WHERE s.apps_top >= 120 AND s.apps_top * 10 >= s.apps_league * 6 AND p.birth_year >= ?""", (MIN_BIRTH,)).fetchall()
-    for pid, name, by, pos, mv, al, at, a5, gt, g5, atr, gtr in rows:
+                          WHERE s.apps_top >= 120 AND s.apps_top * 10 >= s.apps_league * 6""").fetchall()
+    for pid, name, by, pos, mv, al, at, a5, gt, g5, atr, gtr, dec in rows:
         atr = atr or 0; gtr = gtr or 0
         fame2[pid] = (a5 * 1.0 + atr * HOME_APP_W + (at - a5 - atr) * 0.4 + g5 * 3.0 + gtr * HOME_GOAL_W + (gt - g5 - gtr) * 1.2
                       + (mv or 0) / 1e6 * 3.0 + in_top.get(pid, 0) * 80)
-        pinfo[pid] = (name, by, pos)
-    famous.extend(sorted(fame2, key=lambda x: -fame2[x])[:FAMOUS_SIZE])
-    pool = famous[:VERSUS_POOL]; ids = ",".join(map(str, pool))
+        pinfo[pid] = (name, by, pos); pdec[pid] = dec or 0
+    famous_all.extend(sorted(fame2, key=lambda x: -fame2[x]))
+    famous.extend([p for p in famous_all if (pinfo[p][1] or 0) >= MIN_BIRTH][:FAMOUS_SIZE])     # "tümü": bugünün oyuncusunun tanıyacağı dönem
+    v, srt, rk = _cat_tables(tuple(famous[:VERSUS_POOL]))
+    cat_values.update(v); cat_sorted.update(srt); cat_rank.update(rk)
+
+@functools.lru_cache(maxsize=64)
+def famous_for(era: int) -> tuple:
+    """Dönem havuzu: o on yıl(lar)da en az bir maça çıkmış ünlüler, ün sırasıyla. 0 → genel havuz."""
+    if not era: return tuple(famous)
+    return tuple([p for p in famous_all if pdec.get(p, 0) & era][:FAMOUS_SIZE])
+
+def _cat_tables(pool: tuple):
+    vals_all, srt_all, rank_all = {}, {}, {}
+    ids = ",".join(map(str, pool)) or "0"
     for cat, (expr, _fmt) in CATS.items():
         vals = {pid: int(v) for pid, v in db.execute(f"SELECT p.id, {expr} FROM players p JOIN player_stats s ON s.player_id=p.id WHERE p.id IN ({ids})") if v}
-        cat_values[cat] = vals
-        cat_sorted[cat] = sorted(vals, key=lambda x: -vals[x])
-        cat_rank[cat] = {pid: i for i, pid in enumerate(cat_sorted[cat])}
+        vals_all[cat] = vals
+        srt_all[cat] = sorted(vals, key=lambda x: -vals[x])
+        rank_all[cat] = {pid: i for i, pid in enumerate(srt_all[cat])}
+    return vals_all, srt_all, rank_all
+
+@functools.lru_cache(maxsize=64)
+def versus_tables(era: int):
+    """O mu bu mu kategori tabloları; dönem havuzunun en ünlü VERSUS_POOL oyuncusu üstünden."""
+    if not era: return cat_values, cat_sorted, cat_rank
+    return _cat_tables(famous_for(era)[:VERSUS_POOL])
 
 PATH_SQL = """SELECT s.club_id, c.name, s.date, s.kind, s.fee, NULL, NULL, c.defunct FROM stints s JOIN clubs c ON c.id = s.club_id
               WHERE s.player_id = ? ORDER BY s.seq"""      # ülke/lig tabloları varsa _build_famous içinde genişletilir
@@ -389,11 +446,13 @@ def _path(pid: int) -> list:
                     "country": country, "league": league, "defunct": bool(defunct)})
     return out
 
-def _fame_buckets(rng, n: int, ok) -> list:
-    """Ünlüden az ünlüye: ilk üçte biri ilk 300'den, sonraki 300-1200'den, kalanı 1200-5000'den."""
+def _fame_buckets(rng, n: int, ok, era: int = 0) -> list:
+    """Ünlüden az ünlüye üç kova: havuzun ilk %6'sı, sonraki %18'i, kalanı (5000'lik havuzda 300 / 1200 / 5000)."""
+    pool = famous_for(era); L = len(pool)
+    c1 = max(min(L, 40), int(L * 0.06)); c2 = max(c1, int(L * 0.24))
     out, seen = [], set()
-    for lo, hi, share in ((0, 300, 1 / 3), (300, 1200, 1 / 3), (1200, FAMOUS_SIZE, 1 / 3)):
-        cand = [p for p in famous[lo:hi] if p not in seen]; rng.shuffle(cand)
+    for lo, hi, share in ((0, c1, 1 / 3), (c1, c2, 1 / 3), (c2, L, 1 / 3)):
+        cand = [p for p in pool[lo:hi] if p not in seen]; rng.shuffle(cand)
         take = 0; want = max(1, round(n * share))
         for pid in cand:
             if take >= want: break
@@ -402,17 +461,17 @@ def _fame_buckets(rng, n: int, ok) -> list:
     return out
 
 @app.get("/career/pack")
-def career_pack(n: int = 30, seed: str = ""):
+def career_pack(n: int = 30, seed: str = "", era: int = 0):
     """Kariyer yolu: kulüpler sırayla açılır, oyuncu tahmin edilir. Yalnızca oyun sunucusu çağırır (cevap içerir)."""
     rng = random.Random(seed or None)
     def ok(pid):
         path = _path(pid)
         if not (4 <= len(path) <= 11): return None
         return {"_player_id": pid, "_name": pinfo[pid][0], "clubs": [{"club": x["club"], "year": x["year"], "kind": x["kind"], "country": x["country"], "defunct": x["defunct"]} for x in path]}
-    return _fame_buckets(rng, n, ok)
+    return _fame_buckets(rng, n, ok, _era(era))
 
 @app.get("/chain/pack")
-def chain_pack(n: int = 15, seed: str = ""):
+def chain_pack(n: int = 15, seed: str = "", era: int = 0):
     """Sıradaki kulüp: oyuncu verilir; ilk kulüp, sonra her transferin hedefi tahmin edilir (yıl, tür, bedel ipucu)."""
     rng = random.Random(seed or None)
     def ok(pid):
@@ -421,23 +480,25 @@ def chain_pack(n: int = 15, seed: str = ""):
         if any(club_tier.get(x["club_id"], 99) > 10 for x in path): return None   # tahmin edilemeyecek kadar silik kulüp varsa alma
         name, by, pos = pinfo[pid]
         return {"name": name, "born": by, "pos": pos, "_steps": path}
-    return _fame_buckets(rng, n, ok)
+    return _fame_buckets(rng, n, ok, _era(era))
 
 TOP_RESET_RANK = 3     # kalan oyuncu listenin ilk 3'üne girince kategori değişir
 STREAK_RESET = 5       # ya da aynı oyuncu 5 tur üst üste kalınca
 
 @app.get("/versus/pack")
-def versus_pack(rounds: int = 80, seed: str = ""):
+def versus_pack(rounds: int = 80, seed: str = "", era: int = 0):
     """O mu bu mu: iki oyuncu, bir kategori. Kazanan (değeri büyük olan) yerinde kalır, karşısına yenisi gelir.
     Kalan oyuncu zirveye ulaşınca (ilk 3) ya da 5 tur üst üste kalınca kategori değişir.
     Doğru cevap hep büyük olan olduğundan tüm koşu önceden üretilir."""
     if not cat_sorted: return []
     rng = random.Random(seed or None)
-    cats = [c for c in CATS if len(cat_sorted.get(c, [])) >= 40]; rng.shuffle(cats)
+    all_vals, all_sorted, all_rank = versus_tables(_era(era))
+    cats = [c for c in CATS if len(all_sorted.get(c, [])) >= 40]; rng.shuffle(cats)
+    if not cats: return []
     out = []; ci = 0
     while len(out) < rounds:
         cat = cats[ci % len(cats)]; ci += 1
-        order, vals, rank = cat_sorted[cat], cat_values[cat], cat_rank[cat]
+        order, vals, rank = all_sorted[cat], all_vals[cat], all_rank[cat]
         stayer = rng.choice(order[len(order) // 3:]); side = rng.randint(0, 1); used = {stayer}; first = True; streak = 0
         while len(out) < rounds:
             r = rank[stayer]

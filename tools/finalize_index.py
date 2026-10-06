@@ -53,8 +53,10 @@ print(f"ana tablolar yeniden yazıldı ({time.time()-t0:.0f}s)", flush=True)
 if db.execute("SELECT 1 FROM sqlite_master WHERE name='player_stats'").fetchone():
     sc = [r[1] for r in db.execute("PRAGMA table_info(player_stats)")]
     rest = ", ".join("s." + c for c in sc[1:])
-    db.execute(f"CREATE TABLE player_stats_new AS SELECT pm.new AS player_id, {rest} FROM player_stats s JOIN pmap pm ON pm.old = s.player_id")
-    db.executescript("DROP TABLE player_stats; ALTER TABLE player_stats_new RENAME TO player_stats; CREATE UNIQUE INDEX ux_ps ON player_stats(player_id);")
+    # tipli şema şart: CREATE TABLE AS kimlik sütununu tipsiz bırakır, planlayıcı index'i kullanmaz (dönem sorguları 12 sn sürüyordu)
+    db.execute("CREATE TABLE player_stats_new (player_id INTEGER PRIMARY KEY, " + ", ".join(c + " INT NOT NULL DEFAULT 0" for c in sc[1:]) + ")")
+    db.execute(f"INSERT INTO player_stats_new SELECT pm.new, {rest} FROM player_stats s JOIN pmap pm ON pm.old = s.player_id")
+    db.executescript("DROP TABLE player_stats; ALTER TABLE player_stats_new RENAME TO player_stats;")
 db.executescript("""
 DROP TABLE clubs; DROP TABLE players; DROP TABLE stints; DROP TABLE player_clubs; DROP TABLE pair_counts; DROP TABLE names;
 ALTER TABLE clubs_new RENAME TO clubs; ALTER TABLE players_new RENAME TO players; ALTER TABLE stints_new RENAME TO stints;

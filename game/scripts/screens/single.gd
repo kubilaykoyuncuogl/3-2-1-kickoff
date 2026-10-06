@@ -23,10 +23,7 @@ func _mode_card(title: String, sub: String, mode: String) -> Control:
 	tail.add_child(UI.chevron("amber_ink"))
 	var b := UI.option_card(title, sub, null, tail, false, "amber", 92.0)
 	b.pressed.connect(func():
-		if mode in ["ladder", "blitz"]:      # kulüp kapsamı yalnızca kulüp çifti modlarında
-			var sc = load("res://scripts/screens/single_scope.gd").new(); sc.mode = mode
-			App.push(sc); return
-		if not Net.is_connected_to_server():
-			Game.error.emit(T.t("net.connecting")); Net.connect_to_server(); return
-		App.push(load("res://scripts/screens/%s_play.gd" % mode).new()); Game.c_single_start(mode))
+		# kulüp kapsamı yalnızca kulüp çifti modlarında; dönem seçimi hepsinde
+		var nx = load("res://scripts/screens/%s.gd" % ("single_scope" if mode in ["ladder", "blitz"] else "single_era")).new(); nx.mode = mode
+		App.push(nx))
 	return b

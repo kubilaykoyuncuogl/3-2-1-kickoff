@@ -89,12 +89,12 @@ func hello(nick: String, device: String) -> void:
 		if r != null and prc.pid in r.players: _rebind(r, prc.pid, pid)
 
 @rpc("any_peer", "call_remote", "reliable")
-func create_room(scope: String) -> void:
+func create_room(scope: String, era: int) -> void:
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
 	_leave_everything(pid)
 	var code := _new_code()
-	rooms[code] = _new_room(code, false, _scope_ok(scope))
+	rooms[code] = _new_room(code, false, _scope_ok(scope), _era_ok(era))
 	_join(code, pid)
 
 @rpc("any_peer", "call_remote", "reliable")
@@ -108,11 +108,11 @@ func join_room(code: String) -> void:
 	_join(code, pid)
 
 @rpc("any_peer", "call_remote", "reliable")
-func find_match(scope: String) -> void:
+func find_match(scope: String, era: int) -> void:
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
 	_leave_everything(pid)
-	profiles[pid]["scope"] = _scope_ok(scope)
+	profiles[pid]["scope"] = _scope_ok(scope); profiles[pid]["era"] = _era_ok(era)
 	if pid not in queue:
 		queue.append(pid); queue_since[pid] = Time.get_ticks_msec()
 	_send_queue(pid)
@@ -170,7 +170,7 @@ func guess(player_id: int, name: String) -> void:
 	if not _allow("%d:guess" % pid, 30, 60000): return
 	var gen: int = r.gen
 	var t: Array = r.teams.values()
-	var ok: bool = await IndexAPI.check(player_id, t[0], t[1])
+	var ok: bool = await IndexAPI.check(player_id, t[0], t[1], int(r.era))
 	if r.gen != gen or r.state != State.ROUND: return
 	if ok:
 		r.score[pid] = r.score.get(pid, 0) + 1
@@ -189,7 +189,9 @@ func suggest(kind: String, q: String) -> void:
 	if kind == "team":
 		var r0 = _room_of(pid)
 		list = await IndexAPI.suggest_teams(q, r0.scope if r0 != null else "all")
-	else: list = await IndexAPI.suggest_players(q)
+	else:
+		var rp = _room_of(pid); var sp = singles.get(pid)      # dönem seçiliyse yalnızca o dönemin oyuncuları önerilir
+		list = await IndexAPI.suggest_players(q, int(rp.era) if rp != null else (int(sp.get("era", 0)) if sp != null else 0))
 	if kind == "team":
 		var r = _room_of(pid)
 		if r != null:
@@ -212,21 +214,22 @@ func rematch() -> void:
 
 # ---------- tek oyunculu ----------
 @rpc("any_peer", "call_remote", "reliable")
-func single_start(mode: String, scope: String) -> void:
+func single_start(mode: String, scope: String, era: int) -> void:
 	if not multiplayer.is_server(): return
 	var pid := multiplayer.get_remote_sender_id()
 	_leave_everything(pid)
 	var seed := "%d-%d" % [Time.get_ticks_usec(), randi()]   # her oturum farklı merdiven / soru seti
 	if mode not in SINGLE_LIVES: return
+	era = _era_ok(era)
 	var items: Array
 	match mode:
-		"ladder": items = await IndexAPI.ladder(seed, _scope_ok(scope))
-		"blitz": items = await IndexAPI.blitz_pack(seed, _scope_ok(scope))
-		"career": items = await IndexAPI.pack("/career/pack", {"n": 30})
-		"chain": items = await IndexAPI.pack("/chain/pack", {"n": 15})
-		"versus": items = await IndexAPI.pack("/versus/pack", {"rounds": 80})
+		"ladder": items = await IndexAPI.ladder(seed, _scope_ok(scope), era)
+		"blitz": items = await IndexAPI.blitz_pack(seed, _scope_ok(scope), era)
+		"career": items = await IndexAPI.pack("/career/pack", {"n": 30, "era": era})
+		"chain": items = await IndexAPI.pack("/chain/pack", {"n": 15, "era": era})
+		"versus": items = await IndexAPI.pack("/versus/pack", {"rounds": 80, "era": era})
 	if items.is_empty(): err.rpc_id(pid, "err.pack_failed"); return
-	singles[pid] = {"mode": mode, "seed": seed, "items": items, "idx": 0, "lives": SINGLE_LIVES[mode],
+	singles[pid] = {"mode": mode, "seed": seed, "era": era, "items": items, "idx": 0, "lives": SINGLE_LIVES[mode],
 		"score": 0, "combo": 1.0, "deadline": 0, "lock_until": 0, "over": false, "best_combo": 1.0, "gen": 0,
 		"revealed": 1, "step": 0, "done": 0}
 	_single_next(pid, true)
@@ -255,7 +258,7 @@ func single_guess(player_id: int, name: String) -> void:   # ladder
 				s.last["answer"] = str(item._name); _single_over(pid)
 			else: _single_send(pid)
 		return
-	var ok: bool = await IndexAPI.check(player_id, int(item.a), int(item.b))
+	var ok: bool = await IndexAPI.check(player_id, int(item.a), int(item.b), int(s.get("era", 0)))
 	if singles.get(pid) != s or s.gen != gen or s.over: return
 	if ok:
 		var remaining := maxi(0, s.deadline - Time.get_ticks_msec()) / 1000
@@ -358,8 +361,12 @@ func err(msg: String) -> void:
 func _scope_ok(s: String) -> String:
 	return s if s in ["all", "top", "big5"] else "all"
 
-func _new_room(code: String, ranked: bool, scope := "all") -> Dictionary:
-	var r := {"code": code, "ranked": ranked, "scope": scope, "players": [], "state": State.LOBBY, "gen": 0, "rematch": {}, "last": {}}
+func _era_ok(e: int) -> int:      # on yıl bit maskesi (1=80'ler … 16=20'ler); 0 ya da hepsi = tümü
+	e &= 31
+	return 0 if e == 31 else e
+
+func _new_room(code: String, ranked: bool, scope := "all", era := 0) -> Dictionary:
+	var r := {"code": code, "ranked": ranked, "scope": scope, "era": era, "players": [], "state": State.LOBBY, "gen": 0, "rematch": {}, "last": {}}
 	_reset_match(r)
 	return r
 
@@ -490,7 +497,7 @@ func _end_round(r: Dictionary, last: Dictionary) -> void:
 	r.gen += 1
 	var gen: int = r.gen
 	var t: Array = r.teams.values()
-	var ans: Dictionary = await IndexAPI.answers(t[0], t[1])
+	var ans: Dictionary = await IndexAPI.answers(t[0], t[1], int(r.era))
 	if r.gen != gen: return
 	r.answers = ans.names; r.answers_total = int(ans.total); r.last = last
 	if r.answers_total == 0:
@@ -526,7 +533,7 @@ func _broadcast(r: Dictionary) -> void:
 				"team_name": "" if hide else r.team_names.get(pid, ""), "picked": r.teams.get(pid, 0) != 0,
 				"ready": r.ready.get(pid, false), "score": r.score.get(pid, 0), "penalty_ms": maxi(0, r.penalty_until.get(pid, 0) - now),
 				"rematch": r.rematch.get(pid, false), "elo_delta": r.elo_delta.get(pid, 0), "away": r.away.get(pid, false)})
-		var d := {"code": r.code, "ranked": r.ranked, "scope": r.scope, "state": r.state, "players": players, "phase_ms": maxi(0, r.phase_end - now),
+		var d := {"code": r.code, "ranked": r.ranked, "scope": r.scope, "era": r.era, "state": r.state, "players": players, "phase_ms": maxi(0, r.phase_end - now),
 			"last": r.last, "answers": r.answers, "answers_total": r.answers_total, "winner": r.winner, "used_teams": r.used_teams.keys(),
 			"quick_picks": r.get("quick_picks", [])}
 		room_state.rpc_id(viewer, d)
@@ -556,14 +563,15 @@ func _tick_queue() -> void:
 			var pa: Dictionary = profiles[a]; var pb: Dictionary = profiles[b]
 			if pa.get("verified", false) != pb.get("verified", false): continue
 			var cross := _waited(a) >= CROSS_SCOPE_MS and _waited(b) >= CROSS_SCOPE_MS
-			if pa.get("scope", "all") != pb.get("scope", "all") and not cross: continue   # aynı kapsam; 45 sn sonra serbest
+			var ea: int = pa.get("era", 0); var eb: int = pb.get("era", 0)
+			if (pa.get("scope", "all") != pb.get("scope", "all") or ea != eb) and not cross: continue   # aynı kapsam ve dönem; 45 sn sonra serbest
 			var same_last: bool = pa.get("last_opp", "") == pb.get("device", "") and pb.get("device", "") != ""
 			if same_last and (_waited(a) < 20000 or _waited(b) < 20000): continue      # az önceki rakip, 20 sn bekle
 			if absi(int(pa.elo) - int(pb.elo)) <= mini(_band(a), _band(b)):
 				queue.erase(b); queue.erase(a); queue_since.erase(a); queue_since.erase(b)
 				var scope_idx := maxi(SCOPE_ORDER.find(pa.get("scope", "all")), SCOPE_ORDER.find(pb.get("scope", "all")))
 				pa["last_opp"] = pb.get("device", ""); pb["last_opp"] = pa.get("device", "")
-				var code := _new_code(); rooms[code] = _new_room(code, true, SCOPE_ORDER[scope_idx])
+				var code := _new_code(); rooms[code] = _new_room(code, true, SCOPE_ORDER[scope_idx], ea if ea == eb else (0 if ea == 0 or eb == 0 else _era_ok(ea | eb)))
 				_join(code, a); _join(code, b); matched = true; break
 		if not matched:
 			_send_queue(a); i += 1
@@ -724,14 +732,14 @@ func _single_send(pid: int) -> void:
 			if s.mode == "blitz": pub["options"] = item.options
 	single_state.rpc_id(pid, {"mode": s.mode, "idx": s.idx, "total": s.items.size(), "lives": s.lives, "score": s.score, "combo": s.combo, "done": int(s.get("done", 0)),
 		"best_combo": s.best_combo, "remaining_ms": maxi(0, s.deadline - now), "per_ms": s.get("per_ms", 0), "lock_ms": 0,
-		"over": s.over, "item": pub, "last": s.get("last", {})})
+		"over": s.over, "item": pub, "last": s.get("last", {}), "era": int(s.get("era", 0))})
 
 # ============================================================ istemci yardımcıları
 func c_hello() -> void: hello.rpc_id(1, App.nickname, App.device_id)
 func c_acct(op: String, a := "", b := "") -> void: acct.rpc_id(1, op, a, b)
-func c_create_room() -> void: create_room.rpc_id(1, App.scope)
+func c_create_room() -> void: create_room.rpc_id(1, App.scope, App.era)
 func c_join_room(code: String) -> void: join_room.rpc_id(1, code)
-func c_find_match() -> void: find_match.rpc_id(1, App.scope)
+func c_find_match() -> void: find_match.rpc_id(1, App.scope, App.era)
 func c_cancel_find() -> void: cancel_find.rpc_id(1)
 func c_leave() -> void: leave_room.rpc_id(1)
 func c_pick_team(id: int, name: String) -> void: pick_team.rpc_id(1, id, name)
@@ -739,7 +747,7 @@ func c_ready() -> void: set_ready.rpc_id(1)
 func c_guess(id: int, name: String) -> void: guess.rpc_id(1, id, name)
 func c_suggest(kind: String, q: String) -> void: suggest.rpc_id(1, kind, q)
 func c_rematch() -> void: rematch.rpc_id(1)
-func c_single_start(mode: String) -> void: single_start.rpc_id(1, mode, App.scope)
+func c_single_start(mode: String) -> void: single_start.rpc_id(1, mode, App.scope, App.era)
 func c_single_guess(id: int, name: String) -> void: single_guess.rpc_id(1, id, name)
 func c_single_answer(i: int) -> void: single_answer.rpc_id(1, i)
 func c_single_team(id: int, name: String) -> void: single_team.rpc_id(1, id, name)

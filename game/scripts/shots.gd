@@ -20,6 +20,13 @@ func _ready() -> void:
 	await _scr("04_online_search", "online", func(s): s.mode = "searching")
 	await _scr("05_single", "single")
 	await _scr("06_scope", "single_scope")
+	App.era = 0
+	await _scr("06b_era_all", "single_era")
+	App.era = 6
+	await _scr("06c_era_pick", "single_era")
+	await _scr("02b_online_era", "online")
+	await _scr("04b_online_search_era", "online", func(s): s.mode = "searching")
+	App.era = 0
 	await _scr("07_settings", "settings")
 	App.linked = false
 	await _scr("08_account_guest", "account")

@@ -12,7 +12,7 @@ func _ready() -> void:
 		T.load_lang(lang)
 		for pm in [Palette.Mode.LIGHT, Palette.Mode.DARK]:
 			Palette.mode = pm; UI._fonts.clear()
-			for name in ["menu", "nickname", "single", "single_scope", "settings"]:
+			for name in ["menu", "nickname", "single", "single_scope", "single_era", "settings"]:
 				await _show(load("res://scripts/screens/%s.gd" % name).new())
 			var how: Control = load("res://scripts/screens/howto.gd").new()
 			root.add_child(how); await get_tree().process_frame

@@ -300,5 +300,21 @@
  "versus.round": "Round %d",
  "versus.summary": "%d rounds",
  "won": "You won",
- "you": "You"
+ "you": "You",
+ "era.header": "ERA",
+ "era.title_q": "Which era?",
+ "era.sub": "Pick one or more decades. Only players with at least one appearance in those decades count.",
+ "era.start": "Start",
+ "era.all": "All",
+ "era.all_long": "All eras",
+ "era.80": "80s",
+ "era.90": "90s",
+ "era.00": "2000s",
+ "era.10": "2010s",
+ "era.20": "2020s",
+ "era.short.80": "80s",
+ "era.short.90": "90s",
+ "era.short.00": "00s",
+ "era.short.10": "10s",
+ "era.short.20": "20s"
 }

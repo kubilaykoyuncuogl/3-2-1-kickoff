@@ -42,8 +42,8 @@ func suggest_teams(q: String, scope := "all") -> Array:
 	var r = await get_json("/teams/suggest", {"q": q, "scope": scope})
 	return r if r is Array else []
 
-func suggest_players(q: String) -> Array:
-	var r = await get_json("/players/suggest", {"q": q})
+func suggest_players(q: String, era := 0) -> Array:
+	var r = await get_json("/players/suggest", {"q": q, "era": era})
 	return r if r is Array else []
 
 func quick_picks(scope: String, exclude: Array) -> Array:
@@ -54,16 +54,16 @@ func club_in_scope(club_id: int, scope: String) -> bool:
 	var r = await get_json("/club/%d" % club_id, {"scope": scope})
 	return r is Dictionary and r.get("in_scope", false)
 
-func check(player_id: int, a: int, b: int) -> bool:
-	var r = await get_json("/check", {"player_id": player_id, "club_a": a, "club_b": b})
+func check(player_id: int, a: int, b: int, era := 0) -> bool:
+	var r = await get_json("/check", {"player_id": player_id, "club_a": a, "club_b": b, "era": era})
 	return r is Dictionary and r.get("ok", false)
 
-func answers(a: int, b: int) -> Dictionary:
-	var r = await get_json("/pair/answers", {"club_a": a, "club_b": b})
+func answers(a: int, b: int, era := 0) -> Dictionary:
+	var r = await get_json("/pair/answers", {"club_a": a, "club_b": b, "era": era})
 	return r if r is Dictionary else {"names": [], "total": 0}
 
-func ladder(seed: String, scope := "all") -> Array:
-	var r = await get_json("/ladder", {"steps": 27, "scope": scope})   # seed yok → hazır havuzdan
+func ladder(seed: String, scope := "all", era := 0) -> Array:
+	var r = await get_json("/ladder", {"steps": 27, "scope": scope, "era": era})   # seed yok → hazır havuzdan
 	return r.get("steps", []) if r is Dictionary else []
 
 func pack(path: String, params := {}) -> Array:
@@ -71,7 +71,7 @@ func pack(path: String, params := {}) -> Array:
 	var r = await get_json(path, params)
 	return r if r is Array else []
 
-func blitz_pack(seed: String, scope := "all") -> Array:
+func blitz_pack(seed: String, scope := "all", era := 0) -> Array:
 	## reveal=1: soru başına "_answer" (doğru şık indeksi) gelir; yalnızca sunucu bellekte tutar.
-	var r = await get_json("/blitz/pack", {"n": 40, "reveal": 1, "scope": scope})   # seed yok → hazır havuzdan
+	var r = await get_json("/blitz/pack", {"n": 40, "reveal": 1, "scope": scope, "era": era})   # seed yok → hazır havuzdan
 	return r.get("questions", []) if r is Dictionary else []

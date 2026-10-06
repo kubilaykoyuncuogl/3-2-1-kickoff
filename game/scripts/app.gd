@@ -20,6 +20,15 @@ var device_id := ""
 var best := {"ladder": 0, "blitz": 0}   # cihazdaki en iyi tek oyunculu skorlar
 var scope := "all"                      # kulüp kapsamı: all | top | big5
 const SCOPES := ["all", "top", "big5"]
+var era := 0                            # dönem: on yıl bit maskesi, 0 = tümü
+const ERAS := [["80", 1], ["90", 2], ["00", 4], ["10", 8], ["20", 16]]
+
+## Dönem düğmesi mantığı: Tümü tek başına; Tümü seçiliyken bir on yıla basınca yalnız o; sonra aç/kapa; hiçbiri kalmazsa Tümü
+func era_toggle(bit: int) -> void:
+	if bit == 0: era = 0
+	elif era == 0: era = bit
+	else: era ^= bit
+	save_settings()
 
 var _root: Control
 var _stack: Array[Control] = []
@@ -74,6 +83,7 @@ func load_settings() -> void:
 	device_id = cf.get_value("online", "device", "")
 	best = cf.get_value("single", "best", {"ladder": 0, "blitz": 0})
 	scope = cf.get_value("single", "scope", "all")
+	era = int(cf.get_value("single", "era", 0)) & 31
 	T.load_lang(lang)
 
 func ensure_device_id() -> void:
@@ -88,7 +98,7 @@ func save_settings() -> void:
 	cf.set_value("look", "theme", theme_mode); cf.set_value("look", "reduce_motion", reduce_motion); cf.set_value("look", "lang", lang)
 	cf.set_value("sound", "on", sound); cf.set_value("sound", "music", music_vol); cf.set_value("sound", "sfx", sfx_vol); cf.set_value("sound", "haptics", haptics)
 	cf.set_value("online", "elo", elo); cf.set_value("online", "device", device_id)
-	cf.set_value("single", "best", best); cf.set_value("single", "scope", scope)
+	cf.set_value("single", "best", best); cf.set_value("single", "scope", scope); cf.set_value("single", "era", era)
 	cf.save(SETTINGS_PATH)
 
 func apply_theme() -> void:

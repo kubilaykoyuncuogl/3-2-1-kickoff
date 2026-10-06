@@ -57,7 +57,7 @@ func _process(_dt: float) -> void:
 		var band: int = d.get("band", 75); var elo: int = d.get("elo", App.elo)
 		var waiting: int = d.get("waiting", 1); var cross: int = int(d.get("cross_in_ms", 0) / 1000.0)
 		var line := T.t("online.search_line") % [elo - band, elo + band, (Time.get_ticks_msec() - _since) / 1000, waiting]
-		if App.scope != "all": line += "\n" + (T.t("online.cross_in") % cross if cross > 0 else T.t("online.cross_done"))
+		if App.scope != "all" or App.era != 0: line += "\n" + (T.t("online.cross_in") % cross if cross > 0 else T.t("online.cross_done"))
 		status.text = line
 
 func _render() -> void:
@@ -76,6 +76,7 @@ func _render_menu() -> void:
 	cv.add_child(UI.label(T.t("online.elo_note"), 11, 500, "muted"))
 	card.add_child(cv); body.add_child(card)
 	body.add_child(UI.scope_picker(func(_v): _render()))
+	body.add_child(UI.era_picker(_render))
 	var ara := UI.button(T.t("online.find"), "violet", ">")
 	ara.disabled = not Net.is_connected_to_server()
 	ara.pressed.connect(func(): _since = Time.get_ticks_msec(); Game.c_find_match())
@@ -99,6 +100,7 @@ func _render_searching() -> void:
 	var row := UI.hbox(6); row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_child(UI.chip(T.t("online.pool_verified") if App.verified else T.t("online.pool_general"), "ok" if App.verified else "line"))
 	row.add_child(UI.chip(UI.scope_label(App.scope), "violet"))
+	if App.era != 0: row.add_child(UI.chip(UI.era_label(App.era), "amber"))
 	body.add_child(row)
 	body.add_child(UI.spacer())
 	var cancel := UI.button(T.t("cancel"), "ghost"); cancel.pressed.connect(_back); body.add_child(cancel)
@@ -113,7 +115,10 @@ func _render_room() -> void:
 	code.add_theme_constant_override("outline_size", 0); body.add_child(code)
 	var link := _room_link(str(d.get("code", "")))
 	var ll := UI.label(link, 12, 500, "muted"); ll.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; ll.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY; body.add_child(ll)
-	var sc := UI.chip(UI.scope_label(str(d.get("scope", "all"))), "violet"); sc.size_flags_horizontal = Control.SIZE_SHRINK_CENTER; body.add_child(sc)
+	var scr := UI.hbox(6); scr.alignment = BoxContainer.ALIGNMENT_CENTER
+	scr.add_child(UI.chip(UI.scope_label(str(d.get("scope", "all"))), "violet"))
+	if int(d.get("era", 0)) != 0: scr.add_child(UI.chip(UI.era_label(int(d.get("era", 0))), "amber"))
+	body.add_child(scr)
 	var h := UI.hbox(8); h.alignment = BoxContainer.ALIGNMENT_CENTER
 	var copy := UI.button(T.t("room.copy"), "line"); copy.custom_minimum_size.x = 150
 	copy.pressed.connect(func(): DisplayServer.clipboard_set(str(d.get("code", ""))); copy.text = T.t("copied_caps"))

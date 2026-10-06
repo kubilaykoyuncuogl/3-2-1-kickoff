@@ -353,6 +353,38 @@ static func scope_picker(on_change: Callable) -> VBoxContainer:
 			App.scope = val; App.save_settings(); on_change.call(val), true))
 	return v
 
+## Dönem seçici: Tümü + beş on yıl, çoklu seçim (mantık App.era_toggle). big: ayrı ekranda iki satır, değilse tek satır çip
+static func era_picker(on_change: Callable, big := false) -> Control:
+	var wrap: Container
+	if big:
+		var g := GridContainer.new(); g.columns = 3
+		g.add_theme_constant_override("h_separation", 8); g.add_theme_constant_override("v_separation", 8); wrap = g
+	else: wrap = hbox(4)
+	var items := [["all", 0]]; items.append_array(App.ERAS)
+	for it in items:
+		var bit: int = it[1]
+		var on: bool = App.era == 0 if bit == 0 else (App.era & bit) != 0
+		var b := Button.new(); b.text = T.t("era." + str(it[0])) if (big or bit == 0) else T.t("era.short." + str(it[0]))
+		b.custom_minimum_size = Vector2(0, 64 if big else 40); b.size_flags_horizontal = Control.SIZE_EXPAND_FILL; b.clip_text = true
+		b.add_theme_font_override("font", font(700)); b.add_theme_font_size_override("font_size", 17 if big else 13)
+		var st := box("violet_soft" if on else "surface", "violet_fill" if on else "line", 12, 2)
+		st.content_margin_left = 4; st.content_margin_right = 4
+		for k in ["normal", "hover", "pressed"]: b.add_theme_stylebox_override(k, st)
+		b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+		for k in ["font_color", "font_hover_color", "font_pressed_color"]: b.add_theme_color_override(k, c("violet_ink") if on else c("fg"))
+		b.pressed.connect(func(): App.era_toggle(bit); on_change.call())
+		wrap.add_child(b)
+	if big: return wrap
+	var v := vbox(6); v.add_child(eyebrow(T.t("era.header"))); v.add_child(wrap)
+	return v
+
+static func era_label(era: int) -> String:
+	if era & 31 == 0 or era & 31 == 31: return T.t("era.all_long")
+	var parts := []
+	for it in App.ERAS:
+		if era & int(it[1]): parts.append(T.t("era.short." + str(it[0])))
+	return " · ".join(parts)
+
 static func scope_label(s: String) -> String:
 	return T.t("scope.%s.title" % (s if s in App.SCOPES else "all"))
 

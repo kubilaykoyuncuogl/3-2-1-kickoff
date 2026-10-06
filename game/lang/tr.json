@@ -300,5 +300,21 @@
  "versus.round": "Tur %d",
  "versus.summary": "%d tur",
  "won": "Kazandın",
- "you": "Sen"
+ "you": "Sen",
+ "era.header": "DÖNEM",
+ "era.title_q": "Hangi dönem?",
+ "era.sub": "Birden fazla on yıl seçebilirsin. Yalnızca seçtiğin on yıllarda en az bir maça çıkmış oyuncular sayılır.",
+ "era.start": "Başla",
+ "era.all": "Tümü",
+ "era.all_long": "Tüm dönemler",
+ "era.80": "80'ler",
+ "era.90": "90'lar",
+ "era.00": "2000'ler",
+ "era.10": "2010'lar",
+ "era.20": "2020'ler",
+ "era.short.80": "80'ler",
+ "era.short.90": "90'lar",
+ "era.short.00": "00'lar",
+ "era.short.10": "10'lar",
+ "era.short.20": "20'ler"
 }

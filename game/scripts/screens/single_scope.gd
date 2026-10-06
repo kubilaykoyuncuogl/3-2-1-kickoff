@@ -14,7 +14,5 @@ func _ready() -> void:
 
 func _start(scope: String) -> void:
 	App.scope = scope; App.save_settings()
-	if not Net.is_connected_to_server():
-		Game.error.emit(T.t("net.connecting")); Net.connect_to_server(); return
-	var play = load("res://scripts/screens/single_play.gd").new(); play.mode = mode
-	App.push(play); Game.c_single_start(mode)
+	var e = load("res://scripts/screens/single_era.gd").new(); e.mode = mode
+	App.push(e)
