@@ -2,7 +2,7 @@
 import React from "react";
 import { Pressable, View } from "react-native";
 import { t } from "../i18n";
-import { ERAS, LEAGUES, SCOPES, Scope, leagueName, useSettings } from "../store";
+import { ERAS, LEAGUES, ROUNDS, SCOPES, Scope, leagueName, useSettings } from "../store";
 import { Token, useTheme } from "../theme";
 import { BORDER, Chevron, Chip, Crown, Eyebrow, Globe, OptionCard, Txt } from "./index";
 
@@ -76,4 +76,26 @@ export function EraPicker({ big }: { big?: boolean }) {
   const wrap = <View style={{ flexDirection: "row", flexWrap: big ? "wrap" : "nowrap", gap: s(big ? 8 : 4) }}>{items.map(btn)}</View>;
   if (big) return wrap;
   return <View style={{ gap: s(6) }}><Eyebrow>{t("era.header")}</Eyebrow>{wrap}</View>;
+}
+
+// Çok oyunculuda tur süresi: 10 / 15 / 30 sn (ayarlara yazılır; Ara ve Oda kur bununla gider)
+export function RoundPicker() {
+  const { c, s } = useTheme();
+  const round = useSettings((x) => x.round);
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: s(8) }}>
+      <Eyebrow style={{ flex: 1 }}>{t("online.round")}</Eyebrow>
+      {ROUNDS.map((v) => {
+        const on = v === round;
+        return (
+          <Pressable key={v} onPress={() => useSettings.getState().set({ round: v })} style={{
+            minWidth: s(64), minHeight: s(38), borderRadius: s(12), borderWidth: BORDER, alignItems: "center", justifyContent: "center",
+            backgroundColor: on ? c.violet_soft : c.surface, borderColor: on ? c.violet_fill : c.line,
+          }}>
+            <Txt size={13} w={700} color={on ? "violet_ink" : "fg"}>{t("online.round_fmt", v)}</Txt>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
 }

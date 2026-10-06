@@ -53,9 +53,9 @@ class SinglesMixin:
 
     def single_answer(self, pid: int, option: int) -> None:   # blitz, versus
         s = self.singles.get(pid)
-        if s is None or s["over"] or s["mode"] not in ("blitz", "versus"): return
+        if s is None or s["over"] or s["mode"] not in ("blitz",) + VERSUS_LIKE: return
         item = s["items"][s["idx"]]
-        if s["mode"] == "versus":
+        if s["mode"] in VERSUS_LIKE:
             if option == int(item["_answer"]):
                 bonus = int(max(0, s["deadline"] - self.now()) / 100.0)   # hız bonusu: kalan saniye × 10
                 s["score"] += 100 + bonus; s["done"] += 1
@@ -113,7 +113,7 @@ class SinglesMixin:
         if mode == "ladder": per_ms = max(10000, 20000 - 2000 * (idx // 5))
         elif mode == "career": per_ms = CAREER_REVEAL_MS; s["revealed"] = 1
         elif mode == "chain": per_ms = CHAIN_STEP_MS; s["step"] = 0
-        elif mode == "versus": per_ms = max(4000, 9000 - 500 * (idx // 5))
+        elif mode in VERSUS_LIKE: per_ms = max(4000, 9000 - 500 * (idx // 5))
         else: per_ms = max(3000, 8000 - 1000 * (idx // 5))
         s["deadline"] = self.now() + per_ms; s["per_ms"] = per_ms
         self._single_send(pid)
@@ -140,7 +140,7 @@ class SinglesMixin:
                 s["lives"] -= 1
                 self._chain_advance(pid, {"type": "timeout", "answer": str(item["_steps"][s["step"]]["club"])})
                 continue
-            if mode == "versus":
+            if mode in VERSUS_LIKE:
                 s["last"] = {"type": "timeout", "answer": int(item["_answer"]), "values": item["_values"]}
                 self._single_over(pid); continue
             s["last"] = {"type": "timeout"}
@@ -156,6 +156,7 @@ class SinglesMixin:
         s["over"] = True; s["deadline"] = 0
         dev = self.profiles.get(pid, {}).get("device", "")
         if dev and int(s["score"]) > 0: self.spawn(self.acct_best(dev, s["mode"], int(s["score"])))
+        if s["mode"] == "weekly": self.spawn(self._weekly_finish(pid, s))
         self._single_send(pid)
 
     def _single_send(self, pid: int) -> None:
@@ -173,7 +174,7 @@ class SinglesMixin:
             if st < len(steps):      # ipucu: yıl, tür, bedel, gittiği ülke ve lig (ilk kulüp için de ülke/lig)
                 pub["hint"] = {"year": steps[st].get("year"), "kind": steps[st]["kind"], "fee": steps[st].get("fee"),
                                "country": steps[st].get("country"), "league": steps[st].get("league")}
-        elif mode == "versus":
+        elif mode in VERSUS_LIKE:
             pub = {k: v for k, v in item.items() if not str(k).startswith("_")}
         else:
             pub = {"a_name": item.get("a_name", ""), "b_name": item.get("b_name", ""), "a": int(item.get("a", 0)), "b": int(item.get("b", 0)),

@@ -13,7 +13,8 @@ class State(IntEnum):
 
 
 PROTO = 3                      # istemci-sunucu sözleşme sürümü (JSON protokolü; Godot RPC'si 2'ydi). Mesaj biçimi değişince artır.
-ROUND_MS = 15000
+ROUND_MS = 15000               # varsayılan tur süresi; çok oyunculuda oda başına seçilir (ROUND_CHOICES)
+ROUND_CHOICES = (10, 15, 30)   # saniye
 COUNTDOWN_MS = 3000
 REVEAL_MS = 1800
 PICK_MS = 45000                # takım seçimi; dolunca seçmeyen turu kaybeder
@@ -46,10 +47,18 @@ def widen_scope(a: str, b: str) -> str:
     fa, fb = floor(a), floor(b)
     return SCOPE_ORDER[max(rank(fa), rank(fb))]
 SINGLE_LIVES = {"ladder": 3, "blitz": 1, "career": 3, "chain": 3, "versus": 1}
+VERSUS_LIKE = ("versus", "weekly")      # iki seçenekten büyüğünü seç; "weekly" = haftanın maçı (server/game/weekly.py)
 CAREER_REVEAL_MS = 8000        # kariyer yolu: bu aralıkla bir kulüp daha açılır
 CAREER_LAST_MS = 15000         # hepsi açıldıktan sonra son tahmin süresi
 CHAIN_STEP_MS = 20000
 IN_MATCH = {State.PICK_TEAMS, State.COUNTDOWN, State.REVEAL, State.ROUND, State.ROUND_END}
+
+
+def round_ok(v) -> int:
+    """İstemciden gelen tur süresi (saniye) → ms; listede yoksa varsayılan."""
+    try: v = int(v or 0)
+    except (TypeError, ValueError): v = 0
+    return v * 1000 if v in ROUND_CHOICES else ROUND_MS
 
 
 def scope_ok(s) -> str:

@@ -41,7 +41,7 @@ export function connect() {
   const url = serverUrl();
   try { ws = new WebSocket(url); } catch { schedule(); return; }
   const sock = ws;
-  sock.onopen = () => { retry = 0; useGame.getState().set({ connected: true }); hello(); };
+  sock.onopen = () => { retry = 0; useGame.getState().set({ connected: true }); hello(); send({ t: "weekly_info" }); };
   sock.onmessage = (ev) => {
     let message: any;
     try { message = JSON.parse(String(ev.data)); } catch { return; }
@@ -89,6 +89,7 @@ function handle(m: any) {
       useProfile.getState().apply(m.d);
       if (m.d.proto !== undefined && m.d.proto !== PROTO) g.set({ updateNeeded: true });
       break;
+    case "weekly_state": g.set({ weekly: m.d ?? null }); break;
     case "acct_result": g.set({ acctResult: { ...m.d, at: Date.now() } }); break;
     case "err":
       if (m.key === "err.proto") g.set({ updateNeeded: true });
@@ -99,9 +100,9 @@ function handle(m: any) {
 
 // ---------- istemci yardımcıları (Godot c_* karşılığı) ----------
 export const api = {
-  createRoom: () => { const s = useSettings.getState(); trackGameEvent("room_create"); send({ t: "create_room", scope: s.scope, era: s.era }); },
+  createRoom: () => { const s = useSettings.getState(); trackGameEvent("room_create"); send({ t: "create_room", scope: s.scope, era: s.era, round: s.round }); },
   joinRoom: (code: string) => { trackGameEvent("room_join"); send({ t: "join_room", code }); },
-  findMatch: () => { const s = useSettings.getState(); trackGameEvent("match_search"); send({ t: "find_match", scope: s.scope, era: s.era }); },
+  findMatch: () => { const s = useSettings.getState(); trackGameEvent("match_search"); send({ t: "find_match", scope: s.scope, era: s.era, round: s.round }); },
   cancelFind: () => send({ t: "cancel_find" }),
   leave: () => send({ t: "leave_room" }),
   pickTeam: (team_id: number, team_name: string) => send({ t: "pick_team", team_id, team_name }),
@@ -115,4 +116,6 @@ export const api = {
   singleTeam: (team_id: number, name: string) => send({ t: "single_team", team_id, name }),
   singleQuit: () => send({ t: "single_quit" }),
   acct: (op: string, a = "", b = "") => send({ t: "acct", op, a, b }),
+  weeklyInfo: () => send({ t: "weekly_info" }),
+  weeklyStart: (side: "a" | "b") => send({ t: "weekly_start", side }),
 };

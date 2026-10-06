@@ -11,14 +11,15 @@ export const LEAGUES: [string, string][] = [["GB1", "Premier League"], ["ES1", "
   ["TR1", "Süper Lig"], ["NL1", "Eredivisie"], ["PO1", "Liga Portugal"]];
 export const leagueName = (code: string) => LEAGUES.find(([c]) => c === code)?.[1] ?? "";
 export type Scope = string;
+export const ROUNDS = [10, 15, 30];      // çok oyunculuda tur süresi seçenekleri (sn); sunucudaki ROUND_CHOICES ile aynı
 export const ERAS: [string, number][] = [["80", 1], ["90", 2], ["00", 4], ["10", 8], ["20", 16]];
 export type ThemeMode = "system" | "light" | "dark";
 
 export type Settings = {
-  nickname: string; theme_mode: ThemeMode; lang: string; sound: boolean; haptics: boolean; reduce_motion: boolean; learn: boolean;
+  nickname: string; theme_mode: ThemeMode; lang: string; sound: boolean; haptics: boolean; reduce_motion: boolean; learn: boolean; learn_off: string[]; round: number;
   scope: Scope; era: number; best: Record<string, number>; elo: number; device_id: string;
 };
-const DEFAULTS: Settings = { nickname: "", theme_mode: "system", lang: "tr", sound: true, haptics: true, reduce_motion: false, learn: true,
+const DEFAULTS: Settings = { nickname: "", theme_mode: "system", lang: "tr", sound: true, haptics: true, reduce_motion: false, learn: true, learn_off: [], round: 15,
   scope: "all", era: 0, best: {}, elo: 1000, device_id: "" };
 
 type SettingsStore = Settings & {
@@ -35,8 +36,8 @@ function persist(s: Settings) {
   saveTimer = setTimeout(() => { AsyncStorage.setItem(KEY, JSON.stringify(s)).catch(() => {}); }, 150);
 }
 function pick(s: SettingsStore): Settings {
-  const { nickname, theme_mode, lang, sound, haptics, reduce_motion, learn, scope, era, best, elo, device_id } = s;
-  return { nickname, theme_mode, lang, sound, haptics, reduce_motion, learn, scope, era, best, elo, device_id };
+  const { nickname, theme_mode, lang, sound, haptics, reduce_motion, learn, learn_off, round, scope, era, best, elo, device_id } = s;
+  return { nickname, theme_mode, lang, sound, haptics, reduce_motion, learn, learn_off, round, scope, era, best, elo, device_id };
 }
 function randomId(): string {
   let out = "";
@@ -68,6 +69,7 @@ export const useSettings = create<SettingsStore>((set, get) => ({
       if (q.get("lang")) patch.lang = q.get("lang")!;
       if (q.get("scope")) patch.scope = q.get("scope")!;
       if (q.get("era")) patch.era = Number(q.get("era")) & 31;
+      if (q.get("learn") === "0") patch.learn = false;
       set(patch);
     }
     setLang(get().lang);
@@ -109,15 +111,19 @@ export const useProfile = create<ProfileStore>((set) => ({
 // ---------- canlı oyun durumu ----------
 export type Player = { pid: number; nick: string; elo: number; team: number; team_name: string; picked: boolean; ready: boolean; score: number;
   penalty_ms: number; rematch: boolean; elo_delta: number; away: boolean };
-export type Room = { me?: number; code?: string; ranked?: boolean; scope?: Scope; era?: number; state: number; players?: Player[]; phase_ms?: number;
+export type Room = { me?: number; code?: string; ranked?: boolean; scope?: Scope; era?: number; round_ms?: number; state: number; players?: Player[]; phase_ms?: number;
   last?: Record<string, any>; answers?: string[]; answers_total?: number; winner?: number; used_teams?: number[]; quick_picks?: { id: number; name: string }[];
   searching?: boolean; left?: boolean; band?: number; elo?: number; waiting?: number; cross_in_ms?: number };
 export type Single = { mode: string; idx: number; total: number; lives: number; score: number; combo: number; done: number; best_combo: number;
   remaining_ms: number; per_ms: number; over: boolean; item: Record<string, any>; last: Record<string, any>; era: number };
 export type Suggestion = { id: number; name: string; born?: number; used?: boolean; in_scope?: boolean; defunct?: boolean };
 
+// Haftanın maçı: iki taraf (ad, kısa ad, [zemin, yazı] renkleri, toplam puan, koşu sayısı) ve oyuncunun seçtiği taraf
+export type WeeklySide = { name: string; short: string; colors: [string, string]; total: number; runs: number };
+export type Weekly = { slug: string; date: string; a: WeeklySide; b: WeeklySide; me: { side: "a" | "b"; points: number; runs: number } | null };
+
 type GameStore = {
-  connected: boolean; pid: number; updateNeeded: boolean;
+  connected: boolean; pid: number; updateNeeded: boolean; weekly: Weekly | null;
   room: Room | null; roomAt: number;          // roomAt: son oda durumunun geldiği an (phase_ms'i yerel saate bağlamak için)
   single: Single | null; singleAt: number;
   suggestions: { kind: string; q: string; list: Suggestion[] } | null;
@@ -126,7 +132,7 @@ type GameStore = {
   set: (patch: Partial<Omit<GameStore, "set">>) => void;
 };
 export const useGame = create<GameStore>((set) => ({
-  connected: false, pid: 0, updateNeeded: false, room: null, roomAt: 0, single: null, singleAt: 0, suggestions: null, error: null, acctResult: null,
+  connected: false, pid: 0, updateNeeded: false, weekly: null, room: null, roomAt: 0, single: null, singleAt: 0, suggestions: null, error: null, acctResult: null,
   set: (patch) => set(patch),
 }));
 

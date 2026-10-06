@@ -11,7 +11,6 @@ shot 01_menu /
 shot 02_nickname /nickname
 shot 07_settings /settings
 shot 08_account /account
-shot 09_howto /howto
 shot 02_online /online
 shot 05_single /single
 shot 06_setup /single/setup "&mode=ladder"
