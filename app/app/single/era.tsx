@@ -16,7 +16,7 @@ export default function SingleEra() {
     router.push({ pathname: path as any, params: { mode } });
   };
   return (
-    <Page>
+    <Page scroll>
       <Nav title={t("mode." + mode)} />
       <Txt size={22} w={800}>{t("era.title_q")}</Txt>
       <Txt size={13} color="muted">{t("era.sub")}</Txt>

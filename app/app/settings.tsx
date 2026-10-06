@@ -19,7 +19,7 @@ export default function Settings() {
     if (v && v !== st.nickname) { st.set({ nickname: v }); if (useGame.getState().connected) hello(); }
   };
   return (
-    <Page gap={0}>
+    <Page scroll gap={0}>
       <Nav title={t("menu.settings")} />
       <View style={{ height: s(12) }} />
       <OptionCard

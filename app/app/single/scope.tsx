@@ -11,7 +11,7 @@ export default function SingleScope() {
   const scope = useSettings((x) => x.scope);
   const best = useSettings((x) => x.best[mode] ?? 0);
   return (
-    <Page>
+    <Page scroll>
       <Nav title={t("mode." + mode)} />
       <Txt size={22} w={800}>{t("scope.title_q")}</Txt>
       <Txt size={13} color="muted">{t("scope.best", best)}</Txt>

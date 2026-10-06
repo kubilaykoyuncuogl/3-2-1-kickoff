@@ -19,7 +19,7 @@ export default function Nickname() {
   };
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <Page>
+      <Page scroll>
         <Wordmark />
         <Txt size={22} w={800}>{t("nick.title")}</Txt>
         <Txt size={13} color="muted">{t("nick.sub")}</Txt>

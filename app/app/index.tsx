@@ -13,7 +13,7 @@ export default function Menu() {
   const elo = useProfile((p) => p.elo);
   useEffect(() => { if (!nickname) router.push("/nickname"); }, [nickname]);
   return (
-    <Page>
+    <Page scroll>
       <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
         <View style={{ flex: 1 }}><Wordmark /></View>
         <View style={{ gap: s(6), alignItems: "flex-end" }}>

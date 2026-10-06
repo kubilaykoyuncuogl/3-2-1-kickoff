@@ -15,7 +15,7 @@ export default function SingleMenu() {
   const best = useSettings((x) => x.best);
   useEffect(() => { if (!useGame.getState().connected) connect(); }, []);
   return (
-    <Page>
+    <Page scroll>
       <Nav title={t("menu.single")} />
       <Txt size={13} color="muted">{t("single.intro")}</Txt>
       {MODES.map((m) => (

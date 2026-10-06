@@ -54,7 +54,7 @@ export default function Online() {
   };
 
   return (
-    <Page>
+    <Page scroll>
       <Nav title={t("menu.online")} onBack={back} />
       {mode === "menu" && (
         <>

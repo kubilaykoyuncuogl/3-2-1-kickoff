@@ -59,7 +59,7 @@ export default function Account() {
   const rem = Math.max(0, Math.floor((codeUntil - now) / 1000));
 
   return (
-    <Page>
+    <Page scroll>
       <Nav title={t("acct.title")} onBack={back} />
       {msg ? <Toast text={msg.text} kind={msg.kind} /> : null}
       {view === "main" && (prof.linked ? (

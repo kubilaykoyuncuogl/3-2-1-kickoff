@@ -25,7 +25,7 @@ export default function HowTo() {
   const [i, setI] = useState(0);
   const st = STEPS[i]; const last = i === STEPS.length - 1;
   return (
-    <Page>
+    <Page scroll>
       <Nav title={t("menu.howto")} />
       <View style={{ backgroundColor: c.fg, borderRadius: s(12), padding: s(14) }}>
         <Txt size={14} w={600} color="bg">{t(st[2])}</Txt>
