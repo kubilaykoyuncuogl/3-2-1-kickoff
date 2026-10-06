@@ -2,12 +2,12 @@
 """Oyundaki bütün ekranların görüntüsünü kategori klasörlerine, sıra numarasıyla çeker. Aynı ekranın halleri 1, 1B, 1C… diye adlanır.
 
   .venv/bin/python tools/all_shots.py [--theme acik|koyu|ikisi] [--lang tr] [--only 04] [--out screenshots] [--jobs 4]
-  → <out>/<tema>/<NN-kategori>/<numara>-<ad>.png   (ör. screenshots/acik/04-mac/1G-uyari-ayni-takim.png)
+  → <out>/<tema>/<NN-kategori>/<numara><hal>-<ad>.png   (ör. screenshots/acik/04-mac/01H-uyari-ayni-takim.png; ilk hal A)
 
 Önce yerel sunucular çalışıyor olmalı: ./run_local.sh  (Expo web 8081 + oyun sunucusu 9081).
 Ekran durumları geliştirme modundaki hazır durumlardan gelir (app/src/dev/mocks.ts, ?mock=…); öneri listeleri gerçek sunucudan.
 Yeni ekran / durum eklenince aşağıdaki SHOTS listesine ve gerekiyorsa mocks.ts'e ekle."""
-import argparse, asyncio, json, pathlib, sys, urllib.parse
+import argparse, asyncio, json, pathlib, re, sys, urllib.parse
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ap = argparse.ArgumentParser()
@@ -131,13 +131,18 @@ for n, (mid, path, params, steps) in enumerate(LEARN, start=1):
         SHOTS.append(("12-nasil-oynanir", f"{n}{'' if k == 0 else chr(65 + k)}", f"{NAMES[mid]}-adim-{k + 1}", path, {**params, "learn": "1"},
                       [("tap", T("next"), 2.6 + 0.7 * j) for j in range(k)], 3.2 + 0.7 * k))
 SHOTS.sort(key=lambda s: s[0])
+# Dosya adı etiketi: "04A", "04B"… (hali olmayan tek ekran: "02"). Düz "1" ile "1B" dosya yöneticilerinde karışık sıralandığı için ilk hal A alır.
+_multi = {(s[0], re.match(r"\d+", s[1]).group()) for s in SHOTS if re.search(r"[A-Z]$", s[1])}
+def label(cat: str, num: str) -> str:
+    n = re.match(r"\d+", num).group(); letter = num[len(n):]
+    return f"{int(n):02d}{letter or ('A' if (cat, n) in _multi else '')}"
 
 
 async def shoot(sem, port, theme, shot):
     cat, num, name, path, params, actions, wait = shot
     q = {"nick": "kubi", "theme": {"acik": "light", "koyu": "dark"}[theme], "lang": A.lang, "learn": "0", **params}
     url = f"http://localhost:8081{path}?{urllib.parse.urlencode(q)}"
-    out = pathlib.Path(A.out) / theme / cat / f"{num}-{name}.png"; out.parent.mkdir(parents=True, exist_ok=True)
+    out = pathlib.Path(A.out) / theme / cat / f"{label(cat, num)}-{name}.png"; out.parent.mkdir(parents=True, exist_ok=True)
     cmd = [sys.executable, str(ROOT / "tools" / "cdp_shot.py"), str(out), url, "--wait", str(wait), "--size", A.size, "--port", str(port)]
     for kind, arg, at in actions: cmd += [f"--{kind}", f"{arg}@{at}"]
     async with sem:
@@ -147,7 +152,7 @@ async def shoot(sem, port, theme, shot):
             if p.returncode == 0 and out.exists():
                 msg = o.decode().strip().splitlines()
                 warn = [m for m in msg if "bulunamadı" in m]
-                print(f"  {theme}/{cat}/{num}-{name}" + (f"   !! {warn[0].strip()}" if warn else ""), flush=True); return True
+                print(f"  {theme}/{cat}/{label(cat, num)}-{name}" + (f"   !! {warn[0].strip()}" if warn else ""), flush=True); return True
         print(f"  HATA {theme}/{cat}/{num}-{name}: {o.decode()[-200:]}", flush=True); return False
 
 
