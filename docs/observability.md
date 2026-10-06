@@ -23,6 +23,10 @@ Sunucu için `server/.env.example` içindeki satırları mevcut kök `.env` dosy
 
 Clarity projeleri şimdilik oluşturulmadı; ID'ler sonradan girilebilir.
 
+Sentry projeleri 6 Ekim 2026'da `grande-corpo` organizasyonunda oluşturuldu: `kickoff-app` (React Native) ve `kickoff-server` (FastAPI), takım `#grande-corpo`. İki DSN ve uygulama build slug'ları yalnız entegrasyon worktree'sindeki git dışında kalan ortam dosyalarına yazıldı; DSN'ler bu dokümana veya örnek dosyalara eklenmedi.
+
+Sunucu entegrasyonu üzerinden bir test exception'ı ve uygulamanın raporlama/temizleme kodu üzerinden web SDK transport'u ile bir test exception'ı gönderildi. İki kayıt Sentry panelinde `KICKOFF-SERVER-1` ve `KICKOFF-APP-1` olarak doğrulandı; mesajlar `[redacted]`. Bu kontrol gerçek native cihaz veya tam web arayüzü testi değildir. Source map yüklemesi, gerçek cihaz build'i ve Clarity kayıt kontrolü henüz yapılmadı.
+
 ## Kaydedilen veriler
 
 Clarity ekran adlarını ve aşağıdaki sabit olay adlarını alır. Hesap/device kimliği, kullanıcı adı, kurtarma/eşleme kodu veya oda kodu özel tag/event olarak gönderilmez. Web'de belge kökü SDK yüklenmeden önce `data-clarity-mask="true"` ile maskelenir. Mobile SDK yalnız Strict masking hazır bayrağıyla başlar; bu bayrak panel ayarını otomatik değiştirmez.
