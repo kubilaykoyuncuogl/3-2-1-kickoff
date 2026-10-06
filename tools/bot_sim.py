@@ -43,12 +43,12 @@ def info(a: int, b: int):
     k = (a, b) if a < b else (b, a)
     v = _info.get(k)
     if v is None:
-        r = ix.bot_pair_info(k[0], k[1], 0); v = (r["best_rank"], r["total"]); _info[k] = v
+        r = ix.bot_pair_info(k[0], k[1], 0); v = {"total": r["total"], "players": [{"rank": c["rank"]} for c in r["players"]]}; _info[k] = v
     return v
 
 
 def first_right(events):
-    return next((t for t, kind in events if kind == "right"), None)
+    return next((e[0] for e in events if e[1] == "right"), None)
 
 
 def match(ta: float, tb: float, P: dict, rng: random.Random, tr=bots.traits_of("")) -> float:
@@ -57,14 +57,13 @@ def match(ta: float, tb: float, P: dict, rng: random.Random, tr=bots.traits_of("
     for _ in range(40):
         ca = pick(ta, used, rng); cb = pick(tb, used | {ca}, rng)
         if ca is None or cb is None: break
-        rank, total = info(ca, cb)
-        if total == 0:
+        inf = info(ca, cb)
+        if inf["total"] == 0:
             invalid += 1; stats["no_common"] += 1
             if invalid >= MAX_INVALID_PAIRS: return 0.5
             continue
         invalid = 0; used.update((ca, cb))
-        d = bots.difficulty(rank, total)
-        fa = first_right(bots.plan_round(ta, d, tr, rng, P, A.round * 1000)); fb = first_right(bots.plan_round(tb, d, tr, rng, P, A.round * 1000))
+        fa = first_right(bots.plan_round(ta, inf, tr, rng, P, A.round * 1000)); fb = first_right(bots.plan_round(tb, inf, tr, rng, P, A.round * 1000))
         stats["rounds"] += 1
         if fa is None and fb is None: stats["nobody"] += 1; continue
         w = min(x for x in (fa, fb) if x is not None); stats["t_sum"] += w; stats["t_n"] += 1
@@ -101,13 +100,15 @@ if A.check:
 else:
     best = None; n_total = 0
     print("ızgara araması…", flush=True)
-    for s_k in (250.0, 350.0, 450.0, 600.0, 800.0):
-        for t_el in (500.0, 800.0, 1200.0, 2000.0):
-            P = dict(bots.DEFAULT_PARAMS, S_K=s_k, T_EL=t_el)
-            sse, _rows = evaluate(P, A.grid_matches, 1); n_total += A.grid_matches * len(DIFFS) * len(CENTERS)
-            print(f"  S_K={s_k:5.0f} T_EL={t_el:5.0f}  hata={sse:.4f}", flush=True)
-            if best is None or sse < best[0]: best = (sse, P)
-    P = best[1]; print(f"seçilen: S_K={P['S_K']:.0f} T_EL={P['T_EL']:.0f}  ({n_total} maç, {time.time()-t0:.0f}s)")
+    # S_K üst sınırı 350: daha yayvan eğride orta seviye bot Real Madrid × Liverpool gibi kolay çiftleri kaçırıyor (2026-10-06'da görüldü)
+    for s_k in (200.0, 250.0, 300.0, 350.0):
+        for t_el in (500.0, 800.0, 1200.0, 2000.0, 4000.0):
+            for t_sig in (0.35, 0.5, 0.7):
+                P = dict(bots.DEFAULT_PARAMS, S_K=s_k, T_EL=t_el, T_SIGMA=t_sig)
+                sse, _rows = evaluate(P, A.grid_matches, 1); n_total += A.grid_matches * len(DIFFS) * len(CENTERS)
+                print(f"  S_K={s_k:5.0f} T_EL={t_el:5.0f} T_SIGMA={t_sig:.2f}  hata={sse:.4f}", flush=True)
+                if best is None or sse < best[0]: best = (sse, P)
+    P = best[1]; print(f"seçilen: S_K={P['S_K']:.0f} T_EL={P['T_EL']:.0f} T_SIGMA={P['T_SIGMA']:.2f}  ({n_total} maç, {time.time()-t0:.0f}s)")
     old = bots.load_params(); P["OFFSET"] = old.get("OFFSET", 0.0)      # canlı ayarı ezme
     bots.PARAMS_PATH.write_text(json.dumps(P, indent=1) + "\n"); print("yazıldı:", bots.PARAMS_PATH.relative_to(ROOT))
 

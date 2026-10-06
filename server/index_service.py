@@ -573,7 +573,8 @@ def bot_pair_info(a: int, b: int, era: int = 0, limit: int = 8) -> dict:
     rows = db.execute("""SELECT p.id, p.name FROM player_clubs x JOIN player_clubs y ON x.player_id=y.player_id JOIN players p ON p.id=x.player_id
                          WHERE x.club_id=? AND y.club_id=?""" + era_sql("x.player_id", e) + " ORDER BY p.fame DESC LIMIT ?", (a, b, limit)).fetchall()
     ranks = [fame_rank[i] for i, _ in rows if i in fame_rank]
-    return {"total": pair_n(a, b, e) if rows else 0, "players": [{"id": i, "name": n} for i, n in rows], "best_rank": min(ranks) if ranks else None}
+    return {"total": pair_n(a, b, e) if rows else 0, "players": [{"id": i, "name": n, "rank": fame_rank.get(i)} for i, n in rows],
+            "best_rank": min(ranks) if ranks else None}
 
 def bot_wrong(a: int, b: int, era: int = 0, r: float = 0.0):
     """İnandırıcı yanlış tahmin: iki kulüpten yalnızca birinde oynamış bilinen bir oyuncu."""

@@ -196,6 +196,9 @@ class Engine(SinglesMixin, BotsMixin, WeeklyMixin):
             ok = await self.index_in_scope(team_id, r["scope"])
             if not ok: self.err(pid, "err.out_of_scope"); return
             if r["state"] != State.PICK_TEAMS or r["ready"].get(pid, False): return
+            # kapsam sorgusu beklerken rakip aynı takımı seçmiş olabilir: yeniden bak (iki oyuncu aynı anda aynı takımı alabiliyordu)
+            if team_id in r["used_teams"]: self.err(pid, "err.team_used"); return
+            if any(other != pid and tid == team_id for other, tid in r["teams"].items()): self.err(pid, "err.team_taken"); return
         r["teams"][pid] = team_id; r["team_names"][pid] = team_name
         self._broadcast(r)
 
