@@ -56,6 +56,8 @@ Godot RPC'leri birebir JSON mesajına çevrilir. Her mesaj `{"t": "<tip>", ...}`
 | `single_quit` | – | aynı |
 | `acct` | `op, a, b` | aynı |
 
+Zarf: istemci→sunucu `{"t": "<tip>", ...alanlar}`; sunucu→istemci `{"t": "room_state"|"single_state"|"profile_state"|"acct_result", "d": {...}}`, `{"t": "suggest_result", "kind", "q", "list"}`, `{"t": "err", "key"}`, bağlanınca `{"t": "welcome", "pid", "proto"}`. `room_state.d.me` izleyenin kendi pid'i (Godot'daki `multiplayer.get_unique_id()` karşılığı).
+
 Sunucu→istemci: `room_state`, `suggest_result {kind, q, list}`, `single_state`, `profile_state` (içinde `proto`), `acct_result`, `err {key}` (istemci `err.*` anahtarını çevirir). Sözlük alanları `game.gd`'deki `_broadcast`, `_single_send`, `_send_profile`, `_send_queue` ile **aynı adlarla** kalsın; ekran kodu bu alanlara göre yazılacak.
 
 - `proto`: `hello`'da istemci gönderir; tutmuyorsa sunucu `err {key:"err.proto"}` + `profile_state` yollar, istemci "Yeni sürüm var" kartını açar (Expo Updates varken bu kart "güncelleniyor" olur, bkz. 6.3).
@@ -129,7 +131,8 @@ Oda linki: `kickoff://oda/<kod>` (uygulama şeması) + `https://kickoff.grandeco
 
 Her faz sonunda commit; mesajlar Türkçe, `Co-Authored-By` satırı.
 
-### Faz 1 — Python oyun sunucusu (Godot istemciyle uyumlu değil, bağımsız test)
+### Faz 1 — Python oyun sunucusu (Godot istemciyle uyumlu değil, bağımsız test) — **tamamlandı 2026-10-06**
+Dosyalar: `server/game/{consts,engine,singles}.py`, `server/ws.py`, `server/main.py`, `tools/wsbot.py`. Çalıştırma: `set -a; . ./.env; set +a; .venv/bin/uvicorn server.main:app --host 127.0.0.1 --port 9081`. Kabul testleri botla geçti (maç, ortak oyuncusuz çift, pick zaman aşımı, kopma/geri bağlanma, Elo, dönem, 5 mod, hesap akışı, 10 eşzamanlı maç). Not: eski Godot istemcisi bu sunucuyla konuşamaz; test sürümü Faz 5'e kadar Godot sunucusuyla yayında kalır.
 1. `server/game/*`, `server/ws.py`, `server/main.py`.
 2. `tools/wsbot.py`.
 3. Kabul: iki botla tam maç (3 puan), ortak oyuncusuz çift (uyarı, 3 sn, seçime dönüş, 3 kez → berabere), 45 sn seçim zaman aşımı, yanlış tahminde 5 sn kilit, kopma → 10 sn içinde geri bağlanma, Elo değişimi, oda kodu ile katılma, aynı takım tekrar seçilemez, rakip takımı PICK'te gizli, kapsam dışı takım reddi, dönem süzmesi (GS–Inter 80'ler → yalnız Şükür). Beş tek oyunculu mod başlar, yanar, en iyi skor hesaba yazılır. 20 eşzamanlı bot maçı (eski `load_*.log` senaryosu) hatasız.

@@ -1,3 +1,4 @@
 fastapi>=0.115
 uvicorn>=0.30
+websockets>=12
 cryptography>=41

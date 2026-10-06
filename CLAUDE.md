@@ -35,6 +35,8 @@ godot --headless --path game -- --server --port 9080
 # istemci
 godot --path game
 ```
+Yeni (Expo geçişi, Faz 1): tek Python süreci — index + hesaplar + oyun sunucusu (`/ws`): `set -a; . ./.env; set +a; .venv/bin/uvicorn server.main:app --host 127.0.0.1 --port 9081`; test botu `python3 tools/wsbot.py --bot ali --team galatasaray --guess sneijder` (seçenekler dosyanın başında). Oyun mantığı `server/game/` (game.gd'nin karşılığı; kurallar `consts.py`). Godot istemcisi bu sunucuyla konuşmaz.
+
 Godot 4.7.2 stable kurulu: `~/.local/bin/godot` (2026-10-05). Export template'leri henüz indirilmedi (Android/macOS/Web build için gerekir: Editor > Manage Export Templates).
 
 ## Notlar
