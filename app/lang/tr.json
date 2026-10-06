@@ -413,13 +413,18 @@
  "end.round_nocommon": "ortak oyuncu yok",
  "end.round_pick": "takım seçilmedi",
  "shared": "Paylaşıldı",
- "fact.pair_players": "%s ve %s formasını %d oyuncu giydi: %s",
- "fact.two_clubs": "%s iki kulüpte de oynadı: %s (%d) ve %s (%d)",
  "fact.two_clubs_plain": "%s iki kulüpte de oynadı: %s ve %s",
  "fact.career_stats": "%s kariyerinde %s maça çıktı, %s gol attı",
  "fact.career_apps": "%s kariyerinde %s maça çıktı",
  "fact.player": "%s kariyerinde %s maça çıktı, %s gol attı ve %d kulüpte oynadı",
  "fact.player_apps": "%s kariyerinde %s maça çıktı ve %d kulüpte oynadı",
  "fact.club_stats": "%s, %s formasıyla %s maçta %s gol attı, %s asist yaptı",
- "fact.club_stats_apps": "%s, %s formasıyla %s maça çıktı"
+ "fact.club_stats_apps": "%s, %s formasıyla %s maça çıktı",
+ "fact.pair_head": "%s ve %s formasını %d oyuncu giydi:",
+ "fact.pair_more": "ve daha %d futbolcu",
+ "fact.year": "%d yılında",
+ "fact.years": "%d-%d yıllarında",
+ "fact.since": "%d yılından sonra",
+ "fact.two_spells": "%s %s %s, %s %s forması giydi",
+ "fact.and": " ve "
 }

@@ -52,7 +52,6 @@ export default function SinglePlay() {
     const last = d.last ?? {};
     return <SingleOver mode={mode} title={blitz ? t("mode.blitz") : t("mode.ladder_short")} d={d}
       summary={blitz ? t("sp.blitz_summary", d.idx, d.best_combo) : t("sp.ladder_summary", d.idx)}
-      extra={blitz && last.type === "wrong" ? t("sp.answer_was", d.item.options?.[last.answer] ?? "") : undefined}
       onAgain={() => { prevScore.current = 0; history.current = []; setToast(null); restart(); }} chips={runChips()} />;
   }
   const it = d.item;

@@ -10,7 +10,7 @@ import { useTheme } from "@/theme";
 import { Btn, Chip, Eyebrow, ListCard, Nav, Page, Panel, Progress, Spacer, TimerBox, Toast, Txt, t } from "@/ui";
 import { Autocomplete } from "@/ui/autocomplete";
 import { eraLabel, scopeLabel } from "@/ui/pickers";
-import { ResultCard, Section } from "@/ui/result";
+import { ResultCard, Section, pairLines } from "@/ui/result";
 
 const PICK_MS = 45000, QUICK_AT_MS = 20000, RECONNECT_MS = 10000, RETURN_MS = 5000, NOTICE_MS = 3000;
 
@@ -285,11 +285,11 @@ function Over({ room, mine, opp, me, returnAt, now }: { room: Room; mine?: Playe
     return `${pair}  ·  ${res}`;
   });
   const answerName = last.type === "correct" ? String(last.name ?? "") : "";
-  const others = last.type === "left" ? [] : (room.answers ?? []).filter((n) => n !== answerName).slice(0, 4);
+  const others = last.type === "left" ? [] : (room.answers ?? []).filter((n) => n !== answerName).slice(0, 5);
   const lastRound = hist[hist.length - 1];
   const sections: Section[] = [];
   if (rounds.length) sections.push({ title: t("end.rounds"), lines: rounds, kind: "plain" });
-  if (others.length && lastRound) sections.push({ title: t("end.fact"), lines: [t("fact.pair_players", lastRound.mine, lastRound.theirs, room.answers_total ?? others.length, [answerName, ...others].filter(Boolean).slice(0, 4).join(", ") + ((room.answers_total ?? 0) > 4 ? "…" : ""))], kind: "fact" });
+  if (others.length && lastRound) sections.push({ title: t("end.fact"), lines: pairLines(lastRound.mine, lastRound.theirs, room.answers_total ?? others.length, [answerName, ...others].filter(Boolean)), kind: "fact" });
   const leave = () => { api.leave(); router.canGoBack() ? router.back() : router.replace("/online"); };
   const chips = [scopeLabel(room.scope ?? "all"), ...(room.era ? [eraLabel(room.era)] : []), t("online.round_fmt", Math.round((room.round_ms ?? 15000) / 1000))];
   return (

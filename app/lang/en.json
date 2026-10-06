@@ -413,13 +413,18 @@
  "end.round_nocommon": "no shared player",
  "end.round_pick": "no team picked",
  "shared": "Shared",
- "fact.pair_players": "%s and %s share %d players: %s",
- "fact.two_clubs": "%s played for both: %s (%d) and %s (%d)",
  "fact.two_clubs_plain": "%s played for both: %s and %s",
  "fact.career_stats": "%s made %s appearances and scored %s goals in his career",
  "fact.career_apps": "%s made %s career appearances",
  "fact.player": "%s made %s appearances, scored %s goals and played for %d clubs",
  "fact.player_apps": "%s made %s appearances and played for %d clubs",
  "fact.club_stats": "%s, for %s: %s games, %s goals, %s assists",
- "fact.club_stats_apps": "%s, for %s: %s games"
+ "fact.club_stats_apps": "%s, for %s: %s games",
+ "fact.pair_head": "%s and %s share %d players:",
+ "fact.pair_more": "and %d more",
+ "fact.year": "in %d",
+ "fact.years": "in %d-%d",
+ "fact.since": "from %d",
+ "fact.two_spells": "%s played %s for %s and %s for %s",
+ "fact.and": " and "
 }
