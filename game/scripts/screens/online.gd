@@ -48,7 +48,9 @@ func _on_room(d: Dictionary) -> void:
 	if d.get("searching", false):
 		mode = "searching"; _render(); return
 	if d.get("players", []).size() >= 2 and d.state != Game.State.LOBBY:
-		App.push(load("res://scripts/screens/match.gd").new()); return
+		# maç ekranı zaten açıksa dokunma: her oda güncellemesinde yeni maç ekranı itiliyordu (iki oyuncuda da ekran kayıyordu)
+		if App.top() == self: App.push(load("res://scripts/screens/match.gd").new())
+		return
 	mode = "room"; _render()
 
 func _process(_dt: float) -> void:

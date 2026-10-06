@@ -1,5 +1,5 @@
 extends Control
-## Maç ekranı: PICK_TEAMS / COUNTDOWN / ROUND / ROUND_END / GAME_OVER. Her durum değişiminde yeniden kurulur.
+## Maç ekranı: PICK_TEAMS / COUNTDOWN / ROUND / ROUND_END / GAME_OVER. Her durum değişiminde yeniden kurulur (eski içerik sönüp yenisi belirir).
 ## Sen hep üstte, rakip altta (docs/screens.md).
 
 var body: VBoxContainer
@@ -17,9 +17,12 @@ var toast_slot: VBoxContainer
 var pick_timer: Label
 var quick_slot: VBoxContainer
 var quick_shown := false
+var notice: Control
+const FADE_OUT := 0.12
+const FADE_IN := 0.20
+const NOTICE_MS := 3.0
 
 func _ready() -> void:
-	body = UI.page(); add_child(body)
 	Game.room_changed.connect(_on_room)
 	Game.error.connect(_on_error)
 	_on_room(Game.room)
@@ -29,11 +32,43 @@ func _exit_tree() -> void:
 	if Game.error.is_connected(_on_error): Game.error.disconnect(_on_error)
 
 func _on_error(msg: String) -> void:
-	if strip: strip.text = msg
+	if state == Game.State.PICK_TEAMS: _show_notice(msg)
+	elif strip: strip.text = msg
+
+## Takım seçimindeki uyarılar (rakip aynı takımı seçti, takım kullanıldı, kapsam dışı): ortada kart, 3 sn sonra seçime döner
+func _show_notice(msg: String) -> void:
+	if notice and is_instance_valid(notice): notice.queue_free()
+	var ov := ColorRect.new(); notice = ov
+	var dim: Color = UI.c("bg"); dim.a = 0.82; ov.color = dim
+	ov.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var cc := CenterContainer.new(); cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var card := PanelContainer.new(); card.custom_minimum_size.x = 300; card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var st := UI.box("surface", "no", 18, 2)
+	st.content_margin_left = 22; st.content_margin_right = 22; st.content_margin_top = 22; st.content_margin_bottom = 18
+	card.add_theme_stylebox_override("panel", st)
+	var v := UI.vbox(10)
+	var t := UI.label(msg, 21, 800); t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; t.custom_minimum_size.x = 256
+	var sub := UI.label(T.t("match.back_to_pick"), 13, 500, "muted"); sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var bar := UI.progress(1000); bar.value = 1000
+	bar.add_theme_stylebox_override("fill", UI.box("no", "", 999, 0))
+	v.add_child(t); v.add_child(sub); v.add_child(bar); card.add_child(v); cc.add_child(card); ov.add_child(cc); add_child(ov)
+	var close := func():
+		if not is_instance_valid(ov) or ov.is_queued_for_deletion() or notice != ov: return
+		notice = null
+		var out := ov.create_tween(); out.tween_property(ov, "modulate:a", 0.0, FADE_OUT); out.tween_callback(ov.queue_free)
+		if ac and state == Game.State.PICK_TEAMS: ac.clear(); ac.focus()
+	ov.gui_input.connect(func(e): if e is InputEventMouseButton and e.pressed: close.call())
+	ov.modulate.a = 0.0; card.pivot_offset = Vector2(150, 60); card.scale = Vector2(0.94, 0.94)
+	var tw := ov.create_tween()
+	tw.tween_property(ov, "modulate:a", 1.0, 0.16)
+	tw.parallel().tween_property(card, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(bar, "value", 0.0, NOTICE_MS)
+	tw.tween_callback(close)
 
 func _on_room(d: Dictionary) -> void:
 	if d.get("left", false) or d.get("players", []).size() < 1:
-		App.pop(); return
+		if App.top() == self: App.pop()
+		return
 	var now := Time.get_ticks_msec()
 	phase_end = now + int(d.get("phase_ms", 0))
 	var me := Game.me()
@@ -67,7 +102,16 @@ func _process(_dt: float) -> void:
 
 # ---------- kurulum ----------
 func _render(d: Dictionary) -> void:
-	for ch in body.get_children(): ch.queue_free()
+	# eski içerik söner, yenisi ardından belirir; anlık değişim "hoplama" gibi görünüyordu
+	var old := body
+	body = UI.page(); add_child(body)
+	if notice and is_instance_valid(notice): move_child(notice, -1)
+	if old:
+		if App.reduce_motion: old.queue_free()
+		else:
+			var out := old.create_tween(); out.tween_property(old, "modulate:a", 0.0, FADE_OUT); out.tween_callback(old.queue_free)
+			body.modulate.a = 0.0
+			var tin := body.create_tween(); tin.tween_interval(FADE_OUT * 0.7); tin.tween_property(body, "modulate:a", 1.0, FADE_IN)
 	timer_label = null; timer_bar = null; countdown_label = null; ac = null; strip = null; opp_label = null; toast_slot = null
 	pick_timer = null; quick_slot = null; quick_shown = false
 	match state:

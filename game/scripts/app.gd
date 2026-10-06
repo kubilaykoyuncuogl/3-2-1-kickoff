@@ -126,6 +126,9 @@ func push(screen: Control) -> void:
 	elif prev:
 		prev.visible = false
 
+func top() -> Control:
+	return _stack.back() if not _stack.is_empty() else null
+
 func pop() -> void:
 	if _stack.size() < 2: return
 	var top: Control = _stack.pop_back()

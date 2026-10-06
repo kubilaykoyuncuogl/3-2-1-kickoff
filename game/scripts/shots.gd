@@ -38,6 +38,7 @@ func _ready() -> void:
 	await _scr("09c_settings_linked", "settings")
 	App.linked = false
 	await _match("10_pick", Game.State.PICK_TEAMS, {}, 0, true)
+	await _match("10b_pick_notice", Game.State.PICK_TEAMS, {}, 0, true)
 	await _match("11_pick_ready", Game.State.PICK_TEAMS, {}, 2, false)
 	await _match("12_countdown", Game.State.COUNTDOWN, {}, 2, false)
 	await _match("13_reveal", Game.State.REVEAL, {}, 2, false)
@@ -95,4 +96,5 @@ func _match(name: String, st: int, last: Dictionary, variant: int, suggest: bool
 		m.ac.input.text = "gala" if team else "snei"; m.ac._last_q = m.ac.input.text
 		Game.suggestions.emit(m.ac.kind, m.ac._last_q, [{"id": 1, "name": "Galatasaray"}, {"id": 2, "name": "Los Angeles Galaxy", "used": true}, {"id": 4, "name": "Galatasaray Spandau", "defunct": true}, {"id": 3, "name": "SC Otelul Galati", "in_scope": false}] if team else [{"id": 1, "name": "Wesley Sneijder", "born": 1984.0}, {"id": 2, "name": "Rodney Sneijder", "born": 1991.0}, {"id": 3, "name": "Jeffrey Sneijder", "born": 1982.0}])
 	if st == Game.State.PICK_TEAMS and m.quick_slot and suggest == false: m._show_quick_picks(Game.room.quick_picks)
+	if name.ends_with("_notice"): Game.error.emit(T.t("err.team_taken")); await get_tree().create_timer(0.5).timeout
 	await _save(name); m.queue_free(); await _frames(1)
