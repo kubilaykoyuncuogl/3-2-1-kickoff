@@ -12,6 +12,13 @@ import { num } from "@/ui/weekly";
 
 const hold = (prev: Single, next: Single) => (next.over ? (next.last?.values ? 1500 : 0) : next.idx !== prev.idx && next.last?.type === "correct" ? 900 : 0);
 
+// Koşuyu bitiren sorunun dökümü: soru, iki oyuncu ve sayıları (yanlışta doğrusu görülsün)
+function lastLine(d: Single): string | undefined {
+  const v = d.last?.values; const it = d.item;
+  if (!v || !it?.names) return d.last?.type === "timeout" ? t("sp.time_up") : undefined;
+  return `${d.last?.type === "timeout" ? t("sp.time_up") + "  ·  " : ""}${t("cat." + it.cat)}\n${it.names[0]} ${num(Number(v[0]))}  ·  ${it.names[1]} ${num(Number(v[1]))}`;
+}
+
 export default function WeeklyPlay() {
   const { side = "a" } = useLocalSearchParams<{ side?: "a" | "b" }>();
   const { c, s } = useTheme();
@@ -23,7 +30,7 @@ export default function WeeklyPlay() {
   if (!d || !w) return <SingleLoading title={title} failed={failed} onRetry={restart} />;
   const mine = w[w.me?.side ?? (side === "b" ? "b" : "a")];
   if (d.over) return <SingleOver mode="weekly" title={title} d={d} summary={t("versus.summary", d.done ?? 0)} extra={d.score > 0 ? t("weekly.added", mine.short, num(d.score)) : undefined}
-    note={d.last?.type === "timeout" ? t("sp.time_up") : undefined} onAgain={restart} />;
+    note={lastLine(d)} onAgain={restart} />;
   const it = d.item;
   const pl = pending?.last ?? {};
   const values: unknown[] | null = pending && pl.values ? pl.values : null;
