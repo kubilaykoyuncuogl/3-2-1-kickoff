@@ -12,6 +12,7 @@ const PICK_MS := 45000          # takım seçimi süresi; dolunca seçmeyen turu
 const QUICK_AT_MS := 20000      # bu kadar geçince istemci hızlı seçenekleri gösterir
 const PENALTY_MS := 5000
 const ROUND_END_MS := 4000
+const NO_COMMON_MS := 3000          # ortak oyuncusu olmayan çift: uyarı bu kadar görünür, sonra takım seçimine dönülür
 const WIN_SCORE := 3
 const MAX_INVALID_PAIRS := 3
 const ELO_K := 32
@@ -443,6 +444,13 @@ func _rebind(r: Dictionary, old: int, new: int) -> void:
 	_broadcast(r)
 
 func _start_countdown(r: Dictionary) -> void:
+	# ortak oyuncu yoksa tur hiç oynanmaz: uyarı gösterilir, takımlar harcanmaz, seçime dönülür
+	r.gen += 1
+	var pre_gen: int = r.gen
+	var pair: Array = r.teams.values()
+	var pre: Dictionary = await IndexAPI.answers(pair[0], pair[1], int(r.era))
+	if r.gen != pre_gen or r.state != State.PICK_TEAMS or r.teams.size() < 2: return
+	if int(pre.total) == 0: _no_common(r); return
 	for t in r.teams.values(): r.used_teams[t] = true
 	r.gen += 1
 	r.state = State.COUNTDOWN; r.phase_end = Time.get_ticks_msec() + COUNTDOWN_MS; r.last = {}
@@ -459,6 +467,20 @@ func _start_countdown(r: Dictionary) -> void:
 	await get_tree().create_timer(ROUND_MS / 1000.0).timeout
 	if r.gen != gen or r.state != State.ROUND: return
 	_end_round(r, {"type": "timeout"})
+
+func _no_common(r: Dictionary) -> void:
+	r.gen += 1
+	var gen: int = r.gen
+	r.invalid_streak += 1
+	r.answers = []; r.answers_total = 0; r.last = {"type": "timeout", "no_common": true}
+	if r.invalid_streak >= MAX_INVALID_PAIRS:
+		r.state = State.GAME_OVER; r.winner = 0; r.last["draw"] = true; _broadcast(r); return
+	r.state = State.ROUND_END; r.phase_end = Time.get_ticks_msec() + NO_COMMON_MS
+	_broadcast(r)
+	await get_tree().create_timer(NO_COMMON_MS / 1000.0).timeout
+	if r.gen != gen or r.state != State.ROUND_END: return
+	r.teams = {}; r.team_names = {}; r.ready = {}; r.penalty_until = {}; r.last = {}
+	_start_pick(r)
 
 func _start_pick(r: Dictionary) -> void:
 	r.gen += 1

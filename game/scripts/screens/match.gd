@@ -52,10 +52,12 @@ func _show_notice(msg: String) -> void:
 	var bar := UI.progress(1000); bar.value = 1000
 	bar.add_theme_stylebox_override("fill", UI.box("no", "", 999, 0))
 	v.add_child(t); v.add_child(sub); v.add_child(bar); card.add_child(v); cc.add_child(card); ov.add_child(cc); add_child(ov)
+	var oid := ov.get_instance_id()      # lambda düğümü değil kimliğini tutar: ekran kapanırken düğüm önce silinebilir
 	var close := func():
-		if not is_instance_valid(ov) or ov.is_queued_for_deletion() or notice != ov: return
+		var o := instance_from_id(oid) as Control
+		if o == null or o.is_queued_for_deletion() or notice != o: return
 		notice = null
-		var out := ov.create_tween(); out.tween_property(ov, "modulate:a", 0.0, FADE_OUT); out.tween_callback(ov.queue_free)
+		var out := o.create_tween(); out.tween_property(o, "modulate:a", 0.0, FADE_OUT); out.tween_callback(o.queue_free)
 		if ac and state == Game.State.PICK_TEAMS: ac.clear(); ac.focus()
 	ov.gui_input.connect(func(e): if e is InputEventMouseButton and e.pressed: close.call())
 	ov.modulate.a = 0.0; card.pivot_offset = Vector2(150, 60); card.scale = Vector2(0.94, 0.94)
@@ -244,8 +246,9 @@ func _render_reveal(d: Dictionary) -> void:
 func _render_round(d: Dictionary) -> void:
 	var me := Game.me(); var op := Game.opponent()
 	var h := UI.hbox(8)
-	var chips := UI.hbox(6); chips.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	chips.add_child(UI.chip(str(me.get("team_name", "")), "violet")); chips.add_child(UI.chip(str(op.get("team_name", "")), "amber"))
+	# alt alta, tek satır: uzun adlar yan yana sığmayınca harf harf alt alta diziliyordu
+	var chips := UI.vbox(4); chips.size_flags_horizontal = Control.SIZE_EXPAND_FILL; chips.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	chips.add_child(_team_chip(str(me.get("team_name", "")), "violet")); chips.add_child(_team_chip(str(op.get("team_name", "")), "amber"))
 	h.add_child(chips)
 	var tb := UI.timer_box(); timer_label = tb[1]; h.add_child(tb[0])
 	body.add_child(h)
@@ -259,9 +262,41 @@ func _render_round(d: Dictionary) -> void:
 	var sc := _score_row(d); body.add_child(sc)
 	ac.call_deferred("focus")
 
+func _team_chip(text: String, kind: String) -> PanelContainer:
+	var ch := UI.chip(text, kind); ch.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	var l: Label = ch.get_child(0)
+	l.autowrap_mode = TextServer.AUTOWRAP_OFF; l.clip_text = true; l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	l.custom_minimum_size.x = minf(UI.font(600).get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x + 4, 250)
+	return ch
+
+## Ortak oyuncusu olmayan çift: iki takım, ortada uyarı kartı, süre çubuğu; sunucu 3 sn sonra seçime döndürür
+func _render_no_common(d: Dictionary) -> void:
+	var me := Game.me(); var op := Game.opponent()
+	body.add_child(_score_row(d))
+	body.add_child(UI.spacer())
+	for it in [[me, "violet"], [op, "amber"]]:
+		var pan := UI.panel(it[1]); var t := UI.label(str(it[0].get("team_name", "—")), 24, 800, it[1] + "_ink")
+		t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		pan.add_child(t); body.add_child(pan)
+		if it[1] == "violet":
+			var x := UI.label("×", 34, 800, "muted"); x.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; body.add_child(x)
+	var card := PanelContainer.new()
+	var st := UI.box("surface", "no", 18, 2)
+	st.content_margin_left = 20; st.content_margin_right = 20; st.content_margin_top = 20; st.content_margin_bottom = 16
+	card.add_theme_stylebox_override("panel", st)
+	var v := UI.vbox(10)
+	var msg := UI.label(T.t("match.no_common"), 21, 800); msg.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var sub := UI.label(T.t("match.back_to_pick"), 13, 500, "muted"); sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var bar := UI.progress(1000); bar.add_theme_stylebox_override("fill", UI.box("no", "", 999, 0))
+	v.add_child(msg); v.add_child(sub); v.add_child(bar); card.add_child(v)
+	var gap := Control.new(); gap.custom_minimum_size.y = 10; body.add_child(gap); body.add_child(card)
+	body.add_child(UI.spacer())
+	bar.create_tween().tween_property(bar, "value", 0.0, maxf(0.2, (phase_end - Time.get_ticks_msec()) / 1000.0))
+
 func _render_round_end(d: Dictionary) -> void:
 	var me := Game.me(); var op := Game.opponent()
 	var last: Dictionary = d.get("last", {})
+	if last.get("no_common", false): _render_no_common(d); return
 	var my := multiplayer.get_unique_id()
 	var t: String = last.get("type", "")
 	var i_won: bool = (t == "correct" and int(last.get("pid", 0)) == my) or (t == "pick_timeout" and int(last.get("pid", 0)) != my)

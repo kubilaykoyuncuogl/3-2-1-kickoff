@@ -23,8 +23,8 @@ func _ready() -> void:
 	var settings := UI.button(T.t("menu.settings"), "line")
 	settings.pressed.connect(func(): App.push(load("res://scripts/screens/settings.gd").new()))
 	for b in [online, single, howto, settings]: v.add_child(b)
-	var elo_label: Label = online.get_child(0)
-	Game.profile_changed.connect(func(_d): if is_instance_valid(elo_label): elo_label.text = str(App.elo))
+	elo_label = online.get_child(0)
+	Game.profile_changed.connect(_on_profile)   # yöntem bağlantısı ekranla birlikte kopar; lambda silinmiş etiketi tutup hata basıyordu
 	v.add_child(UI.spacer())
 	var ver := UI.label(T.t("menu.footer"), 11, 600, "muted"); ver.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(ver)
@@ -33,3 +33,7 @@ func _ready() -> void:
 
 func _ask_nickname() -> void:
 	App.push(load("res://scripts/screens/nickname.gd").new())
+
+var elo_label: Label
+func _on_profile(_d: Dictionary) -> void:
+	if is_instance_valid(elo_label): elo_label.text = str(App.elo)

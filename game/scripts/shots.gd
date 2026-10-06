@@ -44,6 +44,7 @@ func _ready() -> void:
 	await _match("13_reveal", Game.State.REVEAL, {}, 2, false)
 	await _match("14_round", Game.State.ROUND, {"type": "wrong", "pid": 99, "name": "Mesut Özil"}, 0, true)
 	await _match("15_round_end", Game.State.ROUND_END, {"type": "correct", "pid": me, "name": "Wesley Sneijder"}, 2, false)
+	await _match("15b_no_common", Game.State.ROUND_END, {"type": "timeout", "no_common": true}, 2, false)
 	await _match("16_over", Game.State.GAME_OVER, {"type": "correct", "pid": me, "name": "Wesley Sneijder"}, 1, false)
 	# tek oyunculu
 	var sp: Control = load("res://scripts/screens/single_play.gd").new(); sp.mode = "ladder"; _add(sp); await _frames(2)

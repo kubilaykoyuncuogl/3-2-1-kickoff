@@ -37,7 +37,7 @@ func _show(s: Control) -> void:
 func _room(st: int, last: Dictionary, variant: int) -> Dictionary:
 	var me := {"pid": multiplayer.get_unique_id(), "nick": "smoke", "elo": 1016, "team": 141 if variant > 0 else 0, "team_name": "Galatasaray" if variant > 0 else "",
 		"picked": variant > 0, "ready": variant > 1, "score": 2, "penalty_ms": 3000 if variant == 1 else 0, "rematch": variant > 1, "elo_delta": 16, "away": false}
-	var op := {"pid": 99, "nick": "rakip", "elo": 990, "team": 46, "team_name": "Inter Milan", "picked": true, "ready": variant > 0, "score": 1,
+	var op := {"pid": 99, "nick": "rakip", "elo": 990, "team": 46, "team_name": "Brighton & Hove Albion", "picked": true, "ready": variant > 0, "score": 1,
 		"penalty_ms": 2000, "rematch": variant == 1, "elo_delta": -16, "away": variant == 2}
 	return {"code": "zidane", "ranked": true, "scope": "top", "state": st, "players": [me, op], "phase_ms": 9000, "last": last,
 		"answers": ["Mauro Icardi", "Wesley Sneijder", "Lukas Podolski", "Felipe Melo", "Goran Pandev", "Caner Erkin", "Yuto Nagatomo", "Emre Belözoğlu", "Hakan Şükür"],

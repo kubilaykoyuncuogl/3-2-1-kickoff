@@ -60,7 +60,7 @@ func check(player_id: int, a: int, b: int, era := 0) -> bool:
 
 func answers(a: int, b: int, era := 0) -> Dictionary:
 	var r = await get_json("/pair/answers", {"club_a": a, "club_b": b, "era": era})
-	return r if r is Dictionary else {"names": [], "total": 0}
+	return r if r is Dictionary else {"names": [], "total": -1}   # -1: servis cevap vermedi ("ortak oyuncu yok" sanılmasın)
 
 func ladder(seed: String, scope := "all", era := 0) -> Array:
 	var r = await get_json("/ladder", {"steps": 27, "scope": scope, "era": era})   # seed yok → hazır havuzdan
