@@ -14,11 +14,12 @@ let timer: ReturnType<typeof setTimeout> | null = null;
 let wanted = false;
 
 export function serverUrl(): string {
-  if (!__DEV__) return PROD_URL;
   if (Platform.OS === "web" && typeof location !== "undefined") {
-    if (location.protocol === "https:") return `wss://${location.host}/ws`;
-    return `ws://${location.hostname}:${DEV_PORT}/ws`;
+    if (location.protocol === "https:") return `wss://${location.host}/ws`;      // canlı web: sayfayı sunan adresin /ws'si (Caddy yönlendirir)
+    if (!__DEV__) return `ws://${location.host}/ws`;                              // yerelde konteyner denemesi (http)
+    return `ws://${location.hostname}:${DEV_PORT}/ws`;                            // expo start --web: oyun sunucusu aynı makinede 9081'de
   }
+  if (!__DEV__) return PROD_URL;
   const host = (Constants.expoConfig?.hostUri ?? "127.0.0.1:8081").split(":")[0];   // Expo dev sunucusunun makinesi = oyun sunucusu
   return `ws://${host}:${DEV_PORT}/ws`;
 }

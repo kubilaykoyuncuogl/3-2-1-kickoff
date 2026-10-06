@@ -335,5 +335,6 @@
  "update.title": "New version available",
  "update.web": "The game was updated. Reload the page to keep playing.",
  "update.app": "The game was updated. Install the new version of the app to keep playing.",
- "update.reload": "Reload"
+ "update.reload": "Reload",
+ "err.proto": "The game was updated, a new version is needed"
 }

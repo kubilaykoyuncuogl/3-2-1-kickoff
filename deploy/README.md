@@ -1,3 +1,5 @@
+> **2026-10-06:** konteyner artık Godot içermiyor: tek Python süreci (`server.main`) + Caddy; web dosyaları `app/dist` (Expo web build). Önce yerelde `./run_local.sh export`, sonra rsync (`app/node_modules` ve `app/.expo` hariç) ve `docker compose -f deploy/compose.yaml up -d --build`. Aşağıda Godot'ya dair kalan ifadeler eski sürüme aittir.
+
 # Sunucuya kurulum
 
 Gereken: Linux x86_64 VPS (≥2 GB RAM, index 583 MB belleğe alınır), alan adı A kaydı sunucuya, 80/443 açık, root SSH.

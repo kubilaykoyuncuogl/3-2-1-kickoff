@@ -335,5 +335,6 @@
  "update.title": "Yeni sürüm var",
  "update.web": "Oyun güncellendi. Devam etmek için sayfayı yenile.",
  "update.app": "Oyun güncellendi. Devam etmek için uygulamanın yeni sürümünü kur.",
- "update.reload": "Yenile"
+ "update.reload": "Yenile",
+ "err.proto": "Oyun güncellendi, yeni sürüm gerekli"
 }

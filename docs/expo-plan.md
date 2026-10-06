@@ -137,25 +137,25 @@ Dosyalar: `server/game/{consts,engine,singles}.py`, `server/ws.py`, `server/main
 2. `tools/wsbot.py`.
 3. Kabul: iki botla tam maç (3 puan), ortak oyuncusuz çift (uyarı, 3 sn, seçime dönüş, 3 kez → berabere), 45 sn seçim zaman aşımı, yanlış tahminde 5 sn kilit, kopma → 10 sn içinde geri bağlanma, Elo değişimi, oda kodu ile katılma, aynı takım tekrar seçilemez, rakip takımı PICK'te gizli, kapsam dışı takım reddi, dönem süzmesi (GS–Inter 80'ler → yalnız Şükür). Beş tek oyunculu mod başlar, yanar, en iyi skor hesaba yazılır. 20 eşzamanlı bot maçı (eski `load_*.log` senaryosu) hatasız.
 
-### Faz 2 — Expo iskeleti + ağ + menü/ayarlar/hesap
+### Faz 2 — Expo iskeleti + ağ + menü/ayarlar/hesap — **tamamlandı 2026-10-06**
 1. Proje, font, palet, tema, dil, ölçek, store, socket.
 2. `/`, `/nickname`, `/settings`, `/account`, `/howto`.
 3. Kabul: Android emülatör ve Expo Go'da açılır; dil ve tema anında değişir; hesap akışları (oluştur, bağlama kodu, kurtarma, çıkış, sil) Faz 1 sunucusuyla çalışır; `check_lang.py` temiz.
 
-### Faz 3 — Online maç
+### Faz 3 — Online maç — **tamamlandı 2026-10-06** (tarayıcıda bot rakibe karşı oynandı; iki gerçek telefonla deneme bekliyor)
 1. `/online`, `/match`, Autocomplete, hızlı seçenekler, uyarı kartı, geçişler, kopma/ayrılma davranışları.
 2. Kabul: iki telefon (ya da telefon + bot) ile tam maç; Godot ekran görüntüleriyle yan yana karşılaştırma; her durum ekranı referansa uygun; klavye hiçbir düğmeyi kapatmıyor.
 
-### Faz 4 — Tek oyunculu beş mod
+### Faz 4 — Tek oyunculu beş mod — **tamamlandı 2026-10-06**
 1. `/single/*`.
 2. Kabul: her mod başlar, oynanır, biter; en iyi skor görünür; dönem ve kapsam seçimi paketlere yansır.
 
-### Faz 5 — Deploy ve web
+### Faz 5 — Deploy ve web — **dosyalar hazır 2026-10-06**, canlıya alma kullanıcıda (konteyner yerelde derlenip denendi: sayfalar, /ws, önbellek başlıkları, bot maçı)
 1. Dockerfile/entrypoint/Caddyfile, `run_local.sh`, `README`/`CLAUDE.md` güncellemesi.
 2. Web export; oda linki web'den açılıyor.
 3. Kabul: canlıda web + Android APK (EAS ya da yerel `expo run:android`) aynı sunucuyla oynuyor.
 
-### Faz 6 — Mağaza hazırlığı
+### Faz 6 — Mağaza hazırlığı — `app/eas.json` ve `app.json` hazır; EAS projesi, hesap bağlantıları ve derlemeler bekliyor
 1. `eas.json` (development / preview / production profilleri), `app.json` (paket adı `com.kickoff321.app` benzeri, ikon, splash, şema `kickoff`).
 2. Expo Updates: üretim kanalı; `proto` uyuşmazlığında istemci önce `Updates.fetchUpdateAsync` dener, başarısızsa "mağazadan güncelle" kartı.
 3. iOS: EAS bulut derlemesi (Apple geliştirici hesabı kullanıcıda), TestFlight. Android: AAB, iç test kanalı.
@@ -188,3 +188,13 @@ Dosyalar: `server/game/{consts,engine,singles}.py`, `server/ws.py`, `server/main
 ## 9. Sıra ve süre tahmini
 
 Faz 1 (sunucu) → Faz 2 → Faz 3 → Faz 4 → Faz 5 arka arkaya; Faz 6 kullanıcı hesapları hazır olunca; Faz 7 ayrı karar; Faz 8 en son. Kaba tahmin: Faz 1 bir gün, Faz 2–4 iki-üç gün, Faz 5–6 bir gün; toplam yaklaşık bir hafta yoğun iş.
+
+## 10. Uygulama notları (geçiş sırasında öğrenilenler)
+
+- **Metro önbelleği**: kod değişince `expo start` eski paketi sunabiliyor (yeni dosya/ekran görünmüyor). Çözüm: sunucuyu `--clear` ile yeniden başlat (`run_local.sh` hep öyle başlatır).
+- **Ekran görüntüsü**: `tools/expo_shots.sh [light|dark] [tr|en]` başsız Chrome ile `/tmp/kickoff-shots/expo/` üretir; sayfalar geliştirme modunda `?nick=&theme=&lang=` alır (`app/src/store.ts`). Sanal zaman ileri sarıldığı için sayaçlar 0-1 görünür, normal.
+- **Sunucu adresi** (`app/src/net/socket.ts`): web'de sayfayı sunan adresin `/ws`'si, uygulamada `PROD_URL`, geliştirmede Expo sunucusunun makinesi `:9081`.
+- **Caddy**: `/ws` ayrı `handle` bloğunda olmalı; yoksa `try_files` isteği `index.html`'e çevirir.
+- **Eşzamanlılık**: turu bitiren her yol `Engine._finish_round` üzerinden geçer (gen eşzamanlı artar); `set_ready` tekrar gelirse yok sayılır. Godot sürümünde bu iki yarış vardı, Python'da kapatıldı.
+- **Sözleşme sürümü**: `PROTO = 3` (`server/game/consts.py` ve `app/src/net/socket.ts` aynı olmalı).
+- Godot istemcisi yeni sunucuyla konuşamaz: Faz 5 canlıya alınınca eski APK ve açık sekmeler çalışmaz (web'de sayfa yenilenince yeni istemci gelir).

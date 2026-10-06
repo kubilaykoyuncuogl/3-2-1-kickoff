@@ -1,29 +1,25 @@
 #!/usr/bin/env bash
-# Yerel geliştirme: index servisi (9081) + Godot oyun sunucusu (9080) + web build sunucusu (8080)
-# Kullanım: ./run_local.sh            → üçünü başlatır, loglar data/*.log
-#           ./run_local.sh stop       → durdurur
-#           ./run_local.sh export     → sadece Web export alır (build/web)
+# Yerel geliştirme: Python sunucu (index + hesaplar + oyun, 9081) + Expo web (8081)
+# Kullanım: ./run_local.sh          → ikisini başlatır, loglar data/service.log ve data/expo_web.log
+#           ./run_local.sh stop     → durdurur (bu komutu tek başına çalıştır)
+#           ./run_local.sh export   → web build alır (app/dist)
+#           ./run_local.sh server   → yalnızca Python sunucu
 set -e
 cd "$(dirname "$0")"
 case "${1:-}" in
   stop)
-    pkill -f "uvicorn server.index_service" || true
-    pkill -f "while true; do godot" || true
-    pkill -f "godot --headless --path game -- --server" || true
-    pkill -f "server/serve_web.py" || true
+    pkill -f "[u]vicorn server.main" || true
+    pkill -f "[e]xpo start" || true
     echo "durduruldu"; exit 0;;
   export)
-    godot --headless --path game --export-release "Web" ../build/web/index.html 2>&1 | grep -vE "^$|Godot Engine" | tail -5
-    ls -la build/web | head; exit 0;;
+    (cd app && CI=1 npx expo export --platform web | tail -3); du -sh app/dist; exit 0;;
 esac
 set -a; . ./.env; set +a
-: > data/server.log   # her başlatmada temiz log
-pgrep -f "uvicorn server.index_service" >/dev/null || (nohup .venv/bin/uvicorn server.index_service:app --host 127.0.0.1 --port 9081 > data/service.log 2>&1 &)
-for i in $(seq 1 60); do curl -sf localhost:9081/health >/dev/null && break; sleep 1; done
-# oyun sunucusu: düşerse 2 sn sonra yeniden başlar (watchdog)
-pgrep -f "godot --headless --path game -- --server" >/dev/null || (nohup bash -c 'while true; do godot --headless --path game -- --server --port 9080 >> data/server.log 2>&1; echo "[watchdog] sunucu çıktı, yeniden başlıyor" >> data/server.log; sleep 2; done' > /dev/null 2>&1 &)
-pgrep -f "server/serve_web.py" >/dev/null || (nohup python3 server/serve_web.py 8080 build/web > data/web.log 2>&1 &)
-sleep 1
-echo "index   : http://127.0.0.1:9081/health → $(curl -s localhost:9081/health)"
-echo "oyun    : ws://127.0.0.1:9080"
-echo "web     : http://localhost:8080  (aynı makinede iki sekme aç, ikisinde de Online oyna → Ara)"
+pgrep -f "[u]vicorn server.main" >/dev/null || (nohup .venv/bin/uvicorn server.main:app --host 127.0.0.1 --port 9081 > data/service.log 2>&1 &)
+for i in $(seq 1 90); do curl -sf localhost:9081/health >/dev/null && break; sleep 1; done
+echo "sunucu : http://127.0.0.1:9081/health → $(curl -s localhost:9081/health)   (oyun: ws://127.0.0.1:9081/ws)"
+[ "${1:-}" = "server" ] && exit 0
+# --clear: Metro kod değişikliğinden sonra eski paketi sunabiliyor
+pgrep -f "[e]xpo start" >/dev/null || (cd app && CI=1 nohup npx expo start --web --port 8081 --clear > ../data/expo_web.log 2>&1 &)
+echo "web    : http://localhost:8081   (telefonda Expo Go: cd app && npx expo start)"
+echo "bot    : .venv/bin/python tools/wsbot.py --bot ali --team galatasaray --guess sneijder"

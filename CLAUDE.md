@@ -1,8 +1,8 @@
-# 321-kickoff — 3-2-1 Kickoff (Godot 4)
+# 321-kickoff — 3-2-1 Kickoff (Expo / React Native + Python)
 
 Kubilay'ın kişisel projesi. **3-2-1**: iki oyuncu birer kulüp söyler, 3'ten geri sayılır, 15 saniyede iki kulüpte de oynamış futbolcuyu bulan puan alır. 2 kişilik online versiyon. Hedef: **Android + iOS (telefon ve tablet) + Web**. PC hedef değil; Linux build yalnızca headless sunucu ve yerel test için. iOS build için Mac + Xcode gerekir (bu makineden çıkmaz).
 
-> **Geçiş kararı (2026-10-06):** ürün mobil uygulama; Godot istemcisi ve Godot oyun sunucusu **Expo / React Native + Python** ile değiştirilecek. Plan ve fazlar: `docs/expo-plan.md`. Geçiş bitene kadar Godot kodu referans olarak kalır; yeni kural/özellik Godot sürümüne eklenmez, `docs/TODO.md`'ye yazılır.
+> **Geçiş (2026-10-06):** ürün mobil uygulama. İstemci **Expo / React Native** (`app/`), sunucu tek **Python** süreci (`server/main.py`: index + hesaplar + oyun `/ws`). Fazlar ve durum: `docs/expo-plan.md` (Faz 1-5 yazıldı; mağaza, reklam ve Godot'un silinmesi bekliyor). `game/` (Godot) yalnızca referans: yeni iş oraya yapılmaz; aşağıdaki Godot'ya özel notlar eski sürümü anlatır.
 
 ## Kurallar (ürün)
 - 2 oyuncu bağlanır (oda kodu ile). Her biri bir takım yazar; yazdıkça autocomplete listesi gelir.
@@ -26,16 +26,17 @@ Kubilay'ın kişisel projesi. **3-2-1**: iki oyuncu birer kulüp söyler, 3'ten 
 
 ## Çalıştırma
 ```
-# bir kez: tabloları çıkar (all_data/all_data/database.dump → data/raw/tsv/*.sql), index üret, şifrele
-python tools/build_index.py && python tools/build_stats.py && python tools/build_geo.py && python tools/finalize_index.py && set -a && . ./.env && set +a && python tools/encrypt_index.py --in data/index/index.sqlite --out data/index/index.enc
-# index servisi (.venv: fastapi uvicorn cryptography)
-set -a && . ./.env && set +a && .venv/bin/uvicorn server.index_service:app --host 127.0.0.1 --port 9081
-# oyun sunucusu
-godot --headless --path game -- --server --port 9080
-# istemci
-godot --path game
+./run_local.sh            # Python sunucu (9081) + Expo web (http://localhost:8081)
+./run_local.sh stop       # tek başına çalıştır
+./run_local.sh export     # web build → app/dist (deploy bunu kullanır)
+.venv/bin/python tools/wsbot.py --bot ali --team galatasaray --guess sneijder    # test botu (seçenekler dosyanın başında)
+tools/expo_shots.sh light tr                                                    # ekran görüntüleri → /tmp/kickoff-shots/expo
+cd app && npx tsc --noEmit                                                      # tip kontrolü
 ```
-Yeni (Expo geçişi, Faz 1): tek Python süreci — index + hesaplar + oyun sunucusu (`/ws`): `set -a; . ./.env; set +a; .venv/bin/uvicorn server.main:app --host 127.0.0.1 --port 9081`; test botu `python3 tools/wsbot.py --bot ali --team galatasaray --guess sneijder` (seçenekler dosyanın başında). Oyun mantığı `server/game/` (game.gd'nin karşılığı; kurallar `consts.py`). Godot istemcisi bu sunucuyla konuşmaz.
+- İstemci: `app/app/*` rotalar (Expo Router), `app/src/ui` bileşenler, `app/src/store.ts` durum (zustand), `app/src/net/socket.ts` WebSocket + `api.*`, `app/src/single.tsx` tek oyunculu ortak parçalar, `app/lang/*.json` dil (asıl kopya burası; `python3 tools/check_lang.py`).
+- Sunucu: oyun mantığı `server/game/` (`consts.py` kurallar, `engine.py` oda/maç/eşleşme/Elo/hesap, `singles.py` beş mod), `server/ws.py` WebSocket ucu. Mesaj sözleşmesi `docs/expo-plan.md` §2; biçim değişince iki taraftaki `PROTO`'yu artır.
+- Deploy: `deploy/` (Caddy :8080 → web build + `/ws`); önce `./run_local.sh export`. Komutları kullanıcı çalıştırır.
+- Index hattı (bir kez / veri değişince): `python tools/build_index.py && python tools/build_stats.py && python tools/build_geo.py && python tools/finalize_index.py && set -a && . ./.env && set +a && python tools/encrypt_index.py --in data/index/index.sqlite --out data/index/index.enc`
 
 Godot 4.7.2 stable kurulu: `~/.local/bin/godot` (2026-10-05). Export template'leri henüz indirilmedi (Android/macOS/Web build için gerekir: Editor > Manage Export Templates).
 

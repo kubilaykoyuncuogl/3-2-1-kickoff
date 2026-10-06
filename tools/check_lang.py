@@ -1,6 +1,6 @@
 """Dil paketlerini karşılaştırır: tr.json'a göre eksik/fazla anahtar ve yer tutucu uyuşmazlığı."""
 import json, pathlib, re, sys
-d = pathlib.Path(__file__).resolve().parents[1] / "game" / "lang"
+d = pathlib.Path(__file__).resolve().parents[1] / "app" / "lang"      # asıl kopya Expo uygulamasında; game/lang Godot sürümüyle birlikte kalkacak
 base = json.loads((d / "tr.json").read_text())
 spec = lambda s: re.findall(r"%[\.\d]*[sdf]", s)
 bad = 0
