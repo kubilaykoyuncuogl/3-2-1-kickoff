@@ -52,7 +52,34 @@ Sentry Replay kapalıdır. PII gönderimi kapalıdır; request body/header/cooki
 
 Native Clarity **Expo Go'da çalışmaz**; uygulama Expo Go'da Clarity'yi yüklemez. Yeni native bağımlılıklar için development/production build gerekir. `ios/` ve `android/` klasörlerini elle üretip commit etmeyin; Expo/EAS autolinking kullanır.
 
-Dinamik Expo config Sentry build plugin'ini `grande-corpo` / `kickoff-app` varsayılanlarıyla ekler. Ortam değişkenleri başka organizasyon/proje seçebilir; açık boş `SENTRY_ORG` veya `SENTRY_PROJECT` plugin'i kapatır. Diğer Expo plugin'leri korunur. EAS native build sırasında source map yüklemesi için build ortamında `SENTRY_AUTH_TOKEN` gerekir; yerel CLI tokenı EAS'e otomatik taşınmaz. SDK 7'de Router hataları `_layout.tsx` üzerinden açıkça raporlanır.
+Dinamik Expo config Sentry build plugin'ini `grande-corpo` / `kickoff-app` varsayılanlarıyla ekler. Ortam değişkenleri başka organizasyon/proje seçebilir; açık boş `SENTRY_ORG` veya `SENTRY_PROJECT` plugin'i kapatır. Diğer Expo plugin'leri korunur. EAS native build sırasında source map yüklemesi için build ortamında `SENTRY_AUTH_TOKEN` gerekir. KickGuess'in development, preview ve production ortamlarında bu değer proje kapsamlı **Secret** olarak hazırdır; repoda, uygulama paketinde veya public Expo config içinde bulunmaz. SDK 7'de Router hataları `_layout.tsx` üzerinden açıkça raporlanır.
+
+### Şirket EAS projesi
+
+6 Ekim 2026'da mevcut repo, onboarding sırasında hazırlanmış şirket projesine bağlandı:
+
+| Ayar | Değer |
+| --- | --- |
+| CLI kullanıcısı | `grandecorpo` (`samet@grandecorpo.com`) |
+| Organization / owner | `grande-corpo-llc` (Grande Corpo LLC) |
+| EAS proje slug'ı | `kickguess` |
+| EAS Project ID | `5f7fe87b-03f6-4f51-b735-695239e9c54e` |
+
+`app/app.json` owner/slug/projectId bilgilerini içerir. Development build için SDK'ya uygun `expo-dev-client` kuruldu. `app/eas.json` ortam seçimini açıkça belirtir: development → development, preview ve simulator → preview, production → production. Simulator profili iOS için imza gerektirmeyen simülatör çıktısı üretmek üzere yapılandırıldı. iOS simulator, iOS production ve Android preview profilleri `eas config` ile şirket owner/project ID'si üzerinden doğrulandı.
+
+CLI komutlarını `app/` altında güncel sürümle çalıştırın:
+
+```sh
+npx eas-cli@latest whoami
+npx eas-cli@latest project:info
+# Bir sonraki build isteğinde:
+npx eas-cli@latest build --platform ios --profile simulator
+npx eas-cli@latest build --platform android --profile preview
+# Apple şirket üyeliği onaylandıktan sonra, Grande Corpo LLC team'iyle:
+npx eas-cli@latest build --platform ios --profile production
+```
+
+Bu kurulum sırasında cloud build veya submission başlatılmadı. Grande Corpo LLC Apple Developer başvurusu kullanıcı bilgisinde hâlâ onay bekliyor; şirket adına mağaza imzalama/submission işlemleri için onay ve takım kimliği gerekir. Otomatik OTA update hâlâ kapalıdır.
 
 Web export ve map yüklemesi (repo kökünden):
 

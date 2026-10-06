@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "3-2-1 Kickoff",
-    "slug": "kickoff321",
+    "slug": "kickguess",
+    "owner": "grande-corpo-llc",
     "version": "0.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -30,12 +31,7 @@
       "expo-router",
       "expo-font",
       "expo-secure-store",
-      [
-        "expo-updates",
-        {
-          "username": "kickoff321"
-        }
-      ],
+      "expo-updates",
       "expo-splash-screen"
     ],
     "scheme": "kickoff",
@@ -54,6 +50,11 @@
     },
     "experiments": {
       "typedRoutes": false
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5f7fe87b-03f6-4f51-b735-695239e9c54e"
+      }
     }
   }
 }
