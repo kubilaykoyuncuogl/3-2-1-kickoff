@@ -38,14 +38,13 @@ export default function Settings() {
       <SettingRow title={t("set.theme")}>
         <Segment<ThemeMode> values={["system", "light", "dark"]} labels={[t("theme.system"), t("theme.light"), t("theme.dark")]} current={st.theme_mode} onChange={(v) => st.set({ theme_mode: v })} />
       </SettingRow>
-      <SettingRow title={t("set.learn")}><Toggle value={st.learn} onChange={(v) => st.set({ learn: v })} /></SettingRow>
+      {/* açınca mod başına "bir daha gösterme" seçimleri de sıfırlanır: hepsi topluca yeniden açılır */}
+      <SettingRow title={t("set.learn")}><Toggle value={st.learn && st.learn_off.length === 0} onChange={(v) => st.set({ learn: v, learn_off: [] })} /></SettingRow>
       <SettingRow title={t("set.reduce_motion")}><Toggle value={st.reduce_motion} onChange={(v) => st.set({ reduce_motion: v })} /></SettingRow>
       <SettingRow title={t("set.lang")}>
         <Segment values={LANGS} labels={LANGS.map((l) => l.toUpperCase())} current={st.lang} onChange={(v) => st.set({ lang: v })} />
       </SettingRow>
       <View style={{ height: s(12) }} />
-      <Btn text={t("menu.howto")} kind="line" onPress={() => router.push("/howto")} />
-      <View style={{ height: s(10) }} />
       <Txt size={11} color="muted" center>3-2-1 Kickoff v0.2 beta</Txt>
       <Spacer />
     </Page>
