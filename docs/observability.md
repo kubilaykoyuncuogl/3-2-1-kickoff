@@ -17,7 +17,7 @@ Uygulama için `app/.env.example` dosyasını **git dışında kalan** `app/.env
 | `SENTRY_ORG`, `SENTRY_PROJECT` | Native build/source map yüklemesi için organizasyon ve uygulama projesi slug'ları |
 | `SENTRY_AUTH_TOKEN` | Build/CI ortamında secret; **EXPO_PUBLIC_ önekiyle tanımlanmaz**, git'e eklenmez |
 
-`EXPO_PUBLIC_` değerleri JS paketine derleme sırasında gömülür. Değişiklikten sonra web export veya yeni native build/update gerekir. Sunucu ortamını değiştirmek mevcut web paketini değiştirmez.
+`EXPO_PUBLIC_` değerleri JS paketine derleme sırasında gömülür. Değişiklikten sonra web export veya yeni native build/update gerekir. Değerleri değiştirdikten sonra export'a `--clear` ekleyin; Metro'nun eski dönüşümleri boş/eski DSN taşıyabilir. `npm run export:web` bunu uygular. Sunucu ortamını değiştirmek mevcut web paketini değiştirmez.
 
 Sunucu için `server/.env.example` içindeki satırları mevcut kök `.env` dosyasına ekleyin; index anahtarı ve daily salt satırlarını koruyun. `SENTRY_DSN` ayrı FastAPI projesinin DSN'idir. `SENTRY_ENVIRONMENT`, isteğe bağlı `SENTRY_RELEASE` ve `SENTRY_TRACES_SAMPLE_RATE` sunucuda kullanılır. Compose mevcut `env_file` üzerinden bunları okur.
 
@@ -25,7 +25,9 @@ Clarity projeleri şimdilik oluşturulmadı; ID'ler sonradan girilebilir.
 
 Sentry projeleri 6 Ekim 2026'da `grande-corpo` organizasyonunda oluşturuldu: `kickoff-app` (React Native) ve `kickoff-server` (FastAPI), takım `#grande-corpo`. İki DSN ve uygulama build slug'ları yalnız entegrasyon worktree'sindeki git dışında kalan ortam dosyalarına yazıldı; DSN'ler bu dokümana veya örnek dosyalara eklenmedi.
 
-Sunucu entegrasyonu üzerinden bir test exception'ı ve uygulamanın raporlama/temizleme kodu üzerinden web SDK transport'u ile bir test exception'ı gönderildi. İki kayıt Sentry panelinde `KICKOFF-SERVER-1` ve `KICKOFF-APP-1` olarak doğrulandı; mesajlar `[redacted]`. Bu kontrol gerçek native cihaz veya tam web arayüzü testi değildir. Source map yüklemesi, gerçek cihaz build'i ve Clarity kayıt kontrolü henüz yapılmadı.
+Sunucu entegrasyonu üzerinden bir test exception'ı ve uygulamanın raporlama/temizleme kodu üzerinden web SDK transport'u ile bir test exception'ı gönderildi. İki kayıt Sentry panelinde `KICKOFF-SERVER-1` ve `KICKOFF-APP-1` olarak doğrulandı; mesajlar `[redacted]`. Bu kontrol gerçek native cihaz veya tam web arayüzü testi değildir.
+
+Sentry CLI kimlik doğrulaması tamamlandı. Token gerçek kullanıcı home'undaki `.sentryclirc` dosyasında yalnız kullanıcıya açık (`0600`) saklanır; repoda veya uygulama paketinde bulunmaz. Web export'u DSN'nin JS içine gömüldüğü kontrol edilerek yeniden üretildi. 3 JS dosyası ve 3 source map `kickoff-app` projesine yüklendi; Sentry sunucusunda işleme tamamlandı (artifact bundle: `cb81ca28-0fe4-5e3c-99fb-4255dffef9a2`). Yükleme export dosyalarını değiştirmedi. Web map'leri dağıtım klasöründen `.expo/sentry-sourcemaps/` altında git dışı arşive taşındı. Gerçek native cihaz build'i, native build map yüklemesi ve Clarity kayıt kontrolü henüz yapılmadı.
 
 ## Kaydedilen veriler
 
@@ -47,11 +49,11 @@ Web export ve map yüklemesi (repo kökünden):
 
 ```sh
 cd app
-npx expo export --platform web --source-maps
+npx expo export --platform web --source-maps --clear
 cd ..
-# SENTRY_ORG ve SENTRY_PROJECT uygulama projesini göstermelidir.
 # Token için sentry-cli login veya CI secret kullanın.
-sentry-cli sourcemaps upload app/dist
+SENTRY_ORG=grande-corpo SENTRY_PROJECT=kickoff-app \
+  sentry-cli sourcemaps upload --validate --wait-for 60 app/dist
 # Yükleme başarıyla tamamlandıktan sonra, dağıtımdan önce:
 find app/dist -type f -name '*.map' -delete
 ```
@@ -65,7 +67,7 @@ cd app
 npm run typecheck
 npm run lint
 npm run test:telemetry
-npx expo export --platform all --source-maps
+npx expo export --platform all --source-maps --clear
 cd ..
 .venv/bin/python -m unittest discover -s server/tests -v
 ```
