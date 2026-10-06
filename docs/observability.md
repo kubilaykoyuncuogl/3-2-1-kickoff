@@ -4,7 +4,7 @@ Uygulama: Expo SDK 57, Expo'nun seçtiği `@sentry/react-native ~7.11.0`, native
 
 ## Ortam değişkenleri
 
-Uygulama için `app/.env.example` dosyasını **git dışında kalan** `app/.env.local` dosyasına kopyalayın. Boş DSN/Project ID ile ilgili servis açılmaz. Geliştirme ortamında ayrıca `EXPO_PUBLIC_TELEMETRY_IN_DEV=true` gerekir; normal geliştirme varsayılan olarak veri göndermez.
+Release yapılandırması `app/.env.production` içinde hazırdır: yalnız public DSN ve proje kimlikleri içerir, auth token içermez. Expo production export/build bunları yükler; ana checkout'ta ayrıca gizli bir `.env.local` dosyasının bulunmasına bağlı değildir. Yerel override için `app/.env.example` dosyasını **git dışında kalan** `app/.env.local` dosyasına kopyalayın. Boş DSN/Project ID ile ilgili servis açılmaz. Geliştirme ortamında ayrıca `EXPO_PUBLIC_TELEMETRY_IN_DEV=true` gerekir; normal geliştirme varsayılan olarak veri göndermez.
 
 | Değişken | Kullanım |
 | --- | --- |
@@ -21,13 +21,20 @@ Uygulama için `app/.env.example` dosyasını **git dışında kalan** `app/.env
 
 Sunucu için `server/.env.example` içindeki satırları mevcut kök `.env` dosyasına ekleyin; index anahtarı ve daily salt satırlarını koruyun. `SENTRY_DSN` ayrı FastAPI projesinin DSN'idir. `SENTRY_ENVIRONMENT`, isteğe bağlı `SENTRY_RELEASE` ve `SENTRY_TRACES_SAMPLE_RATE` sunucuda kullanılır. Compose mevcut `env_file` üzerinden bunları okur.
 
-Clarity projeleri şimdilik oluşturulmadı; ID'ler sonradan girilebilir.
+Clarity projeleri 6 Ekim 2026'da hazırlandı:
 
-Sentry projeleri 6 Ekim 2026'da `grande-corpo` organizasyonunda oluşturuldu: `kickoff-app` (React Native) ve `kickoff-server` (FastAPI), takım `#grande-corpo`. İki DSN ve uygulama build slug'ları yalnız entegrasyon worktree'sindeki git dışında kalan ortam dosyalarına yazıldı; DSN'ler bu dokümana veya örnek dosyalara eklenmedi.
+| Platform | Proje | Project ID | Maskeleme |
+| --- | --- | --- | --- |
+| Web | Kickoff (`kickoff.grandecorpo.com`) | `ytk0sewicz` | Strict / Katı |
+| iOS + Android | Kickoff Mobile (`com.kickoff321.app`) | `ytk1yv92fh` | Strict / Katı |
+
+Mobil panel ayarının cihazlara ulaşması bir saate kadar sürebilir. Web ve mobil ekranları aynı sabit olay adlarını kullanır; kayıtları ayrı projelerde inceleyin. Clarity davranış içgörüsü toplar; bu değişiklik doğrudan kullanıcı mesajı gönderen bir feedback formu eklemez.
+
+Sentry projeleri 6 Ekim 2026'da `grande-corpo` organizasyonunda oluşturuldu: `kickoff-app` (React Native, web dahil) ve `kickoff-server` (FastAPI), takım `#grande-corpo`. Uygulama DSN'i `app/.env.production`, sunucu DSN'i `server/.env.example` içinde public yapılandırma olarak bulunur. Sunucuyu yayınlarken örnek satırları mevcut kök `.env` veya deployment ortamına eklemek gerekir.
 
 Sunucu entegrasyonu üzerinden bir test exception'ı ve uygulamanın raporlama/temizleme kodu üzerinden web SDK transport'u ile bir test exception'ı gönderildi. İki kayıt Sentry panelinde `KICKOFF-SERVER-1` ve `KICKOFF-APP-1` olarak doğrulandı; mesajlar `[redacted]`. Bu kontrol gerçek native cihaz veya tam web arayüzü testi değildir.
 
-Sentry CLI kimlik doğrulaması tamamlandı. Token gerçek kullanıcı home'undaki `.sentryclirc` dosyasında yalnız kullanıcıya açık (`0600`) saklanır; repoda veya uygulama paketinde bulunmaz. Web export'u DSN'nin JS içine gömüldüğü kontrol edilerek yeniden üretildi. 3 JS dosyası ve 3 source map `kickoff-app` projesine yüklendi; Sentry sunucusunda işleme tamamlandı (artifact bundle: `cb81ca28-0fe4-5e3c-99fb-4255dffef9a2`). Yükleme export dosyalarını değiştirmedi. Web map'leri dağıtım klasöründen `.expo/sentry-sourcemaps/` altında git dışı arşive taşındı. Gerçek native cihaz build'i, native build map yüklemesi ve Clarity kayıt kontrolü henüz yapılmadı.
+Sentry CLI kimlik doğrulaması tamamlandı. Token gerçek kullanıcı home'undaki `.sentryclirc` dosyasında yalnız kullanıcıya açık (`0600`) saklanır; repoda veya uygulama paketinde bulunmaz. `npm run export:web:sentry` ile DSN ve web Clarity ID'sinin JS içine gömüldüğü kontrol edilerek web export'u yeniden üretildi. 3 JS dosyası ve 3 source map `kickoff-app` projesine yüklendi; Sentry sunucusunda işleme tamamlandı (artifact bundle: `ee096cfb-4125-5709-90b8-1ec20bb0b65f`). Web map'leri dağıtım klasöründen `.expo/sentry-sourcemaps/` altında git dışı arşive taşındı; public `dist` içinde map kalmadı. Gerçek hata stack'inin source map ile çözülmesi ayrıca doğrulanmalıdır.
 
 ## Kaydedilen veriler
 
@@ -43,22 +50,19 @@ Sentry Replay kapalıdır. PII gönderimi kapalıdır; request body/header/cooki
 
 Native Clarity **Expo Go'da çalışmaz**; uygulama Expo Go'da Clarity'yi yüklemez. Yeni native bağımlılıklar için development/production build gerekir. `ios/` ve `android/` klasörlerini elle üretip commit etmeyin; Expo/EAS autolinking kullanır.
 
-`SENTRY_ORG` ve `SENTRY_PROJECT` birlikte tanımlandığında dinamik Expo config Sentry build plugin'ini ekler. Diğer Expo plugin'leri korunur. EAS native build sırasında source map yüklemesi için build ortamında `SENTRY_AUTH_TOKEN` gerekir. SDK 7'de Router hataları `_layout.tsx` üzerinden açıkça raporlanır.
+Dinamik Expo config Sentry build plugin'ini `grande-corpo` / `kickoff-app` varsayılanlarıyla ekler. Ortam değişkenleri başka organizasyon/proje seçebilir; açık boş `SENTRY_ORG` veya `SENTRY_PROJECT` plugin'i kapatır. Diğer Expo plugin'leri korunur. EAS native build sırasında source map yüklemesi için build ortamında `SENTRY_AUTH_TOKEN` gerekir; yerel CLI tokenı EAS'e otomatik taşınmaz. SDK 7'de Router hataları `_layout.tsx` üzerinden açıkça raporlanır.
 
 Web export ve map yüklemesi (repo kökünden):
 
 ```sh
 cd app
-npx expo export --platform web --source-maps --clear
-cd ..
 # Token için sentry-cli login veya CI secret kullanın.
-SENTRY_ORG=grande-corpo SENTRY_PROJECT=kickoff-app \
-  sentry-cli sourcemaps upload --validate --wait-for 60 app/dist
-# Yükleme başarıyla tamamlandıktan sonra, dağıtımdan önce:
-find app/dist -type f -name '*.map' -delete
+npm run export:web:sentry
 ```
 
-Metro Sentry yapılandırması Debug ID'leri ekler. Source map'leri, dağıtılacak JS dosyalarıyla aynı export'tan yükleyin; başka bir export'un map'lerini kullanmayın. Map dosyalarını halka açık web dağıtımına dahil etmeyin. Normal `npm run export:web` map üretmez. EAS Update kullanıma alınırsa update'in map'leri ayrıca `npx sentry-expo-upload-sourcemaps dist` ile yüklenmelidir.
+Bu komut export cache'ini temizler, map'leri doğrulayarak yükler ve Sentry processing sonucunu bekler. Yalnız başarılı yüklemeden sonra map'leri public `dist` dışına arşivler. Export/upload başarısızsa nonzero döner; map'ler teşhis için yerinde kalır, o çıktıyı yayınlamayın. Repo kendi `@sentry/cli` bağımlılığını kullanır; global CLI kurulumu gerekmez.
+
+Metro Sentry yapılandırması Debug ID'leri ekler. Source map'leri, dağıtılacak JS dosyalarıyla aynı export'tan yükleyin; başka bir export'un map'lerini kullanmayın. Map dosyalarını halka açık web dağıtımına dahil etmeyin. Normal `npm run export:web` map üretmez. Web release için `export:web:sentry` çıktısını `deploy/Dockerfile` ile paketleyin. EAS Update kullanıma alınırsa update'in map'leri ayrıca `npx sentry-expo-upload-sourcemaps dist` ile yüklenmelidir.
 
 ## Doğrulama
 
@@ -74,6 +78,15 @@ cd ..
 
 DSN'leri girdikten sonra test ortamında `EXPO_PUBLIC_TELEMETRY_IN_DEV=true` ile bir test hatası üretip Sentry'de tip/stack/operation alanlarını ve source map çözümlemesini doğrulayın. Hesap ekranında nickname/recovery/link metinlerinin Clarity kaydında maskeli olduğunu web ve gerçek native build üzerinde kontrol edin. ID/DSN olmadan derleme ve testlerin geçmesi, vendor'a teslimatın veya gerçek cihazda native kaydın doğrulandığı anlamına gelmez.
 
+6 Ekim 2026 doğrulaması:
+
+- Son `origin/main` (`6380ad1`) branch'e alındı. Yeni round alanları ve weekly mesajları korunuyor; socket testi bunları da doğruluyor.
+- Chrome'da `http://127.0.0.1:18084` production export'u açıldı. Takma ad → ana ekran → ayarlar → dil değişikliği çalıştı; framework hata overlay'i yok. Console'da yalnız üçüncü taraf Acrobat extension hataları görüldü.
+- Web DOM kökünde `data-clarity-mask="true"` ve doğru `https://www.clarity.ms/tag/ytk0sewicz?ref=npm` script adresi doğrulandı. Kontrol anında Clarity tag endpoint'i `204 No Content` döndü ve panel hâlâ Başlarken ekranındaydı. SDK script eklenmesi doğrulandı; gerçek collect isteği, kayıt teslimatı ve maskeli replay henüz doğrulanmadı. Microsoft FAQ, dashboard verilerinin görünmesinin birkaç saat sürebileceğini belirtiyor. Sonraki kontrol: tag'in JavaScript döndürmesi, web'de yeniden bir session açılması, ardından Kayıtlar ekranında maskeli metinlerin incelenmesi.
+- iOS Expo prebuild ve `pod install --repo-update` başarılı; Clarity 4.1.2 ve Sentry 8.58.0 native pod'ları kuruldu. Mevcut Xcode'da kullanılabilir iOS 26.5 platform/destination bulunmadığından native binary derlemesi ve gerçek cihaz kaydı doğrulanamadı. Expo Go kaydı test etmek için yeterli değildir.
+- Typecheck, 7 client testi ve 5 server testi geçti. Full lint, aynı config ile ölçülen güncel main baseline'ıyla aynı 27 error / 29 warning veriyor; değişen dosyalarda ek lint hatası yok.
+- Tam oyun akışı bu worktree'de eksik encrypted index/backend yapılandırması nedeniyle test edilmedi. Merge ve deployment yapılmadı.
+
 Resmî kaynaklar:
 
 - https://docs.expo.dev/versions/v57.0.0/
@@ -83,3 +96,4 @@ Resmî kaynaklar:
 - https://docs.sentry.io/platforms/python/integrations/fastapi/
 - https://learn.microsoft.com/en-us/clarity/mobile-sdk/react-native-sdk
 - https://learn.microsoft.com/en-us/clarity/mobile-sdk/clarity-sdk-masking
+- https://learn.microsoft.com/en-us/clarity/faq

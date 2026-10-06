@@ -1,6 +1,6 @@
 module.exports = ({ config }) => {
-  const organization = process.env.SENTRY_ORG;
-  const project = process.env.SENTRY_PROJECT;
+  const organization = process.env.SENTRY_ORG ?? "grande-corpo";
+  const project = process.env.SENTRY_PROJECT ?? "kickoff-app";
   if (!organization || !project) return config;
 
   return {

@@ -1,6 +1,6 @@
 # Tek konteyner: Caddy (HTTP :8080, web build + /ws proxy) + tek Python süreci (index servisi, hesaplar, oyun sunucusu).
 # TLS ve 80/443 dış proxy'de (Cloudron Nginx). Build bağlamı repo kökü: docker build -f deploy/Dockerfile .
-# Önce yerelde web build alınmış olmalı: cd app && npx expo export --platform web   (app/dist/ rsync ile sunucuya gider)
+# Export the web release first: cd app && npm run export:web:sentry (requires Sentry CLI auth).
 FROM caddy:2 AS caddybin
 
 FROM python:3.12-slim

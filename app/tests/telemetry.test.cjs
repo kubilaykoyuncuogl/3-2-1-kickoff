@@ -113,26 +113,40 @@ test("disabled web telemetry does not load Clarity or change the document", asyn
 });
 
 test("round countdowns do not count as new matches and socket failures exclude payloads", () => {
-  const events = [], errors = [];
+  const events = [], errors = [], messages = [];
   let sock;
   const state = { room: null, set(update) { Object.assign(this, update); } };
   class WebSocket {
     static OPEN = 1;
     static CONNECTING = 0;
     constructor() { sock = this; this.readyState = 0; }
+    send(message) { messages.push(JSON.parse(message)); }
   }
   const dependencyMocks = {
     "expo-constants": { __esModule: true, default: { expoConfig: {} } },
     "react-native": { Platform: { OS: "android" }, AppState: { addEventListener() {} } },
     "../store": {
       State: { LOBBY: 0, PICK_TEAMS: 1, COUNTDOWN: 2, GAME_OVER: 6 },
-      useGame: { getState: () => state }, useSettings: { getState: () => ({}) },
+      useGame: { getState: () => state },
+      useSettings: { getState: () => ({ nickname: "Test", device_id: "DEVICE_SECRET", scope: "all", era: "all", round: 30 }) },
       useProfile: { getState: () => ({}) },
     },
     "../telemetry": { trackGameEvent: (event) => events.push(event), reportClientError: (...args) => errors.push(args) },
   };
   const socket = load("net/socket.ts", dependencyMocks, {}, false, { WebSocket });
   socket.connect();
+  sock.readyState = WebSocket.OPEN;
+  sock.onopen();
+  assert.deepEqual(messages.map((message) => message.t), ["hello", "weekly_info"]);
+  socket.api.createRoom();
+  socket.api.findMatch();
+  assert.equal(messages[2].round, 30);
+  assert.equal(messages[3].round, 30);
+  assert.deepEqual(events, ["room_create", "match_search"]);
+  events.length = 0;
+  sock.onmessage({ data: JSON.stringify({ t: "weekly_state", d: { title: "Weekly match" } }) });
+  assert.equal(state.weekly.title, "Weekly match");
+  assert.equal(events.length, 0);
   for (const roomState of [0, 1, 2, 3, 4, 5, 1, 2, 6, 6, 1]) {
     sock.onmessage({ data: JSON.stringify({ t: "room_state", d: { code: "secret-room", state: roomState } }) });
   }
