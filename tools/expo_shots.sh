@@ -14,8 +14,8 @@ shot 08_account /account
 shot 09_howto /howto
 shot 02_online /online
 shot 05_single /single
-shot 06_scope /single/scope "&mode=ladder"
-shot 06b_era /single/era "&mode=ladder"
+shot 06_setup /single/setup "&mode=ladder"
+shot 06b_setup_era /single/setup "&mode=career"
 shot 20_ladder /single/play "&mode=ladder"
 shot 21_blitz /single/play "&mode=blitz"
 shot 22_career /single/career

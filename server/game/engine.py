@@ -70,9 +70,9 @@ class Engine(SinglesMixin):
         try:
             if mode == "ladder": return (await asyncio.to_thread(self.index.ladder, "", 27, "", sc, era)).get("steps", [])
             if mode == "blitz": return (await asyncio.to_thread(self.index.blitz_pack, "", 40, 1, "", sc, era)).get("questions", [])
-            if mode == "career": return await asyncio.to_thread(self.index.career_pack, 30, "", era)
-            if mode == "chain": return await asyncio.to_thread(self.index.chain_pack, 15, "", era)
-            if mode == "versus": return await asyncio.to_thread(self.index.versus_pack, 80, "", era)
+            if mode == "career": return await asyncio.to_thread(self.index.career_pack, 30, "", era, sc)
+            if mode == "chain": return await asyncio.to_thread(self.index.chain_pack, 15, "", era, sc)
+            if mode == "versus": return await asyncio.to_thread(self.index.versus_pack, 80, "", era, sc)
         except Exception as e:
             print("[engine] pack failed", mode, e, flush=True)
         return []
@@ -493,10 +493,9 @@ class Engine(SinglesMixin):
                 if same_last and (self._waited(a) < SAME_OPP_MS or self._waited(b) < SAME_OPP_MS): continue   # az önceki rakip, 20 sn bekle
                 if abs(int(pa["elo"]) - int(pb["elo"])) <= min(self._band(a), self._band(b)):
                     self.queue.remove(b); self.queue.remove(a); self.queue_since.pop(a, None); self.queue_since.pop(b, None)
-                    scope_idx = max(SCOPE_ORDER.index(pa.get("scope", "all")), SCOPE_ORDER.index(pb.get("scope", "all")))
                     pa["last_opp"] = pb.get("device", ""); pb["last_opp"] = pa.get("device", "")
                     era = ea if ea == eb else (0 if ea == 0 or eb == 0 else era_ok(ea | eb))
-                    code = self._new_code(); self.rooms[code] = self._new_room(code, True, SCOPE_ORDER[scope_idx], era)
+                    code = self._new_code(); self.rooms[code] = self._new_room(code, True, widen_scope(pa.get("scope", "all"), pb.get("scope", "all")), era)
                     self._join(code, a); self._join(code, b); matched = True; break
             if not matched:
                 self._send_queue(a); i += 1

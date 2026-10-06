@@ -2,11 +2,14 @@
 import React from "react";
 import { Pressable, View } from "react-native";
 import { t } from "../i18n";
-import { ERAS, SCOPES, Scope, useSettings } from "../store";
+import { ERAS, LEAGUES, SCOPES, Scope, leagueName, useSettings } from "../store";
 import { Token, useTheme } from "../theme";
 import { BORDER, Chevron, Chip, Crown, Eyebrow, Globe, OptionCard, Txt } from "./index";
 
-export function scopeLabel(s: string): string { return t(`scope.${(SCOPES as readonly string[]).includes(s) ? s : "all"}.title`); }
+export function scopeLabel(s: string): string {
+  const lg = leagueName(s);
+  return lg || t(`scope.${(SCOPES as readonly string[]).includes(s) ? s : "all"}.title`);
+}
 
 export function eraLabel(era: number): string {
   const e = era & 31;
@@ -24,10 +27,22 @@ function ScopeIcon({ scope, ink, compact }: { scope: Scope; ink: Token; compact?
 
 // compact: Online'da seçim (seçili işaretli); değilse Tek oyna'da ileri oklu
 export function ScopeButton({ scope, selected, onPress, compact }: { scope: Scope; selected: boolean; onPress: (s: Scope) => void; compact?: boolean }) {
-  const { s } = useTheme();
   const ink: Token = selected ? "violet_ink" : "fg";
-  const tail = !compact ? <Chevron color={selected ? "violet_ink" : "muted"} /> : selected ? <Chip text={t("selected")} kind="violet" style={{ minWidth: s(58), alignItems: "center" }} /> : null;
-  return <OptionCard title={t(`scope.${scope}.title`)} sub={t(`scope.${scope}.sub`)} lead={<ScopeIcon scope={scope} ink={ink} compact={compact} />} tail={tail} selected={selected} height={compact ? 72 : 76} onPress={() => onPress(scope)} />;
+  const tail = !compact ? <Chevron color={selected ? "violet_ink" : "muted"} /> : null;      // sıkı düzende seçim renkten belli; etiket alt yazıyı kesiyordu
+  return <OptionCard title={t(`scope.${scope}.title`)} sub={t(`scope.${scope}.sub`)} lead={<ScopeIcon scope={scope} ink={ink} compact={compact} />} tail={tail} selected={selected} height={compact ? 62 : 76} onPress={() => onPress(scope)} />;
+}
+
+// Tek lig: dokundukça ligler sırayla değişir (Premier League → La Liga → …). Başka kapsam seçilince varsayılan haline döner.
+function LeagueButton() {
+  const { s } = useTheme();
+  const scope = useSettings((x) => x.scope);
+  const i = LEAGUES.findIndex(([c]) => c === scope);
+  const on = i >= 0;
+  const ink: Token = on ? "violet_ink" : "fg";
+  return <OptionCard title={on ? LEAGUES[i][1] : t("scope.league.title")} sub={on ? t("scope.league.sub_on") : t("scope.league.sub")} selected={on} height={62}
+    lead={<View style={{ width: s(28), alignItems: "center" }}><Txt size={34} w={800} color={ink} style={{ lineHeight: s(36) }}>1</Txt></View>}
+    tail={on ? <Chip text={`${i + 1} / ${LEAGUES.length}`} kind="violet" style={{ minWidth: s(58), alignItems: "center" }} /> : null}
+    onPress={() => useSettings.getState().set({ scope: LEAGUES[on ? (i + 1) % LEAGUES.length : 0][0] })} />;
 }
 
 export function ScopePicker() {
@@ -37,6 +52,7 @@ export function ScopePicker() {
     <View style={{ gap: s(6) }}>
       <Eyebrow>{t("scope.header")}</Eyebrow>
       {SCOPES.map((sc) => <ScopeButton key={sc} scope={sc} selected={scope === sc} compact onPress={(v) => useSettings.getState().set({ scope: v })} />)}
+      <LeagueButton />
     </View>
   );
 }

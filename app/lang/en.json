@@ -336,5 +336,9 @@
  "update.web": "The game was updated. Reload the page to keep playing.",
  "update.app": "The game was updated. Install the new version of the app to keep playing.",
  "update.reload": "Reload",
- "err.proto": "The game was updated, a new version is needed"
+ "err.proto": "The game was updated, a new version is needed",
+ "scope.league.title": "One league",
+ "scope.league.sub": "Tap to pick a league · 3+ seasons in it",
+ "scope.league.sub_on": "Tap to switch · 3+ seasons",
+ "scope.path_note": "In this mode the scope means: players whose career passed through it at least once"
 }

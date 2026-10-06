@@ -57,6 +57,10 @@ if db.execute("SELECT 1 FROM sqlite_master WHERE name='player_stats'").fetchone(
     db.execute("CREATE TABLE player_stats_new (player_id INTEGER PRIMARY KEY, " + ", ".join(c + " INT NOT NULL DEFAULT 0" for c in sc[1:]) + ")")
     db.execute(f"INSERT INTO player_stats_new SELECT pm.new, {rest} FROM player_stats s JOIN pmap pm ON pm.old = s.player_id")
     db.executescript("DROP TABLE player_stats; ALTER TABLE player_stats_new RENAME TO player_stats;")
+if db.execute("SELECT 1 FROM sqlite_master WHERE name='club_leagues'").fetchone():
+    db.executescript("""CREATE TABLE club_leagues_new(club_id INT NOT NULL, comp TEXT NOT NULL, seasons INT NOT NULL, PRIMARY KEY(club_id, comp)) WITHOUT ROWID;
+        INSERT OR IGNORE INTO club_leagues_new SELECT cm.new, l.comp, l.seasons FROM club_leagues l JOIN cmap cm ON cm.old = l.club_id;
+        DROP TABLE club_leagues; ALTER TABLE club_leagues_new RENAME TO club_leagues;""")
 db.executescript("""
 DROP TABLE clubs; DROP TABLE players; DROP TABLE stints; DROP TABLE player_clubs; DROP TABLE pair_counts; DROP TABLE names;
 ALTER TABLE clubs_new RENAME TO clubs; ALTER TABLE players_new RENAME TO players; ALTER TABLE stints_new RENAME TO stints;

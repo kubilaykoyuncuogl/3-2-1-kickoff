@@ -274,7 +274,7 @@
  "shared_caps": "PAYLAŞILDI",
  "single.best": "En iyi %d",
  "single.best_short": "En iyi",
- "single.intro": "Önce mod, sonra kulüp kapsamı. Her koşu farklı; en iyin cihazında kalır.",
+ "single.intro": "Önce mod, sonra kulüp kapsamı ve dönem. Her koşu farklı; en iyin cihazında kalır.",
  "sp.answer_was": "Doğru: %s",
  "sp.best": " · en iyin %d",
  "sp.blitz_summary": "%d soru · en iyi kombo ×%.1f",
@@ -336,5 +336,9 @@
  "update.web": "Oyun güncellendi. Devam etmek için sayfayı yenile.",
  "update.app": "Oyun güncellendi. Devam etmek için uygulamanın yeni sürümünü kur.",
  "update.reload": "Yenile",
- "err.proto": "Oyun güncellendi, yeni sürüm gerekli"
+ "err.proto": "Oyun güncellendi, yeni sürüm gerekli",
+ "scope.league.title": "Tek lig",
+ "scope.league.sub": "Dokun, lig seç · ligde en az 3 sezon",
+ "scope.league.sub_on": "Dokundukça değişir · en az 3 sezon",
+ "scope.path_note": "Bu modda kapsam: kariyeri oraya en az bir kez uğramış oyuncular"
 }

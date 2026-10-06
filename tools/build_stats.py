@@ -8,6 +8,7 @@ player_stats(player_id, apps, goals, assists, minutes, yellow, red, own_goals, p
              apps_league, apps_top, apps_big5, goals_top, goals_big5, apps_tr, goals_tr, decades)
   *_league: lig kodu gibi görünen müsabakalar · *_top: üst ligler · *_big5: GB1 ES1 IT1 L1 FR1 · *_tr: Süper Lig (TR1)
   decades: en az bir maça çıktığı on yılların bit maskesi (1 = 1980'ler, 2 = 1990'lar, 4 = 2000'ler, 8 = 2010'lar, 16 = 2020'ler; sezonun başlangıç yılına göre)
+club_leagues(club_id, comp, seasons): kulübün bir üst ligde kaç sezon oynadığı (oyuncu sezon kayıtlarından)
 Not: kaynak her oyuncuda tüm kariyeri kapsamayabilir (eski oyuncularda eksik sezon olur).
 """
 import argparse, json, re, sqlite3, subprocess, sys, time, collections
@@ -32,6 +33,7 @@ CREATE TABLE player_stats(player_id INTEGER PRIMARY KEY, apps INT, goals INT, as
 known = {r[0] for r in db.execute("SELECT id FROM players")}
 proc = subprocess.Popen(["pg_restore", "--data-only", "-t", "player_season_performance_gzip", "-f", "-", a.dump], stdout=subprocess.PIPE, bufsize=1 << 22)
 t0 = time.time(); n = 0; kept = 0; batch = []; started = False
+club_seasons = collections.defaultdict(set)     # (kulüp, üst lig kodu) -> o ligde maç oynadığı sezonlar ("tek lig" kapsamı için)
 for raw in proc.stdout:
     if not started:
         started = raw.startswith(b"COPY "); continue
@@ -56,6 +58,8 @@ for raw in proc.stdout:
         per_season[st.get("seasonId")] += g
         yr = str(st.get("seasonId") or "")
         if ap_ > 0 and yr.isdigit() and 1980 <= int(yr) <= 2029: decades |= 1 << ((int(yr) - 1980) // 10)
+        if ap_ > 0 and st.get("clubId") and st.get("seasonId") and (comp in TOP_EXTRA or TOP_RE.match(comp)):
+            club_seasons[(str(st["clubId"]), comp)].add(str(st["seasonId"]))
         if LEAGUE_RE.match(comp) or comp in TOP_EXTRA:
             al += ap_
             if comp in BIG5 or comp in TOP_EXTRA or TOP_RE.match(comp): at += ap_; gt += g
@@ -68,7 +72,13 @@ for raw in proc.stdout:
         db.executemany("INSERT OR REPLACE INTO player_stats VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", batch); batch.clear()
         print(f"  {n} satır, {kept} oyuncu ({time.time()-t0:.0f}s)", flush=True)
 db.executemany("INSERT OR REPLACE INTO player_stats VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", batch)
+# club_leagues(club_id, comp, seasons): kulübün o üst ligde (en az bir oyuncusu maça çıkmış) kaç sezonu var
+known_clubs = {r[0] for r in db.execute("SELECT id FROM clubs")}
+db.executescript("DROP TABLE IF EXISTS club_leagues; CREATE TABLE club_leagues(club_id INT NOT NULL, comp TEXT NOT NULL, seasons INT NOT NULL, PRIMARY KEY(club_id, comp)) WITHOUT ROWID;")
+db.executemany("INSERT OR REPLACE INTO club_leagues VALUES(?,?,?)", [(int(c), comp, len(v)) for (c, comp), v in club_seasons.items() if c.isdigit() and int(c) in known_clubs])
 db.commit(); proc.kill()
+for comp in ("GB1", "ES1", "IT1", "L1", "FR1", "TR1", "NL1", "PO1"):
+    print(f"  {comp}: en az 3 sezon {db.execute('SELECT COUNT(*) FROM club_leagues WHERE comp=? AND seasons>=3', (comp,)).fetchone()[0]} kulüp")
 print(f"bitti: {n} satır okundu, {kept} oyuncu yazıldı ({time.time()-t0:.0f}s)")
 print("on yıl dağılımı (80,90,00,10,20):", [db.execute("SELECT COUNT(*) FROM player_stats WHERE decades & ?", (1 << i,)).fetchone()[0] for i in range(5)], "| hiçbiri:", db.execute("SELECT COUNT(*) FROM player_stats WHERE decades = 0").fetchone()[0])
 for name in ("Lionel Messi", "Cristiano Ronaldo", "Robert Lewandowski", "Hakan Şükür", "Burak Yılmaz", "Zlatan Ibrahimović"):

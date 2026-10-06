@@ -33,7 +33,18 @@ CROSS_SCOPE_MS = 45000         # bu kadar bekleyenler kapsam/dönem fark etmeksi
 SAME_OPP_MS = 20000            # az önceki rakiple yeniden eşleşmeden önce bekleme
 RECONNECT_MS = 10000
 SCOPE_ORDER = ["big5", "top", "all"]   # dar → geniş
-SCOPES = {"all", "top", "big5"}
+LEAGUES = ("GB1", "ES1", "IT1", "L1", "FR1", "TR1", "NL1", "PO1")     # tek lig kapsamı: değer lig kodu (index_service.LEAGUES ile aynı)
+BIG5 = {"GB1", "ES1", "IT1", "L1", "FR1"}
+SCOPES = {"all", "top", "big5", *LEAGUES}
+
+
+def widen_scope(a: str, b: str) -> str:
+    """Eşleşmede kapsamlar farklıysa ikisini de kapsayan en dar kapsam. Tek lig < 5 büyük lig < üst ligler < tümü."""
+    if a == b: return a
+    def rank(s): return SCOPE_ORDER.index(s) if s in SCOPE_ORDER else -1
+    def floor(s): return s if s in SCOPE_ORDER else ("big5" if s in BIG5 else "top")     # ligin içinde olduğu en dar genel kapsam
+    fa, fb = floor(a), floor(b)
+    return SCOPE_ORDER[max(rank(fa), rank(fb))]
 SINGLE_LIVES = {"ladder": 3, "blitz": 1, "career": 3, "chain": 3, "versus": 1}
 CAREER_REVEAL_MS = 8000        # kariyer yolu: bu aralıkla bir kulüp daha açılır
 CAREER_LAST_MS = 15000         # hepsi açıldıktan sonra son tahmin süresi

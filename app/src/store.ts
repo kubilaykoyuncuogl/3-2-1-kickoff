@@ -5,8 +5,12 @@ import { Platform } from "react-native";
 import { create } from "zustand";
 import { setLang } from "./i18n";
 
-export const SCOPES = ["all", "top", "big5"] as const;
-export type Scope = (typeof SCOPES)[number];
+export const SCOPES = ["all", "top", "big5"] as const;      // genel kapsamlar
+// Tek lig kapsamı: değer lig kodu (server/game/consts.py LEAGUES ile aynı sıra). Adlar özel isim, çevrilmez.
+export const LEAGUES: [string, string][] = [["GB1", "Premier League"], ["ES1", "La Liga"], ["IT1", "Serie A"], ["L1", "Bundesliga"], ["FR1", "Ligue 1"],
+  ["TR1", "Süper Lig"], ["NL1", "Eredivisie"], ["PO1", "Liga Portugal"]];
+export const leagueName = (code: string) => LEAGUES.find(([c]) => c === code)?.[1] ?? "";
+export type Scope = string;
 export const ERAS: [string, number][] = [["80", 1], ["90", 2], ["00", 4], ["10", 8], ["20", 16]];
 export type ThemeMode = "system" | "light" | "dark";
 
@@ -56,12 +60,14 @@ export const useSettings = create<SettingsStore>((set, get) => ({
       if (!dev) { dev = randomId(); await saveDeviceId(dev); }
       set({ device_id: dev });
     }
-    if (__DEV__ && Platform.OS === "web" && typeof location !== "undefined") {   // ekran görüntüsü aracı: ?nick=…&theme=dark&lang=en (yalnızca geliştirme)
+    if (__DEV__ && Platform.OS === "web" && typeof location !== "undefined") {   // ekran görüntüsü aracı: ?nick=…&theme=dark&lang=en&scope=TR1&era=6 (yalnızca geliştirme)
       const q = new URLSearchParams(location.search);
       const patch: Partial<Settings> = {};
       if (q.get("nick")) patch.nickname = q.get("nick")!;
       if (q.get("theme")) patch.theme_mode = q.get("theme") as ThemeMode;
       if (q.get("lang")) patch.lang = q.get("lang")!;
+      if (q.get("scope")) patch.scope = q.get("scope")!;
+      if (q.get("era")) patch.era = Number(q.get("era")) & 31;
       set(patch);
     }
     setLang(get().lang);

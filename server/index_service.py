@@ -28,7 +28,12 @@ db: sqlite3.Connection
 BIG5 = {"GB1", "ES1", "IT1", "L1", "FR1"}
 TOP_RE = re.compile(r"^[A-Z]{1,4}1[A-Z]?$")          # GB1, TR1, BRA1, MLS1, EC1N…
 TOP_EXTRA = {"ARGC", "MEXA", "URUC", "QSL", "CLPD"}   # kodu 1 ile bitmeyen üst ligler
-SCOPES = ("all", "top", "big5")
+BASE_SCOPES = ("all", "top", "big5")
+# "tek lig" kapsamı: kapsam değeri lig kodunun kendisi. Kulüp o ligde en az LEAGUE_MIN_SEASONS sezon oynamış olmalı (club_leagues tablosu).
+LEAGUES = ("GB1", "ES1", "IT1", "L1", "FR1", "TR1", "NL1", "PO1")
+LEAGUE_MIN_SEASONS = 3
+LEAGUE_TIER_SIZES = [4, 6, 8, 8, 10, 10]      # tek lig kapsamında yerel tier boyutları (en bilinenden); kalanlar son tier
+SCOPES = BASE_SCOPES + LEAGUES
 N_TIERS = 14
 # merdiven tipleri: (1,1),(1,2),(2,2),(2,3)…(14,14) = 27 tip
 PROGRESSION = [(t, t) if k % 2 == 0 else (t, t + 1) for k in range(2 * N_TIERS - 1) for t in [k // 2 + 1]]
@@ -99,14 +104,31 @@ def club_scope_flags(comp):
 def _build_scopes():
     _compute_tiers()
     rows = db.execute("SELECT id, competition_id FROM clubs WHERE national=0 AND fame>0").fetchall()
+    has_leagues = db.execute("SELECT 1 FROM sqlite_master WHERE name='club_leagues'").fetchone() is not None
     for sc in SCOPES:
         ids = []
+        if sc in LEAGUES:      # o ligde yeterince sezon geçirmiş kulüpler (bugün hangi ligde olduğuna bakılmaz)
+            if has_leagues:
+                ids = [r[0] for r in db.execute("SELECT club_id FROM club_leagues WHERE comp = ? AND seasons >= ?", (sc, LEAGUE_MIN_SEASONS)) if r[0] in club_tier]
+            else:
+                ids = [cid for cid, comp in rows if comp == sc and cid in club_tier]
         for cid, comp in rows:
-            if cid not in club_tier: continue
+            if sc in LEAGUES or cid not in club_tier: continue
             top, big5 = club_scope_flags(comp)
             if sc == "all" or (sc == "top" and top) or (sc == "big5" and big5): ids.append(cid)
         scope_clubs[sc] = set(ids)
         by = {k: [] for k in range(1, N_TIERS + 1)}
+        if sc in LEAGUES:
+            # tek ligde genel tier'lar çok seyrek kalır (T1'de 2-3 kulüp): lig içi sıralamayla yerel tier'lar kurulur
+            order = sorted(ids, key=lambda c: (club_tier[c], -club_score.get(c, 0)))
+            local = {}; i = 0
+            for t, size in enumerate(LEAGUE_TIER_SIZES, start=1):
+                for cid in order[i:i + size]: local[cid] = t
+                i += size
+            for cid in order[i:]: local[cid] = len(LEAGUE_TIER_SIZES) + 1
+            for cid in order: by[local[cid]].append(cid)
+            tier_of[sc] = local; tiers[sc] = by
+            continue
         for cid in ids: by[club_tier[cid]].append(cid)
         tier_of[sc] = {cid: club_tier[cid] for cid in ids}; tiers[sc] = by
 
@@ -252,7 +274,7 @@ def _seeded(day: str, salt: str) -> random.Random:
     return random.Random(hashlib.sha256(f"{day}:{salt}:{os.environ.get('KICKOFF_DAILY_SALT','')}".encode()).digest())
 
 POOL_SIZE = 20
-pools = {("ladder", sc): [] for sc in SCOPES} | {("blitz", sc): [] for sc in SCOPES}
+pools = {("ladder", sc): [] for sc in BASE_SCOPES} | {("blitz", sc): [] for sc in BASE_SCOPES}     # tek lig kapsamları istek anında üretilir
 pool_lock = threading.Lock()
 
 def _pool_worker():
@@ -271,7 +293,7 @@ def _pool_worker():
 
 def _pool_take(kind: str, sc: str):
     with pool_lock:
-        lst = pools[(kind, sc)]
+        lst = pools.get((kind, sc))
         return lst.pop() if lst else None
 
 @app.get("/ladder")
@@ -292,11 +314,11 @@ def _ladder(seed: str, steps: int, sc: str, era: int = 0):
         got = pick_pair(rng, sc, ta, tb, used, min_n, era=era) or pick_pair(rng, sc, ta, tb, used, 1, era=era) \
               or pick_pair(rng, sc, min(ta, tb), min(ta, tb), used, 1, era=era)
         if not got:
-            if era: continue      # dar dönemde bu tier çiftinde ortak oyuncu yok: tipi atla, merdiven kısalır
-            break
+            continue      # bu tier çiftinde uygun çift yok: tipi atla, merdiven kısalır
         a, b, n = got; used.update((a, b))
         out.append({"a": a, "b": b, "n": n, "tiers": [ta, tb]})
-    info = {i: (nm, bool(df)) for i, nm, df in db.execute(f"SELECT id, name, defunct FROM clubs WHERE id IN ({','.join(str(c) for c in used) or '0'})")}
+    ids = {q["a"] for q in out} | {q["b"] for q in out}
+    info = {i: (nm, bool(df)) for i, nm, df in db.execute(f"SELECT id, name, defunct FROM clubs WHERE id IN ({','.join(str(c) for c in ids) or '0'})")}
     for st in out:
         st["a_name"], st["a_defunct"] = info[st["a"]]; st["b_name"], st["b_defunct"] = info[st["b"]]
     return {"seed": seed, "scope": sc, "era": era, "steps": out}
@@ -318,13 +340,17 @@ def _blitz(seed: str, n: int, sc: str, era: int = 0):
     only_sql = """SELECT p.id, p.name FROM player_clubs x JOIN players p ON p.id=x.player_id
                   WHERE x.club_id=? AND p.n_clubs>=3 AND NOT EXISTS(SELECT 1 FROM player_clubs y WHERE y.player_id=x.player_id AND y.club_id=?)""" \
                + era_sql("p.id", era) + " ORDER BY p.fame DESC LIMIT 40"
-    tries = 0
+    tries = 0; skips = 0; recycled = False
     while len(qs) < n and tries < n * 6:
         tries += 1
-        ta, tb = tier_pair_for(len(qs), 2, sc, rng)
+        ta, tb = tier_pair_for(len(qs) + skips, 2, sc, rng)      # skips: çift bulunamayan tier tipinde takılı kalmasın
         got = pick_pair(rng, sc, ta, tb, used, max(2, min_common_for(ta, tb)), 60, era=era) or pick_pair(rng, sc, ta, tb, used, 1, 200, era=era)
         if not got:
-            if era and tries < n * 3: continue
+            if tries < n * 3:      # bu tier tipinde uygun çift yok: tipi atla (dar kapsam ve dönemlerde sık olur)
+                skips += 2
+                if sc in LEAGUES and not recycled and skips > 4 * N_TIERS:      # tek ligde kulüpler tükendi: bir kez baştan, kulüpler yeniden kullanılabilir
+                    recycled = True; used.clear(); skips = 0
+                continue
             break
         ca, cb, _ = got
         both = db.execute("""SELECT p.id, p.name FROM player_clubs x JOIN player_clubs y ON x.player_id=y.player_id JOIN players p ON p.id=x.player_id
@@ -337,7 +363,8 @@ def _blitz(seed: str, n: int, sc: str, era: int = 0):
         qid = f"{seed}-{len(qs)}"
         qs.append({"id": qid, "a": ca, "b": cb, "options": [o[1] for o in opts], "tiers": [ta, tb],
                    "answer_hash": hashlib.sha256(f"{qid}:{ans[0]}".encode()).hexdigest(), "_answer_id": ans[0], "_answer": opts.index(ans)})
-    info = {i: (nm, bool(df)) for i, nm, df in db.execute(f"SELECT id, name, defunct FROM clubs WHERE id IN ({','.join(str(c) for c in used) or '0'})")}
+    ids = {q["a"] for q in qs} | {q["b"] for q in qs}      # used değil: tek ligde tur yenilenince used boşalır
+    info = {i: (nm, bool(df)) for i, nm, df in db.execute(f"SELECT id, name, defunct FROM clubs WHERE id IN ({','.join(str(c) for c in ids) or '0'})")}
     for q in qs:
         q["a_name"], q["a_defunct"] = info[q["a"]]; q["b_name"], q["b_defunct"] = info[q["b"]]
     return qs
@@ -355,7 +382,10 @@ def quick_picks(scope: str = "all", n: int = 5, exclude: str = ""):
     """Takım seçiminde geç kalan oyuncuya önerilecek popüler kulüpler (T1-T3, kapsam içi, kullanılmamış)."""
     sc = scope if scope in SCOPES else "all"
     ex = {int(x) for x in exclude.split(",") if x.strip().isdigit()}
-    pool = [c for t in (1, 2, 3) for c in tiers[sc][t] if c not in ex]
+    pool = []
+    for t in range(1, N_TIERS + 1):      # önce en bilinen tier'lar; dar kapsamda (tek lig) yeterince kulüp çıkana kadar aşağı iner
+        pool += [c for c in tiers[sc][t] if c not in ex]
+        if t >= 3 and len(pool) >= max(n * 3, 12): break
     rng = random.Random()
     pick = rng.sample(pool, min(n, len(pool))) if pool else []
     names = dict(db.execute(f"SELECT id, name FROM clubs WHERE id IN ({','.join(map(str, pick)) or '0'}) AND defunct = 0").fetchall())
@@ -410,11 +440,26 @@ def _build_famous():
     v, srt, rk = _cat_tables(tuple(famous[:VERSUS_POOL]))
     cat_values.update(v); cat_sorted.update(srt); cat_rank.update(rk)
 
-@functools.lru_cache(maxsize=64)
-def famous_for(era: int) -> tuple:
-    """Dönem havuzu: o on yıl(lar)da en az bir maça çıkmış ünlüler, ün sırasıyla. 0 → genel havuz."""
-    if not era: return tuple(famous)
-    return tuple([p for p in famous_all if pdec.get(p, 0) & era][:FAMOUS_SIZE])
+@functools.lru_cache(maxsize=32)
+def scope_players(sc: str) -> frozenset:
+    """Kariyeri en az bir kez bu kapsamdaki bir kulübe uğramış ünlüler (tüm kariyerin orada geçmesi gerekmez)."""
+    clubs = scope_clubs.get(sc) or set()
+    if not clubs: return frozenset()
+    hit = set(); ids = list(clubs)
+    for i in range(0, len(ids), 500):      # büyük IN listesi parçalanır
+        part = ",".join(map(str, ids[i:i + 500]))
+        hit.update(r[0] for r in db.execute(f"SELECT DISTINCT player_id FROM player_clubs WHERE club_id IN ({part})"))
+    return frozenset(hit & set(famous_all))
+
+@functools.lru_cache(maxsize=256)
+def famous_for(era: int, sc: str = "all") -> tuple:
+    """Oyuncu havuzu, ün sırasıyla. Dönem: o on yıl(lar)da en az bir maça çıkmış olanlar (0 → 1965 sonrası doğumlular).
+    Kapsam: kariyeri o kapsama en az bir kez uğramış olanlar ("all" → süzme yok)."""
+    if not era and sc == "all": return tuple(famous)
+    base = [p for p in famous_all if pdec.get(p, 0) & era] if era else [p for p in famous_all if (pinfo[p][1] or 0) >= MIN_BIRTH]
+    if sc != "all":
+        ok = scope_players(sc); base = [p for p in base if p in ok]
+    return tuple(base[:FAMOUS_SIZE])
 
 def _cat_tables(pool: tuple):
     vals_all, srt_all, rank_all = {}, {}, {}
@@ -426,11 +471,11 @@ def _cat_tables(pool: tuple):
         rank_all[cat] = {pid: i for i, pid in enumerate(srt_all[cat])}
     return vals_all, srt_all, rank_all
 
-@functools.lru_cache(maxsize=64)
-def versus_tables(era: int):
-    """O mu bu mu kategori tabloları; dönem havuzunun en ünlü VERSUS_POOL oyuncusu üstünden."""
-    if not era: return cat_values, cat_sorted, cat_rank
-    return _cat_tables(famous_for(era)[:VERSUS_POOL])
+@functools.lru_cache(maxsize=256)
+def versus_tables(era: int, sc: str = "all"):
+    """O mu bu mu kategori tabloları; seçilen havuzun en ünlü VERSUS_POOL oyuncusu üstünden."""
+    if not era and sc == "all": return cat_values, cat_sorted, cat_rank
+    return _cat_tables(famous_for(era, sc)[:VERSUS_POOL])
 
 PATH_SQL = """SELECT s.club_id, c.name, s.date, s.kind, s.fee, NULL, NULL, c.defunct FROM stints s JOIN clubs c ON c.id = s.club_id
               WHERE s.player_id = ? ORDER BY s.seq"""      # ülke/lig tabloları varsa _build_famous içinde genişletilir
@@ -446,9 +491,9 @@ def _path(pid: int) -> list:
                     "country": country, "league": league, "defunct": bool(defunct)})
     return out
 
-def _fame_buckets(rng, n: int, ok, era: int = 0) -> list:
+def _fame_buckets(rng, n: int, ok, era: int = 0, sc: str = "all") -> list:
     """Ünlüden az ünlüye üç kova: havuzun ilk %6'sı, sonraki %18'i, kalanı (5000'lik havuzda 300 / 1200 / 5000)."""
-    pool = famous_for(era); L = len(pool)
+    pool = famous_for(era, sc); L = len(pool)
     c1 = max(min(L, 40), int(L * 0.06)); c2 = max(c1, int(L * 0.24))
     out, seen = [], set()
     for lo, hi, share in ((0, c1, 1 / 3), (c1, c2, 1 / 3), (c2, L, 1 / 3)):
@@ -461,17 +506,17 @@ def _fame_buckets(rng, n: int, ok, era: int = 0) -> list:
     return out
 
 @app.get("/career/pack")
-def career_pack(n: int = 30, seed: str = "", era: int = 0):
+def career_pack(n: int = 30, seed: str = "", era: int = 0, scope: str = "all"):
     """Kariyer yolu: kulüpler sırayla açılır, oyuncu tahmin edilir. Yalnızca oyun sunucusu çağırır (cevap içerir)."""
     rng = random.Random(seed or None)
     def ok(pid):
         path = _path(pid)
         if not (4 <= len(path) <= 11): return None
         return {"_player_id": pid, "_name": pinfo[pid][0], "clubs": [{"club": x["club"], "year": x["year"], "kind": x["kind"], "country": x["country"], "defunct": x["defunct"]} for x in path]}
-    return _fame_buckets(rng, n, ok, _era(era))
+    return _fame_buckets(rng, n, ok, _era(era), scope if scope in SCOPES else "all")
 
 @app.get("/chain/pack")
-def chain_pack(n: int = 15, seed: str = "", era: int = 0):
+def chain_pack(n: int = 15, seed: str = "", era: int = 0, scope: str = "all"):
     """Sıradaki kulüp: oyuncu verilir; ilk kulüp, sonra her transferin hedefi tahmin edilir (yıl, tür, bedel ipucu)."""
     rng = random.Random(seed or None)
     def ok(pid):
@@ -480,19 +525,19 @@ def chain_pack(n: int = 15, seed: str = "", era: int = 0):
         if any(club_tier.get(x["club_id"], 99) > 10 for x in path): return None   # tahmin edilemeyecek kadar silik kulüp varsa alma
         name, by, pos = pinfo[pid]
         return {"name": name, "born": by, "pos": pos, "_steps": path}
-    return _fame_buckets(rng, n, ok, _era(era))
+    return _fame_buckets(rng, n, ok, _era(era), scope if scope in SCOPES else "all")
 
 TOP_RESET_RANK = 3     # kalan oyuncu listenin ilk 3'üne girince kategori değişir
 STREAK_RESET = 5       # ya da aynı oyuncu 5 tur üst üste kalınca
 
 @app.get("/versus/pack")
-def versus_pack(rounds: int = 80, seed: str = "", era: int = 0):
+def versus_pack(rounds: int = 80, seed: str = "", era: int = 0, scope: str = "all"):
     """O mu bu mu: iki oyuncu, bir kategori. Kazanan (değeri büyük olan) yerinde kalır, karşısına yenisi gelir.
     Kalan oyuncu zirveye ulaşınca (ilk 3) ya da 5 tur üst üste kalınca kategori değişir.
     Doğru cevap hep büyük olan olduğundan tüm koşu önceden üretilir."""
     if not cat_sorted: return []
     rng = random.Random(seed or None)
-    all_vals, all_sorted, all_rank = versus_tables(_era(era))
+    all_vals, all_sorted, all_rank = versus_tables(_era(era), scope if scope in SCOPES else "all")
     cats = [c for c in CATS if len(all_sorted.get(c, [])) >= 40]; rng.shuffle(cats)
     if not cats: return []
     out = []; ci = 0

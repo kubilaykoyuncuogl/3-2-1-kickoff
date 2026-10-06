@@ -1,4 +1,4 @@
-// Tek oyna: beş mod kartı. Kulüp kapsamı yalnızca kulüp çifti modlarında (Klasik, Beşte Bir); dönem seçimi hepsinde.
+// Tek oyna: beş mod kartı. Sonraki adım kapsam + dönem ekranı (single/setup).
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { View } from "react-native";
@@ -24,7 +24,7 @@ export default function SingleMenu() {
             {(best[m] ?? 0) > 0 ? <Chip text={`${t("single.best_short")} ${best[m]}`} kind="line" style={{ alignSelf: "center" }} /> : null}
             <Chevron color="amber_ink" />
           </View>}
-          onPress={() => router.push({ pathname: m === "ladder" || m === "blitz" ? "/single/scope" : "/single/era", params: { mode: m } })} />
+          onPress={() => router.push({ pathname: "/single/setup", params: { mode: m } })} />
       ))}
       <Spacer />
     </Page>
