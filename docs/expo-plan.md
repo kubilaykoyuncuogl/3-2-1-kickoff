@@ -4,6 +4,11 @@
 
 ## 0. Hedef ve sınırlar
 
+Kararlar (2026-10-06, Kubilay):
+- Süreler ve zorluk: geçiş sırasında dokunulmaz; geçişten sonra tüm modlar için ayrı bir **level design** çalışması yapılacak (tur süresi, basamak süreleri, tier geçişleri, can sayıları hep birlikte).
+- Reklam (Faz 7): sonra, ayrı "başla" ile.
+- Mağaza hesapları: Apple ve Google geliştirici hesapları var; EAS/mağaza bağlantılarını arkadaşı yapacak. Faz 6'da ajan `eas.json` ve komutları hazırlar, hesap işlemlerini yapmaz.
+
 - Tek kod tabanı: `app/` (Expo). Çıktılar: Android (AAB/APK), iOS (EAS bulut derlemesi, Mac yok), web (Expo web; oda linki paylaşımı için yeterli, öncelik değil).
 - Sunucu: tek Python süreci (FastAPI + WebSocket). Index servisi (`server/index_service.py`) ve hesaplar (`server/accounts.py`) **aynen kalır**; oda/maç/tek oyunculu mantık `game/scripts/game.gd`'den Python'a taşınır.
 - Kurallar, süreler, puanlar, tier/kapsam/dönem, hesap akışları, dil anahtarları, palet **değişmez**. Bu bir yeniden yazım, yeniden tasarım değil. Godot'da bitmiş ekranlar birebir referans (`./shots.sh light|dark` ile `/tmp/kickoff-shots/` üretilir; başlamadan bir kez üretip sakla).
