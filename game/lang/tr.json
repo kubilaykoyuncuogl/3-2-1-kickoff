@@ -331,5 +331,9 @@
  "howto.ex.player": "Futbolcu",
  "howto.ex.next_club": "Sıradaki kulüp",
  "howto.ex.more_goals": "Kim daha çok gol attı?",
- "howto.ex.or": "yoksa"
+ "howto.ex.or": "yoksa",
+ "update.title": "Yeni sürüm var",
+ "update.web": "Oyun güncellendi. Devam etmek için sayfayı yenile.",
+ "update.app": "Oyun güncellendi. Devam etmek için uygulamanın yeni sürümünü kur.",
+ "update.reload": "Yenile"
 }

@@ -12,6 +12,7 @@ const PICK_MS := 45000          # takım seçimi süresi; dolunca seçmeyen turu
 const QUICK_AT_MS := 20000      # bu kadar geçince istemci hızlı seçenekleri gösterir
 const PENALTY_MS := 5000
 const ROUND_END_MS := 4000
+const PROTO := 2                    # istemci-sunucu sözleşme sürümü: RPC imzası ya da durum sözlüğü değişince artır (hello imzasına dokunma, eski istemci uyarıyı ancak onunla alır)
 const NO_COMMON_MS := 3000          # ortak oyuncusu olmayan çift: uyarı bu kadar görünür, sonra takım seçimine dönülür
 const WIN_SCORE := 3
 const MAX_INVALID_PAIRS := 3
@@ -347,6 +348,7 @@ func single_state(d: Dictionary) -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func profile_state(d: Dictionary) -> void:
+	if int(d.get("proto", PROTO)) != PROTO: App.show_update()      # açık kalmış eski sekme / eski uygulama: istekleri sunucu sessizce yok sayar
 	App.elo = int(d.get("elo", App.elo))
 	App.linked = bool(d.get("linked", false)); App.verified = bool(d.get("verified", false)); App.devices = int(d.get("devices", 1))
 	if App.linked and str(d.get("nick", "")) != "": App.nickname = str(d.nick)      # hesabın adı cihazdakinin önüne geçer
@@ -616,7 +618,7 @@ func _send_profile(pid: int) -> void:
 	if pid not in multiplayer.get_peers(): return
 	var p: Dictionary = profiles[pid]
 	profile_state.rpc_id(pid, {"elo": p.elo, "games": p.games, "nick": p.nick, "linked": p.get("linked", false), "verified": p.get("verified", false),
-		"bests": p.get("bests", {}), "devices": p.get("devices", 1)})
+		"bests": p.get("bests", {}), "devices": p.get("devices", 1), "proto": PROTO})
 
 ## Hesap servisinden gelen profili bellekteki oyuncuya işler
 func _apply_profile(pid: int, res: Dictionary) -> void:

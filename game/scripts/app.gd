@@ -174,3 +174,26 @@ func reset_to(screen: Control) -> void:
 	for s in _stack: s.queue_free()
 	_stack.clear()
 	push(screen)
+
+## Sunucu daha yeni (ya da eski) bir sürümle konuşuyor: tüm ekranı kapatan "yenile" uyarısı
+var _update_shown := false
+func show_update() -> void:
+	if _update_shown or Net.is_server: return
+	_update_shown = true
+	var layer := CanvasLayer.new(); layer.layer = 50; get_tree().root.add_child(layer)
+	var ov := ColorRect.new(); var dim: Color = UI.c("bg"); dim.a = 0.94; ov.color = dim
+	ov.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); layer.add_child(ov)
+	var cc := CenterContainer.new(); cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); ov.add_child(cc)
+	var card := PanelContainer.new(); card.custom_minimum_size.x = 310
+	var st := UI.box("surface", "violet_fill", 18, 2)
+	st.content_margin_left = 22; st.content_margin_right = 22; st.content_margin_top = 22; st.content_margin_bottom = 20
+	card.add_theme_stylebox_override("panel", st); cc.add_child(card)
+	var v := UI.vbox(12); card.add_child(v)
+	var web := OS.has_feature("web")
+	var t := UI.label(T.t("update.title"), 22, 800); t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(t)
+	var b := UI.label(T.t("update.web") if web else T.t("update.app"), 14, 500, "muted"); b.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; b.custom_minimum_size.x = 266; v.add_child(b)
+	if web:
+		var go := UI.button(T.t("update.reload"), "violet")
+		go.pressed.connect(func(): JavaScriptBridge.eval("location.reload()"))
+		v.add_child(go)

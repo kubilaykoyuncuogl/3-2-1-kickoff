@@ -74,6 +74,7 @@ func _ready() -> void:
 	await _save("25_versus")
 	Game.single_changed.emit(_state("versus", 3, {"cat": "max_fee", "fmt": "money", "names": ["Didier Drogba", "Adrien Rabiot"], "born": [1978, 1995], "shown": [38500000, null], "new_cat": false}, {"type": "wrong", "option": 1, "answer": 0, "values": [38500000, 450000]}, true))
 	await get_tree().create_timer(1.8).timeout; await _save("26_over"); ver.queue_free()
+	App.show_update(); await _save("30_update")
 	print("[shots] done → ", dir); get_tree().quit()
 
 func _add(s: Control) -> void:

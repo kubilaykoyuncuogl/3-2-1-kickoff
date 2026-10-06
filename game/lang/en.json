@@ -331,5 +331,9 @@
  "howto.ex.player": "Player",
  "howto.ex.next_club": "Next club",
  "howto.ex.more_goals": "Who scored more goals?",
- "howto.ex.or": "or"
+ "howto.ex.or": "or",
+ "update.title": "New version available",
+ "update.web": "The game was updated. Reload the page to keep playing.",
+ "update.app": "The game was updated. Install the new version of the app to keep playing.",
+ "update.reload": "Reload"
 }
