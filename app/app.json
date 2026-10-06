@@ -1,0 +1,59 @@
+{
+  "expo": {
+    "name": "3-2-1 Kickoff",
+    "slug": "kickoff321",
+    "version": "0.2.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kickoff321.app"
+    },
+    "android": {
+      "package": "com.kickoff321.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#5E4BC9",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store",
+      [
+        "expo-updates",
+        {
+          "username": "kickoff321"
+        }
+      ],
+      "expo-splash-screen"
+    ],
+    "scheme": "kickoff",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#5E4BC9"
+    },
+    "updates": {
+      "url": "",
+      "enabled": false
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

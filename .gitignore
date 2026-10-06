@@ -18,3 +18,8 @@ data/*.log
 build/
 # Hesap veritabanı (cihaz kimlikleri, Elo): asla repoya girmez
 data/state/
+app/node_modules/
+app/.expo/
+app/dist/
+app/android/
+app/ios/
