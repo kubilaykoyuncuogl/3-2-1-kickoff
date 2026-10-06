@@ -7,6 +7,7 @@ import { getLang, t } from "../i18n";
 import { Weekly, useGame } from "../store";
 import { FONT, useTheme } from "../theme";
 import { Text } from "react-native";
+import { Chevron } from "./index";
 
 export const num = (n: number) => Math.round(n).toLocaleString(getLang() === "tr" ? "tr-TR" : "en-US");
 
@@ -19,23 +20,30 @@ export function WeeklyButton() {
   const lead = w.a.total === w.b.total ? "" : w.a.total > w.b.total ? w.a.short : w.b.short;
   const label = (text: string, color: string, size: number, weight: 600 | 700 | 800 = 800) =>
     <Text numberOfLines={1} style={{ fontFamily: FONT[weight], fontSize: s(size), color }}>{text}</Text>;
+  // üstte çapraz bölünmüş kulüp renkleri (maç ve skorlar), altta modun ne olduğunu söyleyen şerit
   return (
-    <Pressable onPress={() => router.push("/weekly")} style={({ pressed }) => ({ height: s(84), borderRadius: s(14), overflow: "hidden", borderWidth: 2, borderColor: pressed ? c.line_strong : c.line })}>
-      <Svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: "absolute" }}>
-        <Polygon points="0,0 58,0 42,100 0,100" fill={w.a.colors[0]} />
-        <Polygon points="58,0 100,0 100,100 42,100" fill={w.b.colors[0]} />
-      </Svg>
-      <View style={{ flex: 1, flexDirection: "row", paddingHorizontal: s(16), paddingVertical: s(10) }}>
-        <View style={{ flex: 1, justifyContent: "space-between" }}>
-          {label(t("weekly.title").toLocaleUpperCase("tr"), w.a.colors[1], 11, 700)}
-          {label(w.a.short, w.a.colors[1], 20)}
-          {label(num(w.a.total), w.a.colors[1], 13, 700)}
+    <Pressable onPress={() => router.push("/weekly")} style={({ pressed }) => ({ borderRadius: s(14), overflow: "hidden", borderWidth: 2, borderColor: pressed ? c.line_strong : c.line, backgroundColor: c.surface })}>
+      <View style={{ height: s(84) }}>
+        <Svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: "absolute" }}>
+          <Polygon points="0,0 58,0 42,100 0,100" fill={w.a.colors[0]} />
+          <Polygon points="58,0 100,0 100,100 42,100" fill={w.b.colors[0]} />
+        </Svg>
+        <View style={{ flex: 1, flexDirection: "row", paddingHorizontal: s(16), paddingVertical: s(10) }}>
+          <View style={{ flex: 1, justifyContent: "space-between" }}>
+            {label(t("weekly.title").toLocaleUpperCase("tr"), w.a.colors[1], 11, 700)}
+            {label(w.a.short, w.a.colors[1], 20)}
+            {label(t("weekly.points", num(w.a.total)), w.a.colors[1], 13, 700)}
+          </View>
+          <View style={{ flex: 1, justifyContent: "space-between", alignItems: "flex-end" }}>
+            {label(lead ? t("weekly.lead_short", lead) : t("weekly.tied"), w.b.colors[1], 11, 700)}
+            {label(w.b.short, w.b.colors[1], 20)}
+            {label(t("weekly.points", num(w.b.total)), w.b.colors[1], 13, 700)}
+          </View>
         </View>
-        <View style={{ flex: 1, justifyContent: "space-between", alignItems: "flex-end" }}>
-          {label(lead ? t("weekly.lead_short", lead) : " ", w.b.colors[1], 11, 700)}
-          {label(w.b.short, w.b.colors[1], 20)}
-          {label(num(w.b.total), w.b.colors[1], 13, 700)}
-        </View>
+      </View>
+      <View style={{ paddingHorizontal: s(16), paddingVertical: s(8), flexDirection: "row", alignItems: "center", gap: s(8) }}>
+        <Text numberOfLines={2} style={{ flex: 1, fontFamily: FONT[600], fontSize: s(12), lineHeight: s(16), color: c.muted }}>{t("weekly.menu_info")}</Text>
+        <Chevron color="muted" />
       </View>
     </Pressable>
   );

@@ -394,5 +394,7 @@
  "learn.ex.w_q": "Who scored more goals for his club?",
  "learn.ex.w_side": "Your side",
  "learn.ex.w_pick": "Trabzonspor",
- "learn.ex.w_added": "Run: 640 points · added to the total"
+ "learn.ex.w_added": "Run: 640 points · added to the total",
+ "weekly.points": "%s pts",
+ "weekly.menu_info": "This or that · players of the two clubs head to head. Pick your side and score for your team."
 }

@@ -394,5 +394,7 @@
  "learn.ex.w_q": "Kim kulübünde daha çok gol attı?",
  "learn.ex.w_side": "Tarafın",
  "learn.ex.w_pick": "Trabzonspor",
- "learn.ex.w_added": "Koşu: 640 puan · toplamına eklendi"
+ "learn.ex.w_added": "Koşu: 640 puan · toplamına eklendi",
+ "weekly.points": "%s puan",
+ "weekly.menu_info": "O mu bu mu · iki kulübün oyuncuları karşı karşıya. Tarafını seç, puanın takımına yazılsın."
 }
