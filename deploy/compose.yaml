@@ -4,7 +4,9 @@ services:
     build: { context: .., dockerfile: deploy/Dockerfile }
     image: kickoff:latest
     restart: unless-stopped
-    env_file: ../.env            # KICKOFF_INDEX_KEY, KICKOFF_DAILY_SALT
+    env_file:
+      - ../server/.env.production
+      - ../.env                 # Deployment secrets and overrides take precedence.
     ports: ["8080:8080"]   # rootless Docker: 127.0.0.1 bağlaması yönlendirmiyor; dış erişimi güvenlik duvarıyla kapat
     volumes:
       - ../data/index/index.enc:/app/data/index/index.enc:ro

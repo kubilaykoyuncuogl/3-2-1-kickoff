@@ -19,7 +19,9 @@ Release yapılandırması `app/.env.production` içinde hazırdır: yalnız publ
 
 `EXPO_PUBLIC_` değerleri JS paketine derleme sırasında gömülür. Değişiklikten sonra web export veya yeni native build/update gerekir. Değerleri değiştirdikten sonra export'a `--clear` ekleyin; Metro'nun eski dönüşümleri boş/eski DSN taşıyabilir. `npm run export:web` bunu uygular. Sunucu ortamını değiştirmek mevcut web paketini değiştirmez.
 
-Sunucu için `server/.env.example` içindeki satırları mevcut kök `.env` dosyasına ekleyin; index anahtarı ve daily salt satırlarını koruyun. `SENTRY_DSN` ayrı FastAPI projesinin DSN'idir. `SENTRY_ENVIRONMENT`, isteğe bağlı `SENTRY_RELEASE` ve `SENTRY_TRACES_SAMPLE_RATE` sunucuda kullanılır. Compose mevcut `env_file` üzerinden bunları okur.
+Compose sunucu Sentry ayarlarını `server/.env.production` içinden otomatik yükler; sonraki `../.env` dosyası deployment secret'larını ve override'ları sağlar. Mevcut index anahtarı ve daily salt satırlarını koruyun. `SENTRY_DSN` ayrı FastAPI projesinin DSN'idir. `SENTRY_ENVIRONMENT`, isteğe bağlı `SENTRY_RELEASE` ve `SENTRY_TRACES_SAMPLE_RATE` sunucuda kullanılır. Compose dışında çalıştırıyorsanız `server/.env.example` satırlarını süreç ortamına ekleyin. Açık boş `SENTRY_DSN` override'ı raporlamayı kapatır.
+
+6 Ekim 2026'da mevcut canlı deployment'ın `/home/kickoff/kickoff/.env` dosyasına sunucu DSN'i, `production` ortamı ve `0` trace örneklemesi eklendi. Diğer satırlar birebir korundu; index anahtarı ve daily salt'ın resolved Compose ortamında bulunduğu doğrulandı. Önceki dosya kullanıcıya özel izinlerle yedeklendi, `.env` izni `0600` yapıldı. Çalışan konteyner yeniden oluşturulmadı; ayarlar Sentry kodunu içeren sonraki Compose yayınıyla süreç ortamına alınır.
 
 Clarity projeleri 6 Ekim 2026'da hazırlandı:
 
@@ -30,7 +32,7 @@ Clarity projeleri 6 Ekim 2026'da hazırlandı:
 
 Mobil panel ayarının cihazlara ulaşması bir saate kadar sürebilir. Web ve mobil ekranları aynı sabit olay adlarını kullanır; kayıtları ayrı projelerde inceleyin. Clarity davranış içgörüsü toplar; bu değişiklik doğrudan kullanıcı mesajı gönderen bir feedback formu eklemez.
 
-Sentry projeleri 6 Ekim 2026'da `grande-corpo` organizasyonunda oluşturuldu: `kickoff-app` (React Native, web dahil) ve `kickoff-server` (FastAPI), takım `#grande-corpo`. Uygulama DSN'i `app/.env.production`, sunucu DSN'i `server/.env.example` içinde public yapılandırma olarak bulunur. Sunucuyu yayınlarken örnek satırları mevcut kök `.env` veya deployment ortamına eklemek gerekir.
+Sentry projeleri 6 Ekim 2026'da `grande-corpo` organizasyonunda oluşturuldu: `kickoff-app` (React Native, web dahil) ve `kickoff-server` (FastAPI), takım `#grande-corpo`. Uygulama DSN'i `app/.env.production`, sunucu DSN'i `server/.env.production` içinde public yapılandırma olarak bulunur. Normal Compose yayınında sunucu ayarlarını elle kopyalamak gerekmez.
 
 Sunucu entegrasyonu üzerinden bir test exception'ı ve uygulamanın raporlama/temizleme kodu üzerinden web SDK transport'u ile bir test exception'ı gönderildi. İki kayıt Sentry panelinde `KICKOFF-SERVER-1` ve `KICKOFF-APP-1` olarak doğrulandı; mesajlar `[redacted]`. Bu kontrol gerçek native cihaz veya tam web arayüzü testi değildir.
 
