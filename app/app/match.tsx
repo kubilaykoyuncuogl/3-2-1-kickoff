@@ -274,6 +274,12 @@ function Over({ room, mine, opp, me, returnAt, now }: { room: Room; mine?: Playe
   let title = winner === 0 ? t("draw") : winner === my ? t("won") : t("lost");
   if (last.type === "left") title = t("match.opp_left");
   const de = mine?.elo_delta ?? 0;
+  // maçı bitiren turun cevabı ve diğer olası cevaplar (tur sonu ekranı atlandığı için burada gösterilir)
+  const answerName = last.type === "correct" ? String(last.name ?? "") : "";
+  const iScored = last.type === "correct" && last.pid === my;
+  const ans = room.answers ?? []; const total = room.answers_total ?? 0;
+  const others = last.type === "left" ? [] : ans.filter((n) => n !== answerName).slice(0, 5);
+  const rest = Math.max(0, total - others.length - (answerName ? 1 : 0));
   const leave = () => { api.leave(); router.canGoBack() ? router.back() : router.replace("/online"); };
   return (
     <>
@@ -282,6 +288,9 @@ function Over({ room, mine, opp, me, returnAt, now }: { room: Room; mine?: Playe
         <Txt size={64} w={800} color="violet_ink" center>{`${mine?.score ?? 0} : ${opp?.score ?? 0}`}</Txt>
         {room.ranked && de !== 0 ? <Txt size={13} w={600} color="violet_ink" center>{`Elo ${elo}  (${de > 0 ? "+" : ""}${de})`}</Txt> : null}
       </Panel>
+      {answerName ? <Toast text={`${answerName}  +1`} kind={iScored ? "ok" : "no"} /> : null}
+      {others.length > 0 ? <ListCard title={(answerName ? t("match.others") : t("match.possible")).trim().replace(/:$/, "")} items={others}
+        footer={rest > 0 ? t("match.more", rest).trim().replace(/^…/, "").trim() : undefined} /> : null}
       {last.type === "left" ? (
         <Txt size={14} w={600} color="muted" center>{t("match.returning", Math.ceil(Math.max(0, returnAt - now) / 1000))}</Txt>
       ) : (
