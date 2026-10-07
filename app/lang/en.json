@@ -40,7 +40,7 @@
  "career.summary": "%d players named",
  "career.timeout": "Time's up  ·  it was %s",
  "career.was": "It was %s",
- "career.wrong": "Not %s  ·  1 life lost",
+ "career.wrong": "Not %s  ·  ruled out",
  "cat.apps": "Who played more matches?",
  "cat.assists": "Who has more assists?",
  "cat.best_season": "Who scored more in a single season?",
@@ -328,8 +328,8 @@
  "learn.blitz.2": "You have one life. The first mistake or timeout ends the run.",
  "learn.blitz.3": "Consecutive correct answers build a combo that multiplies your score. Questions keep getting faster.",
  "learn.career.1": "A player's career is shown starting from his first club; a new club is revealed every few seconds.",
- "learn.career.2": "Type who it is. The earlier you get it, the more points you earn.",
- "learn.career.3": "You have 3 lives. A wrong guess, or running out of time after all clubs are shown, costs one.",
+ "learn.career.2": "Type who it is. The more clubs still hidden when you get it, the more points you score.",
+ "learn.career.3": "A wrong guess costs no life; that name is ruled out and can't be tried again. You have 3 lives: one is lost if time runs out after all clubs are shown.",
  "learn.chain.1": "The player is given. First type his first professional club.",
  "learn.chain.2": "Then type every club he moved to, in order. Each step gives hints: year, transfer type, fee, country and league.",
  "learn.chain.3": "20 seconds per step and 3 lives in total. On a miss the right club is shown and you move to the next step.",
@@ -431,7 +431,10 @@
  "weekly.menu_info_career": "Clubs are revealed, name the player. Only players from the club you pick.",
  "weekly.note_career": "Pick your side: you only get players who passed through that club since %d. Their clubs are revealed one by one; the earlier you name them, the more you score. Your points are added to your side's total.",
  "learn.wcareer.1": "You pick a side; you only get players who passed through that club. The career is revealed from the first club, a new club every few seconds.",
- "learn.wcareer.2": "Type who it is. The earlier you know, the more points you get. You have 3 lives.",
+ "learn.wcareer.2": "Type who it is. The more clubs still hidden when you get it, the more points you score. A wrong guess costs no life; that name is ruled out.",
  "learn.wcareer.3": "Your side stays the same all week. Every run's score is added to your side's total.",
- "learn.ex.w_early": "Correct · +220 with 2 clubs hidden"
+ "learn.ex.w_early": "Correct · +220 with 2 clubs hidden",
+ "career.tried": "Ruled out: %s",
+ "ac.out": "  · ruled out",
+ "learn.ex.tried_out": "Wrong · name ruled out, no life lost"
 }

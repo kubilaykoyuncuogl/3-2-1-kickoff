@@ -31,7 +31,7 @@ const STEPS: Record<string, Step[]> = {
   career: [
     ["learn.career.1", "learn.ex.path", "Sporting  →  ?", "learn.ex.reveal", "learn.ex.every8"],
     ["learn.career.2", "learn.ex.path", "Sporting → Man United → Real Madrid", "learn.ex.answer", "Cristiano Ronaldo"],
-    ["learn.career.3", "learn.ex.guess", "Luís Figo", "learn.ex.result", "learn.ex.life_lost"],
+    ["learn.career.3", "learn.ex.guess", "Luís Figo", "learn.ex.result", "learn.ex.tried_out"],
   ],
   chain: [
     ["learn.chain.1", "learn.ex.player", "Wesley Sneijder", "learn.ex.first_club", "Ajax"],

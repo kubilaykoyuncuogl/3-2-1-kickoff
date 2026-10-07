@@ -83,7 +83,7 @@ const SINGLES: Record<string, () => Single> = {
   blitz_no: () => ({ ...SINGLES.blitz_play(), _pending: { over: true, last: { type: "wrong", option: 3, answer: 1 } } } as any),
   career_first: () => S("career", { total: 30, remaining_ms: 6500, per_ms: 8000, item: { clubs: CLUBS.slice(0, 1), total: 6, revealed: 1 } }),
   career_mid: () => S("career", { idx: 2, total: 30, score: 520, done: 2, remaining_ms: 5200, per_ms: 8000, item: { clubs: CLUBS.slice(0, 4), total: 6, revealed: 4 } }),
-  career_wrong: () => S("career", { idx: 2, total: 30, score: 520, done: 2, lives: 2, remaining_ms: 4100, per_ms: 8000, item: { clubs: CLUBS.slice(0, 3), total: 6, revealed: 3 }, last: { type: "wrong", name: "Luís Figo" } }),
+  career_wrong: () => S("career", { idx: 2, total: 30, score: 520, done: 2, lives: 3, remaining_ms: 4100, per_ms: 8000, item: { clubs: CLUBS.slice(0, 3), total: 6, revealed: 3, tried: ["Nani", "Luís Figo"] }, last: { type: "wrong", name: "Luís Figo" } }),
   career_right: () => S("career", { idx: 3, total: 30, score: 880, done: 3, remaining_ms: 7600, per_ms: 8000, item: { clubs: [{ club: "FC Barcelona", year: 2004, kind: "start", country: "Spain", defunct: false }], total: 4, revealed: 1 }, last: { type: "correct", name: "Cristiano Ronaldo", gained: 280 } }),
   career_over: () => S("career", { idx: 4, total: 30, score: 880, done: 3, lives: 0, over: true, item: { clubs: CLUBS, total: 6, revealed: 6 }, last: { type: "wrong", name: "Luís Figo", answer: "Cristiano Ronaldo" },
     end: { burn: { kind: "who", answer: "Cristiano Ronaldo", tried: "Luís Figo", first: "Sporting CP" }, fact: { kind: "career", name: "Cristiano Ronaldo", clubs: CLUBS.map((c) => c.club), apps: 1358, goals: 985 } } } as any),

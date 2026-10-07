@@ -8,10 +8,10 @@ import { useTheme } from "../theme";
 import { BORDER, DefunctIcon, Input, Txt } from "./index";
 
 // `fill`: kalan yeri doldurur, öneriler sığmazsa kendi içinde kayar (dar alanda taşıp alttaki parçaların üstüne binmez)
-// `max`: en çok kaç öneri; `below`: öneri yokken kutunun altında gösterilecek parça (klavye açıkken sonuç bildirimi)
-export function Autocomplete({ kind, locked, lockedText, onPick, autoFocus = true, clearKey, fill, max = 6, below }: {
+// `out`: elenen adlar (öneride soluk ve dokunulmaz çıkar). `max`: en çok kaç öneri; `below`: öneri yokken kutunun altında gösterilecek parça (klavye açıkken sonuç bildirimi)
+export function Autocomplete({ kind, locked, lockedText, onPick, autoFocus = true, clearKey, fill, max = 6, below, out }: {
   kind: "team" | "player"; locked?: boolean; lockedText?: string; onPick: (id: number, name: string) => void; autoFocus?: boolean; clearKey?: unknown;
-  fill?: boolean; max?: number; below?: ReactNode;
+  fill?: boolean; max?: number; below?: ReactNode; out?: string[];
 }) {
   const { c, s, kb } = useTheme();
   const [q, setQ] = useState("");
@@ -39,8 +39,9 @@ export function Autocomplete({ kind, locked, lockedText, onPick, autoFocus = tru
 
   const shown = locked ? [] : items.slice(0, max);
   const rows = shown.map((it) => {
-        const used = !!it.used || it.in_scope === false;
-        const label = it.name + (kind === "player" && it.born ? `  ·  ${it.born}` : "") + (used ? (it.used ? t("ac.used") : t("ac.out_of_scope")) : "");
+        const gone = !!out?.includes(it.name);      // elenen isim: daha önce yanlış denendi
+        const used = !!it.used || it.in_scope === false || gone;
+        const label = it.name + (kind === "player" && it.born ? `  ·  ${it.born}` : "") + (gone ? t("ac.out") : used ? (it.used ? t("ac.used") : t("ac.out_of_scope")) : "");
         return (
           <Pressable key={it.id} disabled={used} onPress={() => onPick(it.id, it.name)} style={({ pressed }) => ({
             backgroundColor: pressed ? c.violet_soft : used ? "transparent" : c.surface, borderRadius: s(12), borderWidth: BORDER, borderColor: pressed ? c.violet_fill : c.line,

@@ -31,12 +31,11 @@ class SinglesMixin:
                 s["score"] += gained; s["done"] += 1
                 s["last"] = {"type": "correct", "name": str(item["_name"]), "gained": gained}
                 self._single_next(pid, False)
-            else:
-                s["lives"] -= 1
+            else:      # yanlış tahmin can götürmez: o isim elenir (yeniden denenemez). Bedeli zaman: kulüpler açıldıkça puan düşer; can yalnızca süre dolunca gider
+                tried = s.setdefault("tried", [])
+                if name and self.norm(name) not in [self.norm(x) for x in tried]: tried.append(name[:60])
                 s["last"] = {"type": "wrong", "name": name}
-                if s["lives"] <= 0:
-                    s["last"]["answer"] = str(item["_name"]); self._single_over(pid)
-                else: self._single_send(pid)
+                self._single_send(pid)
             return
         ok = await self.index_check(player_id, int(item["a"]), int(item["b"]), int(s["era"]))
         if self.singles.get(pid) is not s or s["gen"] != gen or s["over"]: return
@@ -108,7 +107,7 @@ class SinglesMixin:
         s = self.singles[pid]
         if not first: s["idx"] += 1
         if s["idx"] >= len(s["items"]): self._single_over(pid); return
-        s["gen"] += 1; s["lock_until"] = 0
+        s["gen"] += 1; s["lock_until"] = 0; s["tried"] = []
         mode, idx = s["mode"], s["idx"]
         if mode == "ladder": per_ms = max(10000, 20000 - 2000 * (idx // 5))
         elif mode in CAREER_LIKE: per_ms = CAREER_REVEAL_MS; s["revealed"] = 1
@@ -166,7 +165,7 @@ class SinglesMixin:
         item = s["items"][min(s["idx"], len(s["items"]) - 1)]
         mode = s["mode"]
         if mode in CAREER_LIKE:
-            pub = {"clubs": item["clubs"][:int(s["revealed"])], "total": len(item["clubs"]), "revealed": int(s["revealed"])}
+            pub = {"clubs": item["clubs"][:int(s["revealed"])], "total": len(item["clubs"]), "revealed": int(s["revealed"]), "tried": list(s.get("tried", []))[-12:]}
         elif mode == "chain":
             steps = item["_steps"]; st = min(int(s["step"]), len(steps))
             pub = {"name": item["name"], "born": item.get("born"), "pos": item.get("pos"), "step": st, "steps_total": len(steps),

@@ -40,7 +40,7 @@
  "career.summary": "%d oyuncu bilindi",
  "career.timeout": "Süre doldu  ·  cevap: %s",
  "career.was": "Cevap: %s",
- "career.wrong": "%s değil  ·  1 can gitti",
+ "career.wrong": "%s değil  ·  elendi",
  "cat.apps": "Kim daha çok maça çıktı?",
  "cat.assists": "Kim daha çok asist yaptı?",
  "cat.best_season": "Tek sezonda kim daha çok gol attı?",
@@ -328,8 +328,8 @@
  "learn.blitz.2": "Tek canın var. İlk yanlışta ya da süre dolunca koşu biter.",
  "learn.blitz.3": "Art arda doğrular kombo yapar ve puanı katlar. Sorular gittikçe hızlanır.",
  "learn.career.1": "Bir futbolcunun kariyeri ilk kulübünden başlayarak gösterilir; birkaç saniyede bir yeni kulüp açılır.",
- "learn.career.2": "Kim olduğunu yaz. Ne kadar erken bilirsen o kadar çok puan alırsın.",
- "learn.career.3": "3 canın var. Yanlış tahmin ya da bütün kulüpler açıldıktan sonra sürenin dolması bir can götürür.",
+ "learn.career.2": "Kim olduğunu yaz. Ne kadar çok kulüp kapalıyken bilirsen o kadar çok puan alırsın.",
+ "learn.career.3": "Yanlış tahmin can götürmez; o isim elenir, yeniden denenmez. 3 canın var: bütün kulüpler açıldıktan sonra süre dolarsa bir can gider.",
  "learn.chain.1": "Futbolcu belli. Önce ilk profesyonel kulübünü yaz.",
  "learn.chain.2": "Sonra sırayla gittiği her kulübü yaz. Her adımda yıl, transfer türü, bedel, ülke ve lig ipucu olarak verilir.",
  "learn.chain.3": "Adım başına 20 saniyen ve toplam 3 canın var. Yanlışta doğru kulüp gösterilir ve sıradaki adıma geçilir.",
@@ -431,7 +431,10 @@
  "weekly.menu_info_career": "Kulüpler açılır, oyuncuyu bil. Yalnızca seçtiğin kulüpten geçenler sorulur.",
  "weekly.note_career": "Tarafını seç: yalnızca %d'den bugüne o kulüpten geçmiş oyuncular sorulur. Kulüpleri tek tek açılır, kim olduğunu erken bilen çok puan alır. Puanın tarafının toplamına yazılır.",
  "learn.wcareer.1": "Tarafını seçersin; yalnızca o kulüpten geçmiş futbolcular sorulur. Kariyeri ilk kulübünden başlayarak açılır, birkaç saniyede bir yeni kulüp gelir.",
- "learn.wcareer.2": "Kim olduğunu yaz. Ne kadar erken bilirsen o kadar çok puan alırsın. 3 canın var.",
+ "learn.wcareer.2": "Kim olduğunu yaz. Ne kadar çok kulüp kapalıyken bilirsen o kadar çok puan alırsın. Yanlış tahmin can götürmez, o isim elenir.",
  "learn.wcareer.3": "Taraf hafta boyunca değişmez. Her koşunun puanı tarafının toplamına yazılır.",
- "learn.ex.w_early": "Doğru · 2 kulüp kapalıyken +220"
+ "learn.ex.w_early": "Doğru · 2 kulüp kapalıyken +220",
+ "career.tried": "Elenenler: %s",
+ "ac.out": "  · elendi",
+ "learn.ex.tried_out": "Yanlış · isim elendi, can gitmez"
 }
