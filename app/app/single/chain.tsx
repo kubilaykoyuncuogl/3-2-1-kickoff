@@ -28,6 +28,7 @@ export default function Chain() {
   const it = d.item; const hint = it.hint ?? {}; const first = it.step === 0; const hist: any[] = it.history ?? [];
   const sub: string[] = [];
   if (it.born != null) sub.push(t("chain.born", it.born));
+  if (it.nat) sub.push(country(it.nat));
   if (it.pos != null) sub.push(String(it.pos));
   sub.push(t("chain.step_n", Math.min(it.step + 1, it.steps_total), it.steps_total));
   const toast = last.type === "correct" ? { text: `${last.name ?? ""}  +${last.gained ?? 0}`, kind: "ok" as const }

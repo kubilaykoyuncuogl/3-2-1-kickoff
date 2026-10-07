@@ -249,9 +249,9 @@ def club(club_id: int, scope: str = "all"):
 def _players_suggest(n: str, limit: int, era: int = 0):
     m = fts_prefix(n)
     if not m: return []
-    rows = db.execute("""SELECT p.id, p.name, p.birth_year FROM names n JOIN players p ON p.id = n.player_id
+    rows = db.execute("""SELECT p.id, p.name, p.birth_year, co.name FROM names n JOIN players p ON p.id = n.player_id LEFT JOIN countries co ON co.id = p.nat_id
                          WHERE names MATCH ?""" + era_sql("p.id", era) + " ORDER BY p.fame DESC LIMIT ?", (m, limit)).fetchall()
-    return [{"id": i, "name": nm, "born": by} for i, nm, by in rows]
+    return [{"id": i, "name": nm, "born": by, "nat": nat} for i, nm, by, nat in rows]      # nat: milliyet (ülke adı; istemci çevirir), adaşları ayırt etmeye yarar
 
 @app.get("/players/suggest")
 def players_suggest(q: str = Query(min_length=2), limit: int = 8, era: int = 0):
@@ -398,6 +398,7 @@ pdec: dict = {}            # pid -> on yıl maskesi
 fame_rank: dict = {}       # pid -> ün sırası (0 = en ünlü); bot zorluk hesabı için
 fame2: dict = {}
 pinfo: dict = {}           # pid -> (name, birth_year, position)
+pnat: dict = {}            # pid -> milliyet (ülke adı); yalnızca ünlü havuzu
 CATS = {                   # O mu bu mu kategorileri: anahtar -> (SQL ifadesi, biçim)
     "goals": ("s.goals", "int"), "apps": ("s.apps", "int"), "assists": ("s.assists", "int"), "yellow": ("s.yellow", "int"),
     "red": ("s.red", "int"), "best_season": ("s.best_season_goals", "int"), "goals_big5": ("s.goals_big5", "int"), "pens": ("s.pens", "int"),
@@ -436,6 +437,8 @@ def _build_famous():
         fame2[pid] = (a5 * 1.0 + atr * HOME_APP_W + (at - a5 - atr) * 0.4 + g5 * 3.0 + gtr * HOME_GOAL_W + (gt - g5 - gtr) * 1.2
                       + (mv or 0) / 1e6 * 3.0 + in_top.get(pid, 0) * 80)
         pinfo[pid] = (name, by, pos); pdec[pid] = dec or 0
+    if db.execute("SELECT 1 FROM sqlite_master WHERE name='countries'").fetchone():
+        pnat.update((pid, nat) for pid, nat in db.execute("SELECT p.id, co.name FROM players p JOIN countries co ON co.id = p.nat_id JOIN player_stats s ON s.player_id = p.id WHERE s.apps_top >= 120") if pid in pinfo)
     famous_all.extend(sorted(fame2, key=lambda x: -fame2[x]))
     fame_rank.update({pid: i for i, pid in enumerate(famous_all)})
     famous.extend([p for p in famous_all if (pinfo[p][1] or 0) >= MIN_BIRTH][:FAMOUS_SIZE])     # "tümü": bugünün oyuncusunun tanıyacağı dönem
@@ -526,7 +529,7 @@ def chain_pack(n: int = 15, seed: str = "", era: int = 0, scope: str = "all"):
         if not (3 <= len(path) <= 9): return None
         if any(club_tier.get(x["club_id"], 99) > 10 for x in path): return None   # tahmin edilemeyecek kadar silik kulüp varsa alma
         name, by, pos = pinfo[pid]
-        return {"name": name, "born": by, "pos": pos, "_steps": path}
+        return {"name": name, "born": by, "nat": pnat.get(pid), "pos": pos, "_steps": path}
     return _fame_buckets(rng, n, ok, _era(era), scope if scope in SCOPES else "all")
 
 TOP_RESET_RANK = 3     # kalan oyuncu listenin ilk 3'üne girince kategori değişir
@@ -557,7 +560,7 @@ def versus_pack(rounds: int = 80, seed: str = "", era: int = 0, scope: str = "al
             pair = [None, None]; pair[side] = stayer; pair[1 - side] = ch
             v = [vals[pair[0]], vals[pair[1]]]
             ans = 0 if v[0] > v[1] else 1
-            out.append({"cat": cat, "fmt": CATS[cat][1], "names": [pinfo[x][0] for x in pair], "born": [pinfo[x][1] for x in pair],
+            out.append({"cat": cat, "fmt": CATS[cat][1], "names": [pinfo[x][0] for x in pair], "born": [pinfo[x][1] for x in pair], "nat": [pnat.get(x) for x in pair],
                         "shown": [None if (first or i != side) else v[i] for i in (0, 1)], "new_cat": first and len(out) > 0,
                         "_values": v, "_answer": ans, "_ids": list(pair)})
             first = False

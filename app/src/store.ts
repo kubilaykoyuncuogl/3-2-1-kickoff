@@ -122,7 +122,7 @@ export type Room = { me?: number; code?: string; ranked?: boolean; scope?: Scope
   searching?: boolean; left?: boolean; band?: number; elo?: number; waiting?: number; cross_in_ms?: number };
 export type Single = { mode: string; idx: number; total: number; lives: number; score: number; combo: number; done: number; best_combo: number;
   remaining_ms: number; per_ms: number; over: boolean; item: Record<string, any>; last: Record<string, any>; era: number };
-export type Suggestion = { id: number; name: string; born?: number; used?: boolean; in_scope?: boolean; defunct?: boolean };
+export type Suggestion = { id: number; name: string; born?: number; nat?: string | null; used?: boolean; in_scope?: boolean; defunct?: boolean };
 
 // Haftanın maçı: iki taraf (ad, kısa ad, [zemin, yazı] renkleri, toplam puan, koşu sayısı) ve oyuncunun seçtiği taraf
 export type WeeklySide = { name: string; short: string; colors: [string, string]; total: number; runs: number };

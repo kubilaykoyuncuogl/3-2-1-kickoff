@@ -1,7 +1,7 @@
 // Yazı kutusu + öneri listesi. Öneriler sunucudan (store.suggestions) gelir; öneriye dokunmak = seçmek.
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, TextInput, View } from "react-native";
-import { t } from "../i18n";
+import { has, t } from "../i18n";
 import { api } from "../net/socket";
 import { Suggestion, useGame } from "../store";
 import { useTheme } from "../theme";
@@ -9,6 +9,9 @@ import { BORDER, DefunctIcon, Input, Txt } from "./index";
 
 // `fill`: kalan yeri doldurur, öneriler sığmazsa kendi içinde kayar (dar alanda taşıp alttaki parçaların üstüne binmez)
 // `out`: elenen adlar (öneride soluk ve dokunulmaz çıkar). `max`: en çok kaç öneri; `below`: öneri yokken kutunun altında gösterilecek parça (klavye açıkken sonuç bildirimi)
+// Ülke adı: dil paketinde karşılığı varsa o, yoksa kaynak ad (single.tsx'teki country ile aynı; oradan alınırsa döngüsel içe aktarma olur)
+const country = (name: string) => (has("country." + name) ? t("country." + name) : name);
+
 export function Autocomplete({ kind, locked, lockedText, onPick, autoFocus = true, clearKey, fill, max = 6, below, out }: {
   kind: "team" | "player"; locked?: boolean; lockedText?: string; onPick: (id: number, name: string) => void; autoFocus?: boolean; clearKey?: unknown;
   fill?: boolean; max?: number; below?: ReactNode; out?: string[];
@@ -41,7 +44,7 @@ export function Autocomplete({ kind, locked, lockedText, onPick, autoFocus = tru
   const rows = shown.map((it) => {
         const gone = !!out?.includes(it.name);      // elenen isim: daha önce yanlış denendi
         const used = !!it.used || it.in_scope === false || gone;
-        const label = it.name + (kind === "player" && it.born ? `  ·  ${it.born}` : "") + (gone ? t("ac.out") : used ? (it.used ? t("ac.used") : t("ac.out_of_scope")) : "");
+        const label = it.name + (kind === "player" && it.born ? `  ·  ${it.born}` : "") + (kind === "player" && it.nat ? `  ·  ${country(it.nat)}` : "") + (gone ? t("ac.out") : used ? (it.used ? t("ac.used") : t("ac.out_of_scope")) : "");
         return (
           <Pressable key={it.id} disabled={used} onPress={() => onPick(it.id, it.name)} style={({ pressed }) => ({
             backgroundColor: pressed ? c.violet_soft : used ? "transparent" : c.surface, borderRadius: s(12), borderWidth: BORDER, borderColor: pressed ? c.violet_fill : c.line,

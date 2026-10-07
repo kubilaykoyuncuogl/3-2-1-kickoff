@@ -169,7 +169,7 @@ class SinglesMixin:
             pub = {"clubs": item["clubs"][:int(s["revealed"])], "total": len(item["clubs"]), "revealed": int(s["revealed"]), "tried": list(s.get("tried", []))[-12:]}
         elif mode == "chain":
             steps = item["_steps"]; st = min(int(s["step"]), len(steps))
-            pub = {"name": item["name"], "born": item.get("born"), "pos": item.get("pos"), "step": st, "steps_total": len(steps),
+            pub = {"name": item["name"], "born": item.get("born"), "nat": item.get("nat"), "pos": item.get("pos"), "step": st, "steps_total": len(steps),
                    "history": [{"club": x["club"], "year": x.get("year"), "kind": x["kind"], "fee": x.get("fee"), "country": x.get("country"),
                                 "defunct": x.get("defunct", False)} for x in steps[:st]]}
             if st < len(steps):      # ipucu: yıl, tür, bedel, gittiği ülke ve lig (ilk kulüp için de ülke/lig)

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { api } from "@/net/socket";
 import { Single } from "@/store";
-import { MARK, SingleHeader, SingleLoading, SingleOver, money, useSingle } from "@/single";
+import { MARK, SingleHeader, SingleLoading, SingleOver, country, money, useSingle } from "@/single";
 import { useTheme } from "@/theme";
 import { Badge, Eyebrow, Nav, Page, Toast, Txt, t } from "@/ui";
 
@@ -42,7 +42,7 @@ export default function Versus() {
       {[0, 1].map((i) => {
         const side = i === 0 ? "violet" : "amber"; const ink = i === 0 ? "violet_ink" : "amber_ink";
         const ok = i === answer; const no = i === wrongPick;
-        const born = it.born?.[i];
+        const born = it.born?.[i]; const nat = it.nat?.[i];
         return (
           <React.Fragment key={i}>
             {i === 1 ? <View style={{ alignItems: "center" }}><Badge text="VS" /></View> : null}
@@ -52,7 +52,7 @@ export default function Versus() {
               borderColor: ok ? c.ok : no ? c.no : p || pressed === i ? (side === "violet" ? c.violet_fill : c.amber_fill) : "transparent",
             })}>
               <Txt size={24} w={800} color={ink} center>{String(it.names[i])}</Txt>
-              <Txt size={12} color={ink} center>{born != null ? t("chain.born", born) : ""}</Txt>
+              <Txt size={12} color={ink} center>{[born != null ? t("chain.born", born) : "", nat ? country(nat) : ""].filter(Boolean).join("  ·  ")}</Txt>
               <Txt size={30} w={800} color={ink} center>{val(values ? values[i] : it.shown?.[i])}</Txt>
             </Pressable>
           </React.Fragment>
