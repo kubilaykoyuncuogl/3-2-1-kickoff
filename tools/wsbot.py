@@ -17,7 +17,7 @@ ap.add_argument("--single", default=""); ap.add_argument("--era", type=int, defa
 ap.add_argument("--seconds", type=float, default=30); ap.add_argument("--delay", type=float, default=0)
 ap.add_argument("--url", default="ws://127.0.0.1:9081/ws"); ap.add_argument("--acct", action="store_true")
 ap.add_argument("--create", action="store_true"); ap.add_argument("--join", default=""); ap.add_argument("--drop", type=float, default=0)
-ap.add_argument("--proto", type=int, default=3); ap.add_argument("--round", type=int, default=15)
+ap.add_argument("--proto", type=int, default=4); ap.add_argument("--round", type=int, default=15)
 A = ap.parse_args()
 nick = A.bot
 device = "dev-" + nick + "-" + "x" * max(0, 8 - len(nick))

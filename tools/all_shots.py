@@ -144,6 +144,12 @@ SHOTS = [
     ("14-klavye-acik", "7", "siradaki-kulup-ipuclari", "/single/chain", {"mock": "chain_mid", "kb": "1"}, [], 3),
     ("14-klavye-acik", "7B", "siradaki-kulup-oneriler", "/single/chain", {"mock": "chain_mid", "kb": "1"}, [("type", "inter", 2)], 4),
     ("14-klavye-acik", "7C", "siradaki-kulup-yanlis-tahmin", "/single/chain", {"mock": "chain_wrong", "kb": "1"}, [], 3),
+    # 11 haftanın maçı, kariyer yolu biçimi
+    ("11-haftanin-maci", "4", "kariyer-ana-menu-dugmesi", "/", {"mock": "wcareer_fresh"}, [], 4),
+    ("11-haftanin-maci", "4B", "kariyer-giris", "/weekly", {"mock": "wcareer_fresh"}, [], 4),
+    ("11-haftanin-maci", "4C", "kariyer-soru", "/weekly/play", {"side": "b", "mock": "wcareer_locked,wcareer_play"}, [], 4),
+    ("11-haftanin-maci", "4D", "kariyer-soru-klavye-acik", "/weekly/play", {"side": "b", "mock": "wcareer_locked,wcareer_play", "kb": "1"}, [("type", "sua", 2.5)], 4.5),
+    ("11-haftanin-maci", "4E", "kariyer-sonuc-karti", "/weekly/play", {"side": "b", "mock": "wcareer_locked,wcareer_over"}, [], 4),
     # 13 sistem
     ("13-sistem", "1", "yeni-surum-karti", "/", {"mock": "update,weekly_fresh"}, [], 3.5),
 ]

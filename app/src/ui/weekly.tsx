@@ -25,7 +25,7 @@ export function WeeklyButton() {
     <Pressable onPress={() => router.push("/weekly")} style={({ pressed }) => ({ borderRadius: s(14), overflow: "hidden", borderWidth: 2, borderColor: pressed ? c.line_strong : c.line, backgroundColor: c.surface })}>
       <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: s(14), paddingVertical: s(8), gap: s(6) }}>
         <Text numberOfLines={2} style={{ flex: 1, fontFamily: FONT[700], fontSize: s(9.5), lineHeight: s(12), color: c.muted }}>{t("weekly.title").toLocaleUpperCase("tr")}</Text>
-        <Text numberOfLines={1} style={{ fontFamily: FONT[800], fontSize: s(14), color: c.amber_ink }}>{t("weekly.mode_name").toLocaleUpperCase("tr")}</Text>
+        <Text numberOfLines={1} style={{ fontFamily: FONT[800], fontSize: s(14), color: c.amber_ink }}>{t(w.format === "career" ? "mode.career" : "weekly.mode_name").toLocaleUpperCase("tr")}</Text>
         <Text numberOfLines={2} style={{ flex: 1, textAlign: "right", fontFamily: FONT[700], fontSize: s(9.5), lineHeight: s(12), color: c.muted }}>{(lead ? t("weekly.lead_short", lead) : t("weekly.tied")).toLocaleUpperCase("tr")}</Text>
       </View>
       <View style={{ height: s(66) }}>
@@ -45,7 +45,7 @@ export function WeeklyButton() {
         </View>
       </View>
       <View style={{ paddingHorizontal: s(14), paddingVertical: s(8), flexDirection: "row", alignItems: "center", gap: s(8) }}>
-        <Text numberOfLines={2} style={{ flex: 1, fontFamily: FONT[600], fontSize: s(12), lineHeight: s(16), color: c.muted }}>{t("weekly.menu_info")}</Text>
+        <Text numberOfLines={2} style={{ flex: 1, fontFamily: FONT[600], fontSize: s(12), lineHeight: s(16), color: c.muted }}>{w.format === "career" ? t("weekly.menu_info_career") : t("weekly.menu_info")}</Text>
         <Chevron color="muted" />
       </View>
     </Pressable>

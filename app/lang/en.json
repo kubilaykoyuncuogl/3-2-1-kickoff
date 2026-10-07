@@ -426,5 +426,12 @@
  "fact.years": "in %d-%d",
  "fact.since": "from %d",
  "fact.two_spells": "%s played %s for %s and %s for %s",
- "fact.and": " and "
+ "fact.and": " and ",
+ "weekly.career_prompt": "Which %s player is this?",
+ "weekly.menu_info_career": "Clubs are revealed, name the player. Only players from the club you pick.",
+ "weekly.note_career": "Pick your side: you only get players who passed through that club since %d. Their clubs are revealed one by one; the earlier you name them, the more you score. Your points are added to your side's total.",
+ "learn.wcareer.1": "You pick a side; you only get players who passed through that club. The career is revealed from the first club, a new club every few seconds.",
+ "learn.wcareer.2": "Type who it is. The earlier you know, the more points you get. You have 3 lives.",
+ "learn.wcareer.3": "Your side stays the same all week. Every run's score is added to your side's total.",
+ "learn.ex.w_early": "Correct · +220 with 2 clubs hidden"
 }

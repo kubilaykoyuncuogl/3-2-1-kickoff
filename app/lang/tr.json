@@ -426,5 +426,12 @@
  "fact.years": "%d-%d yıllarında",
  "fact.since": "%d yılından sonra",
  "fact.two_spells": "%s %s %s, %s %s forması giydi",
- "fact.and": " ve "
+ "fact.and": " ve ",
+ "weekly.career_prompt": "Bu %s oyuncusu kim?",
+ "weekly.menu_info_career": "Kulüpler açılır, oyuncuyu bil. Yalnızca seçtiğin kulüpten geçenler sorulur.",
+ "weekly.note_career": "Tarafını seç: yalnızca %d'den bugüne o kulüpten geçmiş oyuncular sorulur. Kulüpleri tek tek açılır, kim olduğunu erken bilen çok puan alır. Puanın tarafının toplamına yazılır.",
+ "learn.wcareer.1": "Tarafını seçersin; yalnızca o kulüpten geçmiş futbolcular sorulur. Kariyeri ilk kulübünden başlayarak açılır, birkaç saniyede bir yeni kulüp gelir.",
+ "learn.wcareer.2": "Kim olduğunu yaz. Ne kadar erken bilirsen o kadar çok puan alırsın. 3 canın var.",
+ "learn.wcareer.3": "Taraf hafta boyunca değişmez. Her koşunun puanı tarafının toplamına yazılır.",
+ "learn.ex.w_early": "Doğru · 2 kulüp kapalıyken +220"
 }

@@ -36,13 +36,13 @@ export default function WeeklyHome() {
           <View style={{ flex: sum ? w.a.total : 1, backgroundColor: w.a.colors[0] }} />
           <View style={{ flex: sum ? w.b.total : 1, backgroundColor: w.b.colors[0] }} />
         </View>
-        <Txt size={13} color="muted" center>{t("weekly.note")}</Txt>
+        <Txt size={13} color="muted" center>{w.format === "career" ? t("weekly.note_career", w.years?.[0] ?? 2000) : t("weekly.note")}</Txt>
         <Txt size={14} w={700} color="violet_ink" center>{locked ? t("weekly.your", w[locked].short, num(w.me!.points)) : side ? t("weekly.pick_note") : t("weekly.pick")}</Txt>
         <Btn text={side ? t("weekly.play_for", w[side].short) : t("weekly.pick")} right=">" disabled={!side || !connected}
           onPress={() => side && router.push({ pathname: "/weekly/play", params: { side } })} />
         <Spacer />
       </Page>
-      <LearnSteps id="weekly" title={t("weekly.title")} />
+      <LearnSteps id={w.format === "career" ? "weekly_career" : "weekly"} title={t("weekly.title")} />
     </>
   );
 }

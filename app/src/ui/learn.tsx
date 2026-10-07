@@ -43,6 +43,11 @@ const STEPS: Record<string, Step[]> = {
     ["learn.weekly.2", "learn.ex.w_side", "learn.ex.w_pick", "learn.ex.result", "learn.ex.w_added"],
     ["learn.weekly.3", "learn.ex.guess", "Feyyaz Uçar", "learn.ex.result", "learn.ex.run_over"],
   ],
+  weekly_career: [
+    ["learn.wcareer.1", "learn.ex.w_side", "Liverpool", "learn.ex.first_club", "Sporting CP"],
+    ["learn.wcareer.2", "learn.ex.guess", "Luis Suárez", "learn.ex.result", "learn.ex.w_early"],
+    ["learn.wcareer.3", "learn.ex.w_side", "Liverpool", "learn.ex.result", "learn.ex.w_added"],
+  ],
   versus: [
     ["learn.versus.1", "learn.ex.more_goals", "Hakan Şükür", "learn.ex.or", "Burak Yılmaz"],
     ["learn.versus.2", "learn.ex.result", "learn.ex.right_next", "learn.ex.bonus", "learn.ex.fast_bonus"],

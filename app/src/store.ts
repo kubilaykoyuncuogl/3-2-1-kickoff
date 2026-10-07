@@ -126,7 +126,7 @@ export type Suggestion = { id: number; name: string; born?: number; used?: boole
 
 // Haftanın maçı: iki taraf (ad, kısa ad, [zemin, yazı] renkleri, toplam puan, koşu sayısı) ve oyuncunun seçtiği taraf
 export type WeeklySide = { name: string; short: string; colors: [string, string]; total: number; runs: number };
-export type Weekly = { slug: string; date: string; a: WeeklySide; b: WeeklySide; me: { side: "a" | "b"; points: number; runs: number } | null };
+export type Weekly = { slug: string; date: string; format?: "versus" | "career"; years?: [number, number] | null; a: WeeklySide; b: WeeklySide; me: { side: "a" | "b"; points: number; runs: number } | null };
 
 type GameStore = {
   connected: boolean; pid: number; updateNeeded: boolean; weekly: Weekly | null;

@@ -40,6 +40,25 @@ def make_pack(data: dict, rng: random.Random, n: int = ROUNDS, avoid=()) -> list
     return out
 
 
+CAREER_ROUNDS = 40
+
+def make_career_pack(data: dict, side: str, rng: random.Random, n: int = CAREER_ROUNDS, avoid=()) -> list:
+    """Kariyer yolu biçimi: yalnızca seçilen tarafın kulübünden geçmiş oyuncular, tanınandan az tanınana (liste toplam maça göre sıralı).
+    Kimlik eşleşmesi dosyadaki index numarasıyla; ad da eşleşme sayılır (index yeniden üretilse de çalışsın)."""
+    pool = (data.get("careers") or {}).get(side) or []
+    if len(pool) < 10: return []
+    avoid = set(avoid); used = set(); out = []
+    for i in range(min(n, len(pool))):
+        k = 24 + i * 7
+        cand = [p for p in pool[:k] if p["name"] not in used]
+        fresh = [p for p in cand if p["name"] not in avoid]
+        if not (fresh or cand): cand = [p for p in pool if p["name"] not in used]
+        if not (fresh or cand): break
+        p = rng.choice(fresh or cand); used.add(p["name"])
+        out.append({"_player_id": int(p["id"]), "_name": p["name"], "clubs": p["clubs"], "names": [p["name"]]})
+    return out
+
+
 class WeeklyMixin:
     _weekly_seen: dict = {}      # cihaz -> son görülen isimler
     def _weekly_data(self):
@@ -58,7 +77,7 @@ class WeeklyMixin:
         dev = self.profiles.get(pid, {}).get("device", "")
         st = await asyncio.to_thread(self.accounts.weekly_state, data["slug"], dev)
         side = lambda k: {"name": data[k]["name"], "short": data[k]["short"], "colors": data[k]["colors"], **st["totals"][k]}
-        return {"slug": data["slug"], "date": data.get("date", ""), "a": side("a"), "b": side("b"), "me": st.get("me")}
+        return {"slug": data["slug"], "date": data.get("date", ""), "format": data.get("format", "versus"), "years": data.get("years"), "a": side("a"), "b": side("b"), "me": st.get("me")}
 
     async def weekly_info(self, pid: int) -> None:
         self.send(pid, {"t": "weekly_state", "d": await self._weekly_state(pid)})
@@ -71,9 +90,11 @@ class WeeklyMixin:
         st = await asyncio.to_thread(self.accounts.weekly_state, data["slug"], dev)
         if st.get("me") and st["me"]["side"] != side: side = st["me"]["side"]      # taraf hafta boyunca sabit
         self._leave_everything(pid)
-        items = make_pack(data, random.Random(), avoid=self._weekly_seen.get(dev, ()))
+        career = data.get("format") == "career"
+        seen = self._weekly_seen.get(dev, ())
+        items = make_career_pack(data, side, random.Random(), avoid=seen) if career else make_pack(data, random.Random(), avoid=seen)
         if not items: self.err(pid, "err.pack_failed"); return
-        self.singles[pid] = {"mode": "weekly", "seed": "", "era": 0, "items": items, "idx": 0, "lives": 1, "score": 0, "combo": 1.0, "deadline": 0,
+        self.singles[pid] = {"mode": "weekly_career" if career else "weekly", "seed": "", "era": 0, "items": items, "idx": 0, "lives": 3 if career else 1, "score": 0, "combo": 1.0, "deadline": 0,
                              "lock_until": 0, "over": False, "best_combo": 1.0, "gen": 0, "revealed": 1, "step": 0, "done": 0, "per_ms": 0, "last": {},
                              "side": side, "slug": data["slug"]}
         self._single_next(pid, True)

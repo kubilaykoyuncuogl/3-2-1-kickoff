@@ -12,7 +12,7 @@ class State(IntEnum):
     GAME_OVER = 6
 
 
-PROTO = 3                      # istemci-sunucu sözleşme sürümü (JSON protokolü; Godot RPC'si 2'ydi). Mesaj biçimi değişince artır.
+PROTO = 4                      # istemci-sunucu sözleşme sürümü (JSON protokolü; Godot RPC'si 2'ydi). Mesaj biçimi değişince artır.
 ROUND_MS = 15000               # varsayılan tur süresi; çok oyunculuda oda başına seçilir (ROUND_CHOICES)
 ROUND_CHOICES = (10, 15, 30)   # saniye
 COUNTDOWN_MS = 3000
@@ -47,6 +47,8 @@ def widen_scope(a: str, b: str) -> str:
     fa, fb = floor(a), floor(b)
     return SCOPE_ORDER[max(rank(fa), rank(fb))]
 SINGLE_LIVES = {"ladder": 3, "blitz": 1, "career": 3, "chain": 3, "versus": 1}
+CAREER_LIKE = ("career", "weekly_career")  # kulüpler açılır, oyuncu tahmin edilir; "weekly_career" = haftanın maçı, kariyer yolu biçimi
+WEEKLY_MODES = ("weekly", "weekly_career")
 VERSUS_LIKE = ("versus", "weekly")      # iki seçenekten büyüğünü seç; "weekly" = haftanın maçı (server/game/weekly.py)
 CAREER_REVEAL_MS = 8000        # kariyer yolu: bu aralıkla bir kulüp daha açılır
 CAREER_LAST_MS = 15000         # hepsi açıldıktan sonra son tahmin süresi

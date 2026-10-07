@@ -29,9 +29,11 @@ class EndInfoMixin:
             # yıl aralıkları [ilk, son]; son None = hâlâ orada. Kronolojik sırayla verilir.
             parts = sorted(((item.get("a_name", ""), sp.get(int(item["a"])) or []), (item.get("b_name", ""), sp.get(int(item["b"])) or [])), key=lambda x: x[1][0][0] if x[1] else 9999)
             out["fact"] = {"kind": "two_clubs", "name": name, "spells": [{"club": c, "spans": s_[:3]} for c, s_ in parts]}      # spans: [[ilk, son | None], …]
-        elif mode == "career":
+        elif mode in ("career", "weekly_career"):
             if failed: out["burn"] = {"kind": "who", "answer": str(item["_name"]), "tried": last.get("name") if last.get("type") == "wrong" else None, "first": item["clubs"][0]["club"] if item.get("clubs") else ""}
+            # haftanın maçında kimlik veri dosyasından gelir; index yeniden üretildiyse başka oyuncuya denk gelebilir: ad tutmuyorsa sayı yazılmaz
             su = await asyncio.to_thread(ix.player_summary, int(item["_player_id"]))
+            if su and mode == "weekly_career" and su.get("name") != item["_name"]: su = None
             out["fact"] = {"kind": "career", "name": str(item["_name"]), "clubs": [c["club"] for c in item.get("clubs", [])], "apps": (su or {}).get("apps", 0), "goals": (su or {}).get("goals", 0)}
         elif mode == "chain":
             steps = item.get("_steps") or []; k = min(int(s.get("step", 0)), len(steps) - 1)

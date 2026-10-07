@@ -103,13 +103,18 @@ const SINGLES: Record<string, () => Single> = {
   versus_ok: () => ({ ...SINGLES.versus_play(), _pending: { last: { type: "correct", option: 0, values: [383, 291] } } } as any),
   versus_no: () => ({ ...SINGLES.versus_play(), _pending: { over: true, last: { type: "wrong", option: 1, answer: 0, values: [383, 291] } } } as any),
   weekly_no: () => ({ ...SINGLES.weekly_play(), _pending: { over: true, last: { type: "wrong", option: 0, answer: 1, values: [31, 64] } } } as any),
+  wcareer_play: () => S("weekly_career", { idx: 2, total: 40, score: 440, done: 2, remaining_ms: 5200, per_ms: 8000, item: { clubs: [{ club: "FC Groningen", year: 2005, kind: "start", country: "Netherlands", defunct: false }, { club: "Ajax Amsterdam", year: 2007, kind: "sale", country: "Netherlands", defunct: false }, { club: "Liverpool FC", year: 2011, kind: "sale", country: "England", defunct: false }], total: 6, revealed: 3 } }),
+  wcareer_over: () => S("weekly_career", { idx: 4, total: 40, score: 880, done: 3, lives: 0, over: true, item: { clubs: CLUBS.slice(0, 3), total: 5, revealed: 3 }, last: { type: "wrong", name: "Dirk Kuyt", answer: "Luis Suárez" },
+    end: { burn: { kind: "who", answer: "Luis Suárez", tried: "Dirk Kuyt", first: "Club Nacional" }, fact: { kind: "career", name: "Luis Suárez", clubs: ["Club Nacional", "FC Groningen", "Ajax Amsterdam", "Liverpool FC", "FC Barcelona", "Atlético de Madrid"], apps: 987, goals: 588 } } } as any),
   weekly_play: () => S("weekly", { idx: 2, total: 60, lives: 1, score: 372, done: 2, remaining_ms: 7000, per_ms: 9000, item: W }),
   weekly_over: () => S("weekly", { idx: 5, total: 60, lives: 1, score: 930, done: 5, over: true, item: { ...W, cat: "w_assists", names: ["Hamdi Aslan", "Olcay Şahan"] }, last: { type: "wrong", option: 0, answer: 1, values: [22, 34] },
     end: { burn: { kind: "vs", cat: "w_assists", fmt: "int", names: ["Hamdi Aslan", "Olcay Şahan"], values: [22, 34], picked: 0 }, fact: { kind: "club_stats", name: "Olcay Şahan", club: "Beşiktaş", apps: 183, goals: 37, assists: 34, seasons: 5 } } } as any),
 };
 const WEEK = (me: Weekly["me"]): Weekly => ({ slug: "ts-bjk", date: "2026-10-10", me,
   a: { name: "Trabzonspor", short: "Trabzonspor", colors: ["#7A1230", "#8FD0F5"], total: 12480, runs: 31 }, b: { name: "Beşiktaş JK", short: "Beşiktaş", colors: ["#111111", "#FFFFFF"], total: 13920, runs: 36 } });
-const WEEKLIES: Record<string, () => Weekly | null> = { weekly_fresh: () => WEEK(null), weekly_locked: () => WEEK({ side: "b", points: 1860, runs: 4 }), weekly_none: () => null };
+const WEEK_C = (me: Weekly["me"]): Weekly => ({ slug: "mci-liv", date: "", format: "career", years: [2000, 2026], me,
+  a: { name: "Manchester City", short: "Man City", colors: ["#6CABDD", "#1C2C5B"], total: 8640, runs: 22 }, b: { name: "Liverpool FC", short: "Liverpool", colors: ["#C8102E", "#FFFFFF"], total: 9120, runs: 25 } });
+const WEEKLIES: Record<string, () => Weekly | null> = { wcareer_fresh: () => WEEK_C(null), wcareer_locked: () => WEEK_C({ side: "b", points: 1320, runs: 3 }), weekly_fresh: () => WEEK(null), weekly_locked: () => WEEK({ side: "b", points: 1860, runs: 4 }), weekly_none: () => null };
 
 let current = "";
 export function mockName(): string { return current; }

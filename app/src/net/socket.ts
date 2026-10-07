@@ -5,7 +5,7 @@ import { AppState, Platform } from "react-native";
 import { State, useGame, useProfile, useSettings } from "../store";
 import { reportClientError, trackGameEvent } from "../telemetry";
 
-export const PROTO = 3;
+export const PROTO = 4;
 export const PROD_URL = "wss://kickoff.grandecorpo.com/ws";
 const DEV_PORT = 9081;
 

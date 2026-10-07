@@ -1,8 +1,10 @@
-// Haftanın maçı oynanışı: üstte A kulübünün, altta B kulübünün oyuncusu (kulüp renklerinde). Sayısı yüksek olana dokun; ilk yanlışta biter.
+// Haftanın maçı oynanışı; biçim sunucudan gelir (weekly.format): "versus" = o mu bu mu (aşağıda), "career" = kariyer yolu (src/career.tsx).
+// O mu bu mu: üstte A kulübünün, altta B kulübünün oyuncusu (kulüp renklerinde). Sayısı yüksek olana dokun; ilk yanlışta biter.
 // Akış tek oyunculu "o mu bu mu" ile aynı (sunucuda mode = "weekly"); puan seçilen tarafın toplamına yazılır.
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import { CareerPlay } from "@/career";
 import { api } from "@/net/socket";
 import { Single, useGame } from "@/store";
 import { SingleHeader, SingleLoading, SingleOver, useSingle } from "@/single";
@@ -20,6 +22,19 @@ function lastLine(d: Single): string | undefined {
 }
 
 export default function WeeklyPlay() {
+  const { side = "a" } = useLocalSearchParams<{ side?: "a" | "b" }>();
+  const w = useGame((g) => g.weekly);
+  if (!w) return <Page><Nav title={t("weekly.title")} /><Txt size={14} w={600} color="muted">{t("loading")}</Txt></Page>;
+  if (w.format === "career") {
+    const mine = w[w.me?.side ?? (side === "b" ? "b" : "a")];
+    return <CareerPlay mode="weekly_career" title={t("weekly.title")} starter={() => api.weeklyStart(side === "b" ? "b" : "a")}
+      prompt={t("weekly.career_prompt", mine.short)} chips={[`${w.a.short} – ${w.b.short}`, mine.short]}
+      extra={(d) => (d.score > 0 ? t("weekly.added", mine.short, num(d.score)) : undefined)} />;
+  }
+  return <WeeklyVersus />;
+}
+
+function WeeklyVersus() {
   const { side = "a" } = useLocalSearchParams<{ side?: "a" | "b" }>();
   const { c, s } = useTheme();
   const w = useGame((g) => g.weekly);

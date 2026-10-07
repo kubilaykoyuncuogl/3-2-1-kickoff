@@ -20,10 +20,10 @@ class SinglesMixin:
 
     async def single_guess(self, pid: int, player_id: int, name: str) -> None:   # ladder, career
         s = self.singles.get(pid)
-        if s is None or s["over"] or s["mode"] not in ("ladder", "career"): return
+        if s is None or s["over"] or s["mode"] not in ("ladder",) + CAREER_LIKE: return
         if s["lock_until"] > self.now() or not self._allow("%d:guess" % pid, 30, 60000): return
         gen = s["gen"]; item = s["items"][s["idx"]]
-        if s["mode"] == "career":
+        if s["mode"] in CAREER_LIKE:
             hit = player_id == int(item["_player_id"]) or self.norm(name) == self.norm(str(item["_name"]))
             if hit:
                 hidden = len(item["clubs"]) - int(s["revealed"])
@@ -111,7 +111,7 @@ class SinglesMixin:
         s["gen"] += 1; s["lock_until"] = 0
         mode, idx = s["mode"], s["idx"]
         if mode == "ladder": per_ms = max(10000, 20000 - 2000 * (idx // 5))
-        elif mode == "career": per_ms = CAREER_REVEAL_MS; s["revealed"] = 1
+        elif mode in CAREER_LIKE: per_ms = CAREER_REVEAL_MS; s["revealed"] = 1
         elif mode == "chain": per_ms = CHAIN_STEP_MS; s["step"] = 0
         elif mode in VERSUS_LIKE: per_ms = max(4000, 9000 - 500 * (idx // 5))
         else: per_ms = max(3000, 8000 - 1000 * (idx // 5))
@@ -125,7 +125,7 @@ class SinglesMixin:
             if s is None or s["over"] or s["deadline"] == 0 or now < s["deadline"]: continue
             item = s["items"][s["idx"]]
             mode = s["mode"]
-            if mode == "career":
+            if mode in CAREER_LIKE:
                 if int(s["revealed"]) < len(item["clubs"]):      # bir kulüp daha aç
                     s["revealed"] += 1; s["last"] = {}
                     s["per_ms"] = CAREER_REVEAL_MS if int(s["revealed"]) < len(item["clubs"]) else CAREER_LAST_MS
@@ -156,7 +156,7 @@ class SinglesMixin:
         s["over"] = True; s["deadline"] = 0
         dev = self.profiles.get(pid, {}).get("device", "")
         if dev and int(s["score"]) > 0: self.spawn(self.acct_best(dev, s["mode"], int(s["score"])))
-        if s["mode"] == "weekly": self.spawn(self._weekly_finish(pid, s))
+        if s["mode"] in WEEKLY_MODES: self.spawn(self._weekly_finish(pid, s))
         self.spawn(self._single_end(pid, s))      # koşu sonu kartı: "seni yakan soru" ve "biliyor muydun" (hazır olunca durum yeniden gider)
         self._single_send(pid)
 
@@ -165,7 +165,7 @@ class SinglesMixin:
         now = self.now()
         item = s["items"][min(s["idx"], len(s["items"]) - 1)]
         mode = s["mode"]
-        if mode == "career":
+        if mode in CAREER_LIKE:
             pub = {"clubs": item["clubs"][:int(s["revealed"])], "total": len(item["clubs"]), "revealed": int(s["revealed"])}
         elif mode == "chain":
             steps = item["_steps"]; st = min(int(s["step"]), len(steps))
