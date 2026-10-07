@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, View } from "react-native";
 import { api } from "@/net/socket";
 import { Single } from "@/store";
-import { SingleHeader, SingleLoading, SingleOver, useSingle } from "@/single";
+import { MARK, SingleHeader, SingleLoading, SingleOver, useSingle } from "@/single";
 import { useTheme } from "@/theme";
 import { BORDER, Chip, DefunctIcon, Eyebrow, Lives, Nav, Page, Panel, Row, Toast, Txt, t } from "@/ui";
 import { Autocomplete } from "@/ui/autocomplete";
@@ -20,8 +20,8 @@ export default function SinglePlay() {
   const hold = (prev: Single, next: Single) => {
     if (!blitz) return 0;
     const tp = next.last?.type;
-    if (next.over) return tp === "wrong" ? 1300 : tp === "timeout" ? 1000 : 0;
-    return next.idx !== prev.idx && tp === "correct" ? 350 : 0;
+    if (next.over) return tp === "wrong" ? MARK.quick.wrong : tp === "timeout" ? MARK.quick.timeout : 0;
+    return next.idx !== prev.idx && tp === "correct" ? MARK.quick.ok : 0;
   };
   const { d, at, pending, failed, restart } = useSingle(mode, hold);
   const [clearKey, setClearKey] = useState(0);
@@ -80,7 +80,7 @@ export default function SinglePlay() {
               const ok = i === answer; const no = i === wrongPick; const busy = pressed >= 0 || !!pending;
               return (
                 <Pressable key={i} disabled={busy} onPress={() => { setPressed(i); api.singleAnswer(i); }} style={({ pressed: p }) => ({
-                  minHeight: s(58), borderRadius: s(14), borderWidth: BORDER, alignItems: "center", justifyContent: "center", paddingHorizontal: s(16),
+                  minHeight: s(58), borderRadius: s(14), borderWidth: ok || no ? MARK.border : BORDER, alignItems: "center", justifyContent: "center", paddingHorizontal: s(16),
                   backgroundColor: ok ? c.ok_soft : no ? c.no_soft : c.surface, borderColor: ok ? c.ok : no ? c.no : p || pressed === i ? c.line_strong : c.line,
                 })}>
                   <Txt size={16} w={700} color={ok ? "ok" : no ? "no" : "fg"} lines={1}>{o}</Txt>

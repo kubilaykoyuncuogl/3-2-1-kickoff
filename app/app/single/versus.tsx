@@ -4,12 +4,12 @@ import React, { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { api } from "@/net/socket";
 import { Single } from "@/store";
-import { SingleHeader, SingleLoading, SingleOver, money, useSingle } from "@/single";
+import { MARK, SingleHeader, SingleLoading, SingleOver, money, useSingle } from "@/single";
 import { useTheme } from "@/theme";
 import { Badge, Eyebrow, Nav, Page, Toast, Txt, t } from "@/ui";
 
 // sonuç gösterimi: doğruysa 0,9 sn, koşu bitiyorsa 1,5 sn değerler açık kalır
-const hold = (prev: Single, next: Single) => (next.over ? (next.last?.values ? 1500 : 0) : next.idx !== prev.idx && next.last?.type === "correct" ? 900 : 0);
+const hold = (prev: Single, next: Single) => (next.over ? (next.last?.values ? MARK.vs.wrong : 0) : next.idx !== prev.idx && next.last?.type === "correct" ? MARK.vs.ok : 0);
 
 // Koşuyu bitiren sorunun dökümü: soru, iki oyuncu ve sayıları
 function lastLine(d: Single, fmt: string): string | undefined {
@@ -47,7 +47,7 @@ export default function Versus() {
           <React.Fragment key={i}>
             {i === 1 ? <View style={{ alignItems: "center" }}><Badge text="VS" /></View> : null}
             <Pressable disabled={pressed >= 0 || !!pending} onPress={() => { setPressed(i); api.singleAnswer(i); }} style={({ pressed: p }) => ({
-              flex: 1, minHeight: s(110), borderRadius: s(16), borderWidth: 2, alignItems: "center", justifyContent: "center", paddingHorizontal: s(12),
+              flex: 1, minHeight: s(110), borderRadius: s(16), borderWidth: ok || no ? MARK.border : 2, alignItems: "center", justifyContent: "center", paddingHorizontal: s(12),
               backgroundColor: ok ? c.ok_soft : no ? c.no_soft : side === "violet" ? c.violet_soft : c.amber_soft,
               borderColor: ok ? c.ok : no ? c.no : p || pressed === i ? (side === "violet" ? c.violet_fill : c.amber_fill) : "transparent",
             })}>

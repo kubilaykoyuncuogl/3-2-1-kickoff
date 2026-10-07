@@ -47,6 +47,7 @@ def widen_scope(a: str, b: str) -> str:
     fa, fb = floor(a), floor(b)
     return SCOPE_ORDER[max(rank(fa), rank(fb))]
 SINGLE_LIVES = {"ladder": 3, "blitz": 1, "career": 3, "chain": 3, "versus": 1}
+SHOW_MS = {"blitz": 850, "versus": 1400, "weekly": 1400}   # doğru cevaptan sonra istemcide vurgunun kaldığı süre (app/src/single.tsx MARK); sıradaki sorunun süresine eklenir
 CAREER_LIKE = ("career", "weekly_career")  # kulüpler açılır, oyuncu tahmin edilir; "weekly_career" = haftanın maçı, kariyer yolu biçimi
 WEEKLY_MODES = ("weekly", "weekly_career")
 VERSUS_LIKE = ("versus", "weekly")      # iki seçenekten büyüğünü seç; "weekly" = haftanın maçı (server/game/weekly.py)

@@ -7,12 +7,12 @@ import { Pressable, Text, View } from "react-native";
 import { CareerPlay } from "@/career";
 import { api } from "@/net/socket";
 import { Single, useGame } from "@/store";
-import { SingleHeader, SingleLoading, SingleOver, useSingle } from "@/single";
+import { MARK, SingleHeader, SingleLoading, SingleOver, useSingle } from "@/single";
 import { FONT, useTheme } from "@/theme";
 import { Badge, Eyebrow, Nav, Page, Txt, t } from "@/ui";
 import { num, useWeekly } from "@/ui/weekly";
 
-const hold = (prev: Single, next: Single) => (next.over ? (next.last?.values ? 1500 : 0) : next.idx !== prev.idx && next.last?.type === "correct" ? 900 : 0);
+const hold = (prev: Single, next: Single) => (next.over ? (next.last?.values ? MARK.vs.wrong : 0) : next.idx !== prev.idx && next.last?.type === "correct" ? MARK.vs.ok : 0);
 
 // Koşuyu bitiren sorunun dökümü: soru, iki oyuncu ve sayıları (yanlışta doğrusu görülsün)
 function lastLine(d: Single): string | undefined {
@@ -64,7 +64,7 @@ function WeeklyVersus() {
           <React.Fragment key={k}>
             {i === 1 ? <View style={{ alignItems: "center" }}><Badge text="VS" /></View> : null}
             <Pressable disabled={pressed >= 0 || !!pending} onPress={() => { setPressed(i); api.singleAnswer(i); }} style={({ pressed: p }) => ({
-              flex: 1, minHeight: s(110), borderRadius: s(16), borderWidth: 4, alignItems: "center", justifyContent: "center", paddingHorizontal: s(12), gap: s(2),
+              flex: 1, minHeight: s(110), borderRadius: s(16), borderWidth: ok || no ? MARK.border + 2 : 4, alignItems: "center", justifyContent: "center", paddingHorizontal: s(12), gap: s(2),
               backgroundColor: club.colors[0], borderColor: ok ? c.ok : no ? c.no : p || pressed === i ? c.violet_fill : c.line,
             })}>
               {tx(club.short.toLocaleUpperCase("tr"), 12, 600)}

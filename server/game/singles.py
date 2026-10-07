@@ -114,7 +114,8 @@ class SinglesMixin:
         elif mode == "chain": per_ms = CHAIN_STEP_MS; s["step"] = 0
         elif mode in VERSUS_LIKE: per_ms = max(4000, 9000 - 500 * (idx // 5))
         else: per_ms = max(3000, 8000 - 1000 * (idx // 5))
-        s["deadline"] = self.now() + per_ms; s["per_ms"] = per_ms
+        # doğru cevaptan sonra istemci vurguyu gösterirken sıradaki sorunun süresi akmasın: o kadar pay eklenir
+        s["deadline"] = self.now() + per_ms + (0 if first else SHOW_MS.get(mode, 0)); s["per_ms"] = per_ms
         self._single_send(pid)
 
     def _tick_singles(self) -> None:

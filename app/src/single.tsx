@@ -15,6 +15,11 @@ import { ResultCard, SITE, Section, endSections, sectionsText } from "./ui/resul
 
 const LOAD_TIMEOUT = 8000;
 
+// Şıklı modlarda cevap vurgusu (Beşte Bir, O mu bu mu, Haftanın maçı): doğru şık yeşil, yanlış seçilen kırmızı kalın iç çerçeveyle yanar.
+// Süreler: doğruda sıradaki soruya geçmeden, yanlışta / süre dolunca koşu sonuna geçmeden önce vurgunun ekranda kaldığı ms.
+// `ok` değerleri sunucudaki consts.SHOW_MS ile aynı olmalı: sunucu sıradaki sorunun süresine bu kadar pay ekler, vurgu oyuncunun süresinden yemez.
+export const MARK = { border: 7, quick: { ok: 850, wrong: 1800, timeout: 1500 }, vs: { ok: 1400, wrong: 2000 } };
+
 // `hold(prev, next)`: yeni durum gösterilmeden önce eski ekranın kaç ms daha kalacağı (şık/sonuç gösterimi için); 0 = hemen
 // `starter`: oturumu başlatan istek; verilmezse standart single_start (haftanın maçı kendi isteğini gönderir)
 export function useSingle(mode: string, hold?: (prev: Single, next: Single) => number, starter?: () => void) {
