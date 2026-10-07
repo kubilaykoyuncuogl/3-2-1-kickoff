@@ -21,6 +21,7 @@ T = lambda k: L[k]
 SHOTS = [
     # 01 açılış ve menü
     ("01-acilis-menu", "1", "ana-menu", "/", {"mock": "weekly_fresh"}, [], 4),
+    ("01-acilis-menu", "1C", "ana-menu-iki-mac", "/", {"mock": "weekly_two"}, [], 4),
     ("01-acilis-menu", "1B", "ana-menu-haftanin-maci-yok", "/", {"mock": "weekly_none"}, [], 4),
     ("01-acilis-menu", "2", "takma-ad-bos", "/nickname", {"nick": ""}, [], 3),
     ("01-acilis-menu", "2B", "takma-ad-yazili", "/nickname", {"nick": ""}, [("type", "kubilay", 2)], 3.5),

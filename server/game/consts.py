@@ -12,7 +12,7 @@ class State(IntEnum):
     GAME_OVER = 6
 
 
-PROTO = 4                      # istemci-sunucu sözleşme sürümü (JSON protokolü; Godot RPC'si 2'ydi). Mesaj biçimi değişince artır.
+PROTO = 5                      # istemci-sunucu sözleşme sürümü (JSON protokolü; Godot RPC'si 2'ydi). Mesaj biçimi değişince artır.
 ROUND_MS = 15000               # varsayılan tur süresi; çok oyunculuda oda başına seçilir (ROUND_CHOICES)
 ROUND_CHOICES = (10, 15, 30)   # saniye
 COUNTDOWN_MS = 3000

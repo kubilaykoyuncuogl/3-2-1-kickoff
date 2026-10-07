@@ -1,11 +1,13 @@
 """Haftanın maçı: iki kulübün oyuncularıyla "o mu bu mu". Her soruda bir A'lı, bir B'li; değer o kulüp formasıyla istatistik.
 Oyuncu bir taraf seçer (hafta boyunca sabit), koşu puanı o tarafın toplamına yazılır; girişte iki tarafın toplamı görünür.
 
-Veri: server/weekly/current.json (tools/build_weekly.py). Toplamlar hesap veritabanında (accounts.weekly_*), slug başına.
+Veri: server/weekly/<slug>.json (tools/build_weekly.py, build_weekly_career.py). Etkin maçlar: active.json (slug listesi; aynı anda birden çok maç), yoksa current.json. Toplamlar hesap veritabanında (accounts.weekly_*), slug başına.
 Oturum, tek oyunculu "versus" akışını kullanır (mode = "weekly": tek can, hız bonusu); istemciye değerler cevap verilince gider."""
 import asyncio, json, pathlib, random
 
-WEEKLY_PATH = pathlib.Path(__file__).resolve().parents[1] / "weekly" / "current.json"
+WEEKLY_DIR = pathlib.Path(__file__).resolve().parents[1] / "weekly"
+WEEKLY_PATH = WEEKLY_DIR / "current.json"
+SLUG_OK = lambda x: bool(x) and all(ch.isalnum() or ch == "-" for ch in x)      # dosya adı olarak kullanılır
 CATS = ("apps", "goals", "assists", "yellow", "seasons")      # istemcide cat.w_<ad>
 ROUNDS = 60
 SEEN_KEEP = 70      # cihaz başına son koşularda görülen bu kadar isim, yeni koşuda mümkün oldukça yeniden sorulmaz
@@ -60,30 +62,43 @@ def make_career_pack(data: dict, side: str, rng: random.Random, n: int = CAREER_
 
 
 class WeeklyMixin:
-    _weekly_seen: dict = {}      # cihaz -> son görülen isimler
-    def _weekly_data(self):
-        """Etkin haftanın verisi; dosya değişince yeniden okunur. Yoksa None (istemcide düğme çıkmaz)."""
-        try: mt = WEEKLY_PATH.stat().st_mtime
+    _weekly_seen: dict = {}      # (cihaz, slug) -> son görülen isimler
+    def _weekly_file(self, path: pathlib.Path):
+        """Bir hafta dosyası; değişince yeniden okunur. Okunamıyorsa None."""
+        try: mt = path.stat().st_mtime
         except OSError: return None
-        c = getattr(self, "_weekly_cache", None)
+        cache = self.__dict__.setdefault("_weekly_cache", {})
+        c = cache.get(path)
         if c is None or c[0] != mt:
-            try: self._weekly_cache = c = (mt, json.loads(WEEKLY_PATH.read_text()))
+            try: cache[path] = c = (mt, json.loads(path.read_text()))
             except (OSError, ValueError): return None
         return c[1]
 
-    async def _weekly_state(self, pid: int) -> dict | None:
-        data = self._weekly_data()
-        if not data: return None
+    def _weekly_all(self) -> list:
+        """Etkin maçlar, menüdeki sırayla. active.json (slug listesi) varsa oradakiler, yoksa tek maç: current.json. Hiçbiri yoksa düğme çıkmaz."""
+        slugs = self._weekly_file(WEEKLY_DIR / "active.json")
+        if isinstance(slugs, list):
+            return [d for d in (self._weekly_file(WEEKLY_DIR / (str(x) + ".json")) for x in slugs[:4] if SLUG_OK(str(x))) if isinstance(d, dict)]
+        d = self._weekly_file(WEEKLY_PATH)
+        return [d] if isinstance(d, dict) else []
+
+    def _weekly_data(self, slug: str = ""):
+        """Slug'ı verilen etkin maç; slug yoksa / bulunamazsa ilki."""
+        every = self._weekly_all()
+        return next((d for d in every if d["slug"] == slug), every[0] if every else None)
+
+    async def _weekly_state(self, pid: int, data: dict) -> dict:
         dev = self.profiles.get(pid, {}).get("device", "")
         st = await asyncio.to_thread(self.accounts.weekly_state, data["slug"], dev)
         side = lambda k: {"name": data[k]["name"], "short": data[k]["short"], "colors": data[k]["colors"], **st["totals"][k]}
         return {"slug": data["slug"], "date": data.get("date", ""), "format": data.get("format", "versus"), "years": data.get("years"), "a": side("a"), "b": side("b"), "me": st.get("me")}
 
     async def weekly_info(self, pid: int) -> None:
-        self.send(pid, {"t": "weekly_state", "d": await self._weekly_state(pid)})
+        every = [await self._weekly_state(pid, d) for d in self._weekly_all()]
+        self.send(pid, {"t": "weekly_state", "d": every[0] if every else None, "all": every})      # d: ilk maç (eski alan), all: etkin maçların hepsi
 
-    async def weekly_start(self, pid: int, side: str) -> None:
-        data = self._weekly_data()
+    async def weekly_start(self, pid: int, side: str, slug: str = "") -> None:
+        data = self._weekly_data(slug)
         if not data or side not in ("a", "b"): self.err(pid, "err.pack_failed"); return
         dev = self.profiles.get(pid, {}).get("device", "")
         if not dev: return
@@ -91,7 +106,7 @@ class WeeklyMixin:
         if st.get("me") and st["me"]["side"] != side: side = st["me"]["side"]      # taraf hafta boyunca sabit
         self._leave_everything(pid)
         career = data.get("format") == "career"
-        seen = self._weekly_seen.get(dev, ())
+        seen = self._weekly_seen.get((dev, data["slug"]), ())
         items = make_career_pack(data, side, random.Random(), avoid=seen) if career else make_pack(data, random.Random(), avoid=seen)
         if not items: self.err(pid, "err.pack_failed"); return
         self.singles[pid] = {"mode": "weekly_career" if career else "weekly", "seed": "", "era": 0, "items": items, "idx": 0, "lives": 3 if career else 1, "score": 0, "combo": 1.0, "deadline": 0,
@@ -104,7 +119,8 @@ class WeeklyMixin:
         dev = self.profiles.get(pid, {}).get("device", "")
         if dev:      # bu koşuda görülen isimler: sonraki koşularda öne alınmaz (bellekte; sunucu yeniden başlayınca sıfırlanır)
             shown = [n for it in s["items"][:int(s["idx"]) + 1] for n in it["names"]]
-            self._weekly_seen[dev] = (list(self._weekly_seen.get(dev, ())) + shown)[-SEEN_KEEP:]
+            key = (dev, s["slug"])
+            self._weekly_seen[key] = (list(self._weekly_seen.get(key, ())) + shown)[-SEEN_KEEP:]
         if dev and int(s["score"]) > 0:
             await asyncio.to_thread(self.accounts.weekly_add, s["slug"], dev, s["side"], int(s["score"]))
         if pid in self.profiles: await self.weekly_info(pid)

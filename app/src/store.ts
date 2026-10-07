@@ -129,7 +129,7 @@ export type WeeklySide = { name: string; short: string; colors: [string, string]
 export type Weekly = { slug: string; date: string; format?: "versus" | "career"; years?: [number, number] | null; a: WeeklySide; b: WeeklySide; me: { side: "a" | "b"; points: number; runs: number } | null };
 
 type GameStore = {
-  connected: boolean; pid: number; updateNeeded: boolean; weekly: Weekly | null;
+  connected: boolean; pid: number; updateNeeded: boolean; weekly: Weekly | null; weeklies: Weekly[];
   room: Room | null; roomAt: number;          // roomAt: son oda durumunun geldiği an (phase_ms'i yerel saate bağlamak için)
   single: Single | null; singleAt: number;
   suggestions: { kind: string; q: string; list: Suggestion[] } | null;
@@ -138,7 +138,7 @@ type GameStore = {
   set: (patch: Partial<Omit<GameStore, "set">>) => void;
 };
 export const useGame = create<GameStore>((set) => ({
-  connected: false, pid: 0, updateNeeded: false, weekly: null, room: null, roomAt: 0, single: null, singleAt: 0, suggestions: null, error: null, acctResult: null,
+  connected: false, pid: 0, updateNeeded: false, weekly: null, weeklies: [], room: null, roomAt: 0, single: null, singleAt: 0, suggestions: null, error: null, acctResult: null,
   set: (patch) => set(patch),
 }));
 

@@ -12,17 +12,27 @@ import { Chevron } from "./index";
 export const num = (n: number) => Math.round(n).toLocaleString(getLang() === "tr" ? "tr-TR" : "en-US");
 
 // Ana menüdeki düğme: sol üst yarı A kulübünün, sağ alt yarı B kulübünün rengi. Haftalık veri yoksa çizilmez.
-export function WeeklyButton() {
+// Slug'ı verilen etkin maç; slug yoksa ilki (tek maçlı haftalar ve eski bağlantılar)
+export function useWeekly(slug?: string): Weekly | null {
+  const all = useGame((g) => g.weeklies);
+  return all.find((x) => x.slug === slug) ?? all[0] ?? null;
+}
+
+// Ana menü: etkin her maç için bir düğme (aynı anda birden çok maç olabilir)
+export function WeeklyButtons() {
+  const all = useGame((g) => g.weeklies);
+  return <>{all.map((w) => <WeeklyButton key={w.slug} w={w} />)}</>;
+}
+
+export function WeeklyButton({ w }: { w: Weekly }) {
   const router = useRouter();
   const { c, s } = useTheme();
-  const w = useGame((g) => g.weekly);
-  if (!w) return null;
   const lead = w.a.total === w.b.total ? "" : w.a.total > w.b.total ? w.a.short : w.b.short;
   const label = (text: string, color: string, size: number, weight: 600 | 700 | 800 = 800) =>
     <Text numberOfLines={1} style={{ fontFamily: FONT[weight], fontSize: s(size), color }}>{text}</Text>;
   // üst satır: solda "Haftanın maçı", ortada oyun modu (amber, büyük harf), sağda kim önde · orta: çapraz bölünmüş kulüp renklerinde adlar ve puanlar · alt: mod açıklaması
   return (
-    <Pressable onPress={() => router.push("/weekly")} style={({ pressed }) => ({ borderRadius: s(14), overflow: "hidden", borderWidth: 2, borderColor: pressed ? c.line_strong : c.line, backgroundColor: c.surface })}>
+    <Pressable onPress={() => router.push({ pathname: "/weekly", params: { slug: w.slug } })} style={({ pressed }) => ({ borderRadius: s(14), overflow: "hidden", borderWidth: 2, borderColor: pressed ? c.line_strong : c.line, backgroundColor: c.surface })}>
       <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: s(14), paddingVertical: s(8), gap: s(6) }}>
         <Text numberOfLines={2} style={{ flex: 1, fontFamily: FONT[700], fontSize: s(9.5), lineHeight: s(12), color: c.muted }}>{t("weekly.title").toLocaleUpperCase("tr")}</Text>
         <Text numberOfLines={1} style={{ fontFamily: FONT[800], fontSize: s(14), color: c.amber_ink }}>{t(w.format === "career" ? "mode.career" : "weekly.mode_name").toLocaleUpperCase("tr")}</Text>

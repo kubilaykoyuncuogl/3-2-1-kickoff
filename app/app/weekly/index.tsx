@@ -1,5 +1,5 @@
 // Haftanın maçı: iki tarafın toplam puanı, taraf seçimi (hafta boyunca sabit) ve Oyna.
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import { api, connect } from "@/net/socket";
@@ -7,12 +7,13 @@ import { useGame } from "@/store";
 import { useTheme } from "@/theme";
 import { Btn, Nav, Page, Spacer, Txt, t } from "@/ui";
 import { LearnSteps } from "@/ui/learn";
-import { SideCard, num } from "@/ui/weekly";
+import { SideCard, num, useWeekly } from "@/ui/weekly";
 
 export default function WeeklyHome() {
   const router = useRouter();
   const { c, s } = useTheme();
-  const w = useGame((g) => g.weekly);
+  const { slug } = useLocalSearchParams<{ slug?: string }>();
+  const w = useWeekly(slug);
   const connected = useGame((g) => g.connected);
   const [pick, setPick] = useState<"a" | "b" | null>(null);
   useEffect(() => { if (!useGame.getState().connected) connect(); else api.weeklyInfo(); }, [connected]);
@@ -39,7 +40,7 @@ export default function WeeklyHome() {
         <Txt size={13} color="muted" center>{w.format === "career" ? t("weekly.note_career", w.years?.[0] ?? 2000) : t("weekly.note")}</Txt>
         <Txt size={14} w={700} color="violet_ink" center>{locked ? t("weekly.your", w[locked].short, num(w.me!.points)) : side ? t("weekly.pick_note") : t("weekly.pick")}</Txt>
         <Btn text={side ? t("weekly.play_for", w[side].short) : t("weekly.pick")} right=">" disabled={!side || !connected}
-          onPress={() => side && router.push({ pathname: "/weekly/play", params: { side } })} />
+          onPress={() => side && router.push({ pathname: "/weekly/play", params: { side, slug: w.slug } })} />
         <Spacer />
       </Page>
       <LearnSteps id={w.format === "career" ? "weekly_career" : "weekly"} title={t("weekly.title")} />

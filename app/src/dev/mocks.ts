@@ -114,7 +114,7 @@ const WEEK = (me: Weekly["me"]): Weekly => ({ slug: "ts-bjk", date: "2026-10-10"
   a: { name: "Trabzonspor", short: "Trabzonspor", colors: ["#7A1230", "#8FD0F5"], total: 12480, runs: 31 }, b: { name: "Beşiktaş JK", short: "Beşiktaş", colors: ["#111111", "#FFFFFF"], total: 13920, runs: 36 } });
 const WEEK_C = (me: Weekly["me"]): Weekly => ({ slug: "mci-liv", date: "", format: "career", years: [2000, 2026], me,
   a: { name: "Manchester City", short: "Man City", colors: ["#6CABDD", "#1C2C5B"], total: 8640, runs: 22 }, b: { name: "Liverpool FC", short: "Liverpool", colors: ["#C8102E", "#FFFFFF"], total: 9120, runs: 25 } });
-const WEEKLIES: Record<string, () => Weekly | null> = { wcareer_fresh: () => WEEK_C(null), wcareer_locked: () => WEEK_C({ side: "b", points: 1320, runs: 3 }), weekly_fresh: () => WEEK(null), weekly_locked: () => WEEK({ side: "b", points: 1860, runs: 4 }), weekly_none: () => null };
+const WEEKLIES: Record<string, () => Weekly | null> = { weekly_two: () => WEEK(null), wcareer_fresh: () => WEEK_C(null), wcareer_locked: () => WEEK_C({ side: "b", points: 1320, runs: 3 }), weekly_fresh: () => WEEK(null), weekly_locked: () => WEEK({ side: "b", points: 1860, runs: 4 }), weekly_none: () => null };
 
 let current = "";
 export function mockName(): string { return current; }
@@ -139,7 +139,7 @@ export function applyMock(names: string) {
     if (NOTICES[name]) setTimeout(() => useGame.getState().set({ error: { key: NOTICES[name], at: Date.now() } }), 1400);
     if (name === "update") g.set({ updateNeeded: true });
     // sunucudan gelen gerçek profil / haftalık durum sonradan üstüne yazmasın diye gecikmeli ve iki kez
-    if (WEEKLIES[name]) for (const ms of [300, 1600, 2600]) setTimeout(() => useGame.getState().set({ weekly: WEEKLIES[name]() }), ms);
+    if (WEEKLIES[name]) for (const ms of [300, 1600, 2600]) setTimeout(() => { const w = WEEKLIES[name](); useGame.getState().set({ weekly: w, weeklies: name === "weekly_two" ? [WEEK(null), WEEK_C(null)] : w ? [w] : [] }); }, ms);
     if (name === "linked") for (const ms of [1500, 2500]) setTimeout(() => useProfile.setState({ linked: true, verified: false, devices: 2, elo: 1042 }), ms);
     if (name === "acct_recovery") setTimeout(() => useGame.getState().set({ acctResult: { op: "create", ok: true, error: "", recovery: "zidane-pirlo-xavi-4821", at: Date.now() } }), 1600);
     if (name === "acct_code") setTimeout(() => useGame.getState().set({ acctResult: { op: "link_code", ok: true, error: "", code: "482913", ttl: 600, at: Date.now() } }), 1600);

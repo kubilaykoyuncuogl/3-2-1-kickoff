@@ -5,7 +5,7 @@ import { AppState, Platform } from "react-native";
 import { State, useGame, useProfile, useSettings } from "../store";
 import { reportClientError, trackGameEvent } from "../telemetry";
 
-export const PROTO = 4;
+export const PROTO = 5;
 export const PROD_URL = "wss://kickoff.grandecorpo.com/ws";
 const DEV_PORT = 9081;
 
@@ -89,7 +89,7 @@ function handle(m: any) {
       useProfile.getState().apply(m.d);
       if (m.d.proto !== undefined && m.d.proto !== PROTO) g.set({ updateNeeded: true });
       break;
-    case "weekly_state": g.set({ weekly: m.d ?? null }); break;
+    case "weekly_state": g.set({ weekly: m.d ?? null, weeklies: m.all ?? (m.d ? [m.d] : []) }); break;      // weeklies: etkin maçların hepsi (menü sırası)
     case "acct_result": g.set({ acctResult: { ...m.d, at: Date.now() } }); break;
     case "err":
       if (m.key === "err.proto") g.set({ updateNeeded: true });
@@ -117,5 +117,5 @@ export const api = {
   singleQuit: () => send({ t: "single_quit" }),
   acct: (op: string, a = "", b = "") => send({ t: "acct", op, a, b }),
   weeklyInfo: () => send({ t: "weekly_info" }),
-  weeklyStart: (side: "a" | "b") => send({ t: "weekly_start", side }),
+  weeklyStart: (side: "a" | "b", slug = "") => send({ t: "weekly_start", side, slug }),
 };

@@ -10,7 +10,7 @@ import { Single, useGame } from "@/store";
 import { SingleHeader, SingleLoading, SingleOver, useSingle } from "@/single";
 import { FONT, useTheme } from "@/theme";
 import { Badge, Eyebrow, Nav, Page, Txt, t } from "@/ui";
-import { num } from "@/ui/weekly";
+import { num, useWeekly } from "@/ui/weekly";
 
 const hold = (prev: Single, next: Single) => (next.over ? (next.last?.values ? 1500 : 0) : next.idx !== prev.idx && next.last?.type === "correct" ? 900 : 0);
 
@@ -22,12 +22,12 @@ function lastLine(d: Single): string | undefined {
 }
 
 export default function WeeklyPlay() {
-  const { side = "a" } = useLocalSearchParams<{ side?: "a" | "b" }>();
-  const w = useGame((g) => g.weekly);
+  const { side = "a", slug } = useLocalSearchParams<{ side?: "a" | "b"; slug?: string }>();
+  const w = useWeekly(slug);
   if (!w) return <Page><Nav title={t("weekly.title")} /><Txt size={14} w={600} color="muted">{t("loading")}</Txt></Page>;
   if (w.format === "career") {
     const mine = w[w.me?.side ?? (side === "b" ? "b" : "a")];
-    return <CareerPlay mode="weekly_career" title={t("weekly.title")} starter={() => api.weeklyStart(side === "b" ? "b" : "a")}
+    return <CareerPlay mode="weekly_career" title={t("weekly.title")} starter={() => api.weeklyStart(side === "b" ? "b" : "a", slug)}
       prompt={t("weekly.career_prompt", mine.short)} chips={[`${w.a.short} – ${w.b.short}`, mine.short]}
       extra={(d) => (d.score > 0 ? t("weekly.added", mine.short, num(d.score)) : undefined)} />;
   }
@@ -35,10 +35,10 @@ export default function WeeklyPlay() {
 }
 
 function WeeklyVersus() {
-  const { side = "a" } = useLocalSearchParams<{ side?: "a" | "b" }>();
+  const { side = "a", slug } = useLocalSearchParams<{ side?: "a" | "b"; slug?: string }>();
   const { c, s } = useTheme();
-  const w = useGame((g) => g.weekly);
-  const { d, at, pending, failed, restart } = useSingle("weekly", hold, () => api.weeklyStart(side === "b" ? "b" : "a"));
+  const w = useWeekly(slug);
+  const { d, at, pending, failed, restart } = useSingle("weekly", hold, () => api.weeklyStart(side === "b" ? "b" : "a", slug));
   const [pressed, setPressed] = useState(-1);
   useEffect(() => { setPressed(-1); }, [d?.idx]);
   const title = t("weekly.title");

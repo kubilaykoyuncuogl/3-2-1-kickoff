@@ -144,7 +144,7 @@ class Engine(SinglesMixin, BotsMixin, WeeklyMixin, EndInfoMixin):
         elif t == "single_quit": self.single_quit(pid)
         elif t == "acct": await self.acct(pid, s("op", 12), s("a", 64), s("b", 64))
         elif t == "weekly_info": await self.weekly_info(pid)
-        elif t == "weekly_start": await self.weekly_start(pid, s("side", 1))
+        elif t == "weekly_start": await self.weekly_start(pid, s("side", 1), s("slug", 24))
 
     # ---------- istemci → sunucu ----------
     async def hello(self, pid: int, nick: str, device: str, proto: int) -> None:
