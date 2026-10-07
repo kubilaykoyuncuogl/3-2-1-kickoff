@@ -436,5 +436,12 @@
  "learn.ex.w_early": "Doğru · 2 kulüp kapalıyken +220",
  "career.tried": "Elenenler: %s",
  "ac.out": "  · elendi",
- "learn.ex.tried_out": "Yanlış · isim elendi, can gitmez"
+ "learn.ex.tried_out": "Yanlış · isim elendi, can gitmez",
+ "fact.cs_seasons": "%s, %s formasını %d sezon giydi ve %s maça çıktı",
+ "fact.cs_minutes": "%s, %s formasıyla toplam %s dakika sahada kaldı; bu yaklaşık %s tam maç eder",
+ "fact.cs_cards": "%s, %s formasıyla çıktığı %s maçta %s sarı kart gördü",
+ "fact.cs_cards_red": "%s, %s formasıyla çıktığı %s maçta %s sarı kart gördü, %s kez de oyundan atıldı",
+ "fact.cs_rate": "%s, %s formasıyla ortalama her %s maçta bir gol attı (%s gol, %s maç)",
+ "fact.cs_contrib": "%s, %s formasıyla %s gole doğrudan katkı yaptı: %s gol, %s asist",
+ "fact.cs_both": "%s iki kulübün de formasını giydi; daha çok maça %s ile çıktı (%s maç)"
 }

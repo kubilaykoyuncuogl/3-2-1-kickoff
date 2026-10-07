@@ -1,7 +1,22 @@
 """Koşu sonu kartı için bilgiler: "seni yakan soru" (burn) ve "biliyor muydun" (fact).
 Sunucu yapılandırılmış veri gönderir, cümleyi istemci kendi dilinde kurar. Emin olunmayan bilgi gönderilmez
 (ör. gol sayısı 0 ya da eksikse cümle golsüz kurulur); kart paylaşılacağı için yanlış sayı yazmaktansa satır hiç çıkmaz."""
-import asyncio
+import asyncio, random
+
+
+def club_fact_kinds(p: dict) -> list:
+    """Haftanın maçı "biliyor muydun" cümlesinin çeşitleri; yalnızca o oyuncunun verisiyle kurulabilenler döner, biri rastgele seçilir.
+    base: maç + gol + asist · apps: yalnız maç · seasons: sezon + maç · minutes: dakika (≈ tam maç) · cards: sarı / kırmızı · rate: kaç maçta bir gol
+    contrib: gol + asist katkısı · both: iki kulübün de formasını giymiş. Eşikler anlamsız cümleyi eler (3 maçta "her 3 maçta bir gol" gibi)."""
+    apps = p.get("apps") or 0; goals = p.get("goals"); assists = p.get("assists"); mins = p.get("minutes") or 0
+    kinds = ["base"] if goals is not None and assists is not None else ["apps"]
+    if (p.get("seasons") or 0) >= 3: kinds.append("seasons")
+    if apps >= 20 and mins >= apps * 30: kinds.append("minutes")      # dakika verisi eksik sezonları olanlar elenir
+    if (p.get("yellow") or 0) >= 8: kinds.append("cards")
+    if goals is not None and goals >= 10 and apps <= goals * 6: kinds.append("rate")      # yalnızca golcüler: "her 28 maçta bir gol" bilgi değil
+    if goals is not None and assists is not None and goals >= 5 and assists >= 5: kinds.append("contrib")
+    if p.get("both"): kinds.append("both")
+    return kinds
 
 
 class EndInfoMixin:
@@ -47,7 +62,8 @@ class EndInfoMixin:
                                       "picked": int(last["option"]) if last.get("type") == "wrong" else None}
             if mode == "weekly":
                 p = (item.get("_p") or [None, None])[ai]; club = (item.get("_clubs") or ["", ""])[ai]
-                if p: out["fact"] = {"kind": "club_stats", "name": p["name"], "club": club, "apps": p.get("apps") or 0, "goals": p.get("goals"), "assists": p.get("assists"), "seasons": p.get("seasons") or 0}
+                if p: out["fact"] = {"kind": "club_stats", "v": random.choice(club_fact_kinds(p)), "name": p["name"], "club": club, "apps": p.get("apps") or 0, "goals": p.get("goals"), "assists": p.get("assists"),
+                                     "seasons": p.get("seasons") or 0, "yellow": p.get("yellow") or 0, "red": p.get("red") or 0, "minutes": p.get("minutes") or 0}
             else:
                 ids = item.get("_ids") or []
                 su = await asyncio.to_thread(ix.player_summary, int(ids[ai])) if len(ids) == 2 else None

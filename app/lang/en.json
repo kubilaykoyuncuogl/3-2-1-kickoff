@@ -436,5 +436,12 @@
  "learn.ex.w_early": "Correct · +220 with 2 clubs hidden",
  "career.tried": "Ruled out: %s",
  "ac.out": "  · ruled out",
- "learn.ex.tried_out": "Wrong · name ruled out, no life lost"
+ "learn.ex.tried_out": "Wrong · name ruled out, no life lost",
+ "fact.cs_seasons": "%s, for %s: %d seasons, %s games",
+ "fact.cs_minutes": "%s, for %s: %s minutes on the pitch, about %s full games",
+ "fact.cs_cards": "%s, for %s: %s games, %s yellow cards",
+ "fact.cs_cards_red": "%s, for %s: %s games, %s yellow cards and %s sendings-off",
+ "fact.cs_rate": "%s, for %s: a goal every %s games on average (%s goals, %s games)",
+ "fact.cs_contrib": "%s, for %s: directly involved in %s goals (%s goals, %s assists)",
+ "fact.cs_both": "%s wore both shirts; more games came for %s (%s)"
 }

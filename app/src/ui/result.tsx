@@ -83,10 +83,25 @@ export function endSections(end: any): Section[] {
     else if (f.kind === "career") line = (f.apps > 0 ? (f.goals > 0 ? t("fact.career_stats", f.name, nf(f.apps), nf(f.goals)) : t("fact.career_apps", f.name, nf(f.apps))) + "\n" : "") + f.clubs.join(" → ");
     else if (f.kind === "move") line = `${f.name} · ${f.year ?? ""}: ${f.from ? f.from + " → " : ""}${f.to}` + (f.move && f.move !== "start" ? ` · ${t("kind." + f.move)}` : "") + (f.fee ? ` · ${eur(Number(f.fee))}` : "");
     else if (f.kind === "player") line = f.goals > 0 ? t("fact.player", f.name, nf(f.apps), nf(f.goals), f.n_clubs) : t("fact.player_apps", f.name, nf(f.apps), f.n_clubs);
-    else if (f.kind === "club_stats") line = f.goals != null && f.assists != null ? t("fact.club_stats", f.name, f.club, nf(f.apps), nf(f.goals), nf(f.assists)) : t("fact.club_stats_apps", f.name, f.club, nf(f.apps));
+    else if (f.kind === "club_stats") line = clubStatsLine(f);
     if (line) out.push({ title: t("end.fact"), lines: line.split("\n"), kind: "fact" });
   }
   return out;
+}
+
+// Haftanın maçı: oyuncunun o kulüp formasıyla bir istatistiği. Hangi cümlenin kurulacağını sunucu seçer (f.v; endinfo.club_fact_kinds), eski sunucuda v yoktur.
+function clubStatsLine(f: any): string {
+  const one = (n: number) => (Math.round(n * 10) / 10).toLocaleString(getLang() === "tr" ? "tr-TR" : "en-US");
+  const base = f.goals != null && f.assists != null ? t("fact.club_stats", f.name, f.club, nf(f.apps), nf(f.goals), nf(f.assists)) : t("fact.club_stats_apps", f.name, f.club, nf(f.apps));
+  switch (f.v) {
+    case "seasons": return t("fact.cs_seasons", f.name, f.club, f.seasons, nf(f.apps));
+    case "minutes": return t("fact.cs_minutes", f.name, f.club, nf(f.minutes), nf(Math.round(f.minutes / 90)));
+    case "cards": return f.red > 0 ? t("fact.cs_cards_red", f.name, f.club, nf(f.apps), nf(f.yellow), nf(f.red)) : t("fact.cs_cards", f.name, f.club, nf(f.apps), nf(f.yellow));
+    case "rate": return t("fact.cs_rate", f.name, f.club, one(f.apps / f.goals), nf(f.goals), nf(f.apps));
+    case "contrib": return t("fact.cs_contrib", f.name, f.club, nf(f.goals + f.assists), nf(f.goals), nf(f.assists));
+    case "both": return t("fact.cs_both", f.name, f.club, nf(f.apps));
+    default: return base;
+  }
 }
 
 // "A ve B formasını N oyuncu giydi:" + numaralı ilk beş isim + "ve daha Y futbolcu"
