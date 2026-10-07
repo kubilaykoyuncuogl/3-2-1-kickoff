@@ -63,7 +63,7 @@ export default function SinglePlay() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <Page>
         <Nav title={title} />
-        <SingleHeader d={d} at={at} hotMs={blitz ? 2000 : 5000} score={d.score}
+        <SingleHeader d={d} at={at} hotMs={blitz ? 2000 : 5000} score={d.score} frozen={blitz && (pressed >= 0 || !!pending)}
           left={blitz ? <><Eyebrow>{t("sp.question", d.idx + 1)}</Eyebrow><Chip text={`×${d.combo.toFixed(1)}`} kind="ok" style={{ alignSelf: "center" }} /></>
             : <><Eyebrow>{t("sp.step", d.idx + 1)}</Eyebrow><Lives n={d.lives} /></>} />
         <Panel pad={kb ? 10 : 16}>

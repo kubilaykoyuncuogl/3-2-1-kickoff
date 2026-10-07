@@ -54,7 +54,7 @@ function WeeklyVersus() {
   return (
     <Page>
       <Nav title={title} />
-      <SingleHeader d={d} at={at} hotMs={2500} score={d.score} left={<Eyebrow>{t("versus.round", d.idx + 1)}</Eyebrow>} />
+      <SingleHeader d={d} at={at} hotMs={2500} score={d.score} frozen={pressed >= 0 || !!pending} left={<Eyebrow>{t("versus.round", d.idx + 1)}</Eyebrow>} />
       <Txt size={20} w={800} center>{t("cat." + it.cat)}</Txt>
       {(["a", "b"] as const).map((k, i) => {
         const club = w[k]; const ok = i === answer; const no = i === wrongPick;

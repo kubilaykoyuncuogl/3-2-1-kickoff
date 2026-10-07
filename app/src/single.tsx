@@ -78,10 +78,14 @@ export function SingleLoading({ title, failed, onRetry }: { title: string; faile
 }
 
 // Üst bilgi: solda adım/can, sağda puan ve sayaç; altında ince süre çubuğu
-export function SingleHeader({ left, score, d, at, hotMs }: { left: ReactNode; score?: number; d: Single; at: number; hotMs: number }) {
+// `frozen`: cevap verildi (şıka dokunuldu ya da sonuç gösteriliyor): sayaç o anda durur, sonuç ekranı beklenirken geri saymaz
+export function SingleHeader({ left, score, d, at, hotMs, frozen }: { left: ReactNode; score?: number; d: Single; at: number; hotMs: number; frozen?: boolean }) {
   const { s } = useTheme();
   const now = useNow(100);
-  const rem = remaining(d.remaining_ms, at, now);
+  const live = remaining(d.remaining_ms, at, now);
+  const held = useRef<number | null>(null);
+  if (!frozen) held.current = null; else if (held.current === null) held.current = live;
+  const rem = held.current ?? live;
   const hot = rem <= hotMs;
   return (
     <>
