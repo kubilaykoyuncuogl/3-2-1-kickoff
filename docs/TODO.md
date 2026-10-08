@@ -45,4 +45,3 @@ Güncelleme: 2026-10-06. Biten işler buradan silinir; ayrıntı ilgili doküman
 ## Expo geçişi sırasında bekleyenler
 - [ ] Tur süresi 15 → 20 sn? (testçi: "yazana kadar yanlış oluyor"; karar Kubilay'da)
 - [ ] Zorluk eğrisi çok hızlı artıyor (Klasik merdiven); tier geçiş adımları yumuşatılacak
-- [ ] Eski oyuncuların ün puanı düşük ("maradona" yazınca Diego 4. sırada); öneri sıralamasında dönem ağırlığı
