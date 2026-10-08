@@ -7,9 +7,15 @@ import { setLang } from "./i18n";
 import { applyMock } from "./dev/mocks";      // döngüsel içe aktarma: iki taraf da birbirini yalnızca fonksiyon içinde kullanır
 
 export const SCOPES = ["all", "top", "big5"] as const;      // genel kapsamlar
-// Tek lig kapsamı: değer lig kodu (server/game/consts.py LEAGUES ile aynı sıra). Adlar özel isim, çevrilmez.
-export const LEAGUES: [string, string][] = [["GB1", "Premier League"], ["ES1", "La Liga"], ["IT1", "Serie A"], ["L1", "Bundesliga"], ["FR1", "Ligue 1"],
-  ["TR1", "Süper Lig"], ["NL1", "Eredivisie"], ["PO1", "Liga Portugal"]];
+// Tek lig kapsamı: [lig kodu, lig adı, ülke (country.* anahtarı)]. Kodlar server/game/consts.py LEAGUES ile aynı sıra; lig adları özel isim, çevrilmez.
+// Bayraklar: src/ui/flags.ts (aynı kodlarla).
+export const LEAGUES: [string, string, string][] = [
+  ["GB1", "Premier League", "England"], ["ES1", "La Liga", "Spain"], ["IT1", "Serie A", "Italy"], ["L1", "Bundesliga", "Germany"],
+  ["FR1", "Ligue 1", "France"], ["TR1", "Süper Lig", "Türkiye"], ["NL1", "Eredivisie", "Netherlands"], ["PO1", "Liga Portugal", "Portugal"],
+  ["BE1", "Pro League", "Belgium"], ["GR1", "Super League", "Greece"], ["RU1", "Premier Liga", "Russia"], ["UKR1", "Premier Liha", "Ukraine"],
+  ["BRA1", "Brasileirão", "Brazil"], ["ARG1", "Primera División", "Argentina"], ["MLS1", "MLS", "United States"], ["C1", "Super League", "Switzerland"],
+  ["A1", "Bundesliga", "Austria"], ["SER1", "Super Liga", "Serbia"], ["RO1", "SuperLiga", "Romania"], ["PL1", "Ekstraklasa", "Poland"],
+];
 export const leagueName = (code: string) => LEAGUES.find(([c]) => c === code)?.[1] ?? "";
 export type Scope = string;
 export const ROUNDS = [10, 15, 30];      // çok oyunculuda tur süresi seçenekleri (sn); sunucudaki ROUND_CHOICES ile aynı

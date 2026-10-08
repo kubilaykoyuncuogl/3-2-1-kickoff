@@ -34,7 +34,7 @@ CROSS_SCOPE_MS = 45000         # bu kadar bekleyenler kapsam/dönem fark etmeksi
 SAME_OPP_MS = 20000            # az önceki rakiple yeniden eşleşmeden önce bekleme
 RECONNECT_MS = 10000
 SCOPE_ORDER = ["big5", "top", "all"]   # dar → geniş
-LEAGUES = ("GB1", "ES1", "IT1", "L1", "FR1", "TR1", "NL1", "PO1")     # tek lig kapsamı: değer lig kodu (index_service.LEAGUES ile aynı)
+LEAGUES = ("GB1", "ES1", "IT1", "L1", "FR1", "TR1", "NL1", "PO1", "BE1", "GR1", "RU1", "UKR1", "BRA1", "ARG1", "MLS1", "C1", "A1", "SER1", "RO1", "PL1")     # tek lig kapsamı: değer lig kodu (index_service.LEAGUES ile aynı)
 BIG5 = {"GB1", "ES1", "IT1", "L1", "FR1"}
 SCOPES = {"all", "top", "big5", *LEAGUES}
 

@@ -314,8 +314,8 @@
  "update.reload": "Reload",
  "err.proto": "The game was updated, a new version is needed",
  "scope.league.title": "One league",
- "scope.league.sub": "Tap to pick a league · 3+ seasons in it",
- "scope.league.sub_on": "Tap to switch · 3+ seasons",
+ "scope.league.sub": "Top leagues of 20 countries · tap to pick",
+ "scope.league.sub_on": "%s · tap to change",
  "scope.path_note": "In this mode the scope means: players whose career passed through it at least once",
  "set.learn": "Show how to play",
  "learn.header": "How to play",
@@ -518,5 +518,7 @@
  "country.Venezuela": "Venezuela",
  "country.Yugoslavia (Republic)": "Yugoslavia",
  "country.Zaire": "Zaire",
- "country.Zambia": "Zambia"
+ "country.Zambia": "Zambia",
+ "scope.league.pick": "Pick a league",
+ "scope.league.pick_sub": "clubs with 3+ seasons in the league"
 }

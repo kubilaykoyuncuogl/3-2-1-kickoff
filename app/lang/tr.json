@@ -314,8 +314,8 @@
  "update.reload": "Yenile",
  "err.proto": "Oyun güncellendi, yeni sürüm gerekli",
  "scope.league.title": "Tek lig",
- "scope.league.sub": "Dokun, lig seç · ligde en az 3 sezon",
- "scope.league.sub_on": "Dokundukça değişir · en az 3 sezon",
+ "scope.league.sub": "20 ülkenin en üst ligi · dokun, seç",
+ "scope.league.sub_on": "%s · değiştirmek için dokun",
  "scope.path_note": "Bu modda kapsam: kariyeri oraya en az bir kez uğramış oyuncular",
  "set.learn": "Nasıl oynanır'ı göster",
  "learn.header": "Nasıl oynanır",
@@ -518,5 +518,7 @@
  "country.Venezuela": "Venezuela",
  "country.Yugoslavia (Republic)": "Yugoslavya",
  "country.Zaire": "Zaire",
- "country.Zambia": "Zambiya"
+ "country.Zambia": "Zambiya",
+ "scope.league.pick": "Lig seç",
+ "scope.league.pick_sub": "ligde en az 3 sezon oynamış kulüpler"
 }

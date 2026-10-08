@@ -30,7 +30,7 @@ TOP_RE = re.compile(r"^[A-Z]{1,4}1[A-Z]?$")          # GB1, TR1, BRA1, MLS1, EC1
 TOP_EXTRA = {"ARGC", "MEXA", "URUC", "QSL", "CLPD"}   # kodu 1 ile bitmeyen üst ligler
 BASE_SCOPES = ("all", "top", "big5")
 # "tek lig" kapsamı: kapsam değeri lig kodunun kendisi. Kulüp o ligde en az LEAGUE_MIN_SEASONS sezon oynamış olmalı (club_leagues tablosu).
-LEAGUES = ("GB1", "ES1", "IT1", "L1", "FR1", "TR1", "NL1", "PO1")
+LEAGUES = ("GB1", "ES1", "IT1", "L1", "FR1", "TR1", "NL1", "PO1", "BE1", "GR1", "RU1", "UKR1", "BRA1", "ARG1", "MLS1", "C1", "A1", "SER1", "RO1", "PL1")      # 20 ülkenin en üst ligi (istemcide 4×5 bayraklı ızgara)
 LEAGUE_MIN_SEASONS = 3
 LEAGUE_TIER_SIZES = [4, 6, 8, 8, 10, 10]      # tek lig kapsamında yerel tier boyutları (en bilinenden); kalanlar son tier
 SCOPES = BASE_SCOPES + LEAGUES

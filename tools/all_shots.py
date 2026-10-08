@@ -40,6 +40,8 @@ SHOTS = [
     ("03-online", "1", "online-menu", "/online", {}, [], 3.5),
     ("03-online", "1B", "online-menu-lig-donem-sure", "/online", {"scope": "TR1", "era": "6", "round": "30"}, [], 3.5),
     ("03-online", "1C", "online-menu-5-buyuk-lig", "/online", {"scope": "big5", "era": "16", "round": "10"}, [], 3.5),
+    ("03-online", "1D", "lig-secimi-izgara", "/online", {}, [("tap", T("scope.league.title"), 2.5)], 4.5),
+    ("03-online", "1E", "lig-secimi-secili", "/online", {"scope": "TR1"}, [("tap", "Süper Lig", 2.5)], 4.5),
     ("03-online", "2", "rakip-araniyor", "/online", {"mock": "online_search", "scope": "TR1", "era": "6"}, [], 3.5),
     ("03-online", "3", "oda-kuruldu-bekleniyor", "/online", {"mock": "online_room"}, [], 3.5),
     ("03-online", "4", "odaya-katil", "/online", {}, [("tap", T("online.join"), 2)], 3.5),
