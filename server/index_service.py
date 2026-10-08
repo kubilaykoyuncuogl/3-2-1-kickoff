@@ -245,13 +245,30 @@ def club(club_id: int, scope: str = "all"):
     return {"id": row[0], "name": row[1], "competition": row[2], "top": top, "big5": big5, "defunct": bool(row[3]),
             "in_scope": sc == "all" or row[0] in scope_clubs[sc], "tier": club_tier.get(row[0], N_TIERS)}
 
+@functools.lru_cache(maxsize=1)
+def has_full_names() -> bool:      # tools/add_full_names.py çalıştırılmış mı (ilk aramada bir kez bakılır; db bu satırda henüz açılmamıştır)
+    return db.execute("SELECT 1 FROM sqlite_master WHERE name='names_full'").fetchone() is not None
+
+SUGGEST_POOL = 60      # sıralamadan önce her kaynaktan alınan aday sayısı (ün sırasıyla)
+
 @functools.lru_cache(maxsize=100000)
 def _players_suggest(n: str, limit: int, era: int = 0):
+    """Ad önerisi. Adaylar: asıl ad + takma adlar (names), yanında tam adlar (names_full; "pedro rodriguez" → Pedro).
+    Sıra yalnızca üne göre olursa "pedro" yazınca tam adında Pedro geçen daha ünlü oyuncular (Pedri, João Neves…) listeyi doldurur,
+    adı Pedro olan dışarıda kalır. Bu yüzden görünen ad yazılanla tam tutuyorsa ün × 3, yazılanla başlıyorsa × 1,5 sayılır."""
     m = fts_prefix(n)
     if not m: return []
-    rows = db.execute("""SELECT p.id, p.name, p.birth_year, co.name FROM names n JOIN players p ON p.id = n.player_id LEFT JOIN countries co ON co.id = p.nat_id
-                         WHERE names MATCH ?""" + era_sql("p.id", era) + " ORDER BY p.fame DESC LIMIT ?", (m, limit)).fetchall()
-    return [{"id": i, "name": nm, "born": by, "nat": nat} for i, nm, by, nat in rows]      # nat: milliyet (ülke adı; istemci çevirir), adaşları ayırt etmeye yarar
+    sql = """SELECT p.id, p.name, p.birth_year, co.name, p.norm, p.fame FROM {t} n JOIN players p ON p.id = n.player_id LEFT JOIN countries co ON co.id = p.nat_id
+             WHERE {t} MATCH ?""" + era_sql("p.id", era) + " GROUP BY p.id ORDER BY p.fame DESC LIMIT ?"
+    rows = db.execute(sql.format(t="names"), (m, SUGGEST_POOL)).fetchall()
+    if has_full_names():
+        got = {r[0] for r in rows}
+        rows += [r for r in db.execute(sql.format(t="names_full"), (m, SUGGEST_POOL // 2)).fetchall() if r[0] not in got]
+    def score(r):
+        norm = r[4] or ""; fame = (r[5] or 0) + 0.01
+        return fame * (3.0 if norm == n else 1.5 if norm.startswith(n) else 1.0)
+    rows.sort(key=lambda r: -score(r))
+    return [{"id": i, "name": nm, "born": by, "nat": nat} for i, nm, by, nat, _norm, _fame in rows[:limit]]      # nat: milliyet (ülke adı; istemci çevirir), adaşları ayırt etmeye yarar
 
 @app.get("/players/suggest")
 def players_suggest(q: str = Query(min_length=2), limit: int = 8, era: int = 0):
@@ -490,7 +507,12 @@ def _path(pid: int) -> list:
     out = []
     for cid, name, date, kind, fee, country, league, defunct in db.execute(PATH_SQL, (pid,)):
         if kind == "loan_end": continue
-        if out and out[-1]["club_id"] == cid: continue
+        if out and out[-1]["club_id"] == cid:
+            # kiralık gittiği kulüp sonra bonservisini aldı (kiralık → dönüş → aynı kulübe satış): tek adım, kalıcı transfer olarak görünür.
+            # Yıl ilk geliş yılı kalır; yoksa yol "kiralık Sevilla → Barcelona" gibi okunur (Dani Alves, 2026-10-08)
+            if out[-1]["kind"] == "loan" and kind != "loan":
+                out[-1]["kind"] = "sale" if (fee or 0) > 0 else "free"; out[-1]["fee"] = fee if (fee or 0) > 0 else None
+            continue
         k = "start" if not out else ("loan" if kind == "loan" else ("sale" if (fee or 0) > 0 else "free"))
         out.append({"club_id": cid, "club": name, "year": int(date[:4]) if date else None, "kind": k, "fee": fee if (fee or 0) > 0 else None,
                     "country": country, "league": league, "defunct": bool(defunct)})

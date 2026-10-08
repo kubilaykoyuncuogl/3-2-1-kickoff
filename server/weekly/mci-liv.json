@@ -68,7 +68,7 @@
 {
 "club": "AS Roma",
 "year": 2015,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 },
@@ -175,7 +175,7 @@
 {
 "club": "Aston Villa",
 "year": 2005,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -418,7 +418,7 @@
 {
 "club": "Everton FC",
 "year": 2013,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -1009,7 +1009,7 @@
 {
 "club": "AS Monaco",
 "year": 2014,
-"kind": "loan",
+"kind": "sale",
 "country": "Monaco",
 "defunct": false
 },
@@ -1280,7 +1280,7 @@
 {
 "club": "Chelsea FC",
 "year": 2018,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -1458,7 +1458,7 @@
 {
 "club": "Valencia CF",
 "year": 2014,
-"kind": "loan",
+"kind": "sale",
 "country": "Spain",
 "defunct": false
 },
@@ -2093,7 +2093,7 @@
 {
 "club": "Tottenham Hotspur",
 "year": 2011,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -2420,7 +2420,7 @@
 {
 "club": "Valencia CF",
 "year": 2014,
-"kind": "loan",
+"kind": "sale",
 "country": "Spain",
 "defunct": false
 },
@@ -2469,7 +2469,7 @@
 {
 "club": "FC Barcelona",
 "year": 2026,
-"kind": "loan",
+"kind": "free",
 "country": "Spain",
 "defunct": false
 }
@@ -3197,7 +3197,7 @@
 {
 "club": "Inter Milan",
 "year": 2015,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 },
@@ -3774,7 +3774,7 @@
 {
 "club": "Inter Milan",
 "year": 2025,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 }
@@ -3881,7 +3881,7 @@
 {
 "club": "Celtic FC",
 "year": 2008,
-"kind": "loan",
+"kind": "sale",
 "country": "Scotland",
 "defunct": false
 },
@@ -4515,7 +4515,7 @@
 {
 "club": "Manchester City",
 "year": 2019,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 }
@@ -4637,7 +4637,7 @@
 {
 "club": "AFC Bournemouth",
 "year": 2016,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -5050,7 +5050,7 @@
 {
 "club": "Aberdeen FC",
 "year": 2014,
-"kind": "loan",
+"kind": "free",
 "country": "Scotland",
 "defunct": false
 },
@@ -5093,7 +5093,7 @@
 {
 "club": "Southampton FC",
 "year": 1986,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -5284,14 +5284,14 @@
 {
 "club": "Deportivo Alavés",
 "year": 2020,
-"kind": "loan",
+"kind": "free",
 "country": "Spain",
 "defunct": false
 },
 {
 "club": "Rayo Vallecano",
 "year": 2022,
-"kind": "loan",
+"kind": "sale",
 "country": "Spain",
 "defunct": false
 }
@@ -5555,7 +5555,7 @@
 {
 "club": "Burnley FC",
 "year": 2011,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -5605,7 +5605,7 @@
 {
 "club": "SL Benfica",
 "year": 2003,
-"kind": "loan",
+"kind": "free",
 "country": "Portugal",
 "defunct": false
 },
@@ -5704,14 +5704,14 @@
 {
 "club": "Fleetwood Town",
 "year": 2018,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
 {
 "club": "Preston North End",
 "year": 2021,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -5995,7 +5995,7 @@
 {
 "club": "AFC Bournemouth",
 "year": 2024,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -6167,7 +6167,7 @@
 {
 "club": "Norwich City",
 "year": 2005,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -6387,7 +6387,7 @@
 {
 "club": "Real Sociedad",
 "year": 2016,
-"kind": "loan",
+"kind": "sale",
 "country": "Spain",
 "defunct": false
 },
@@ -6899,7 +6899,7 @@
 {
 "club": "RB Leipzig",
 "year": 2020,
-"kind": "loan",
+"kind": "sale",
 "country": "Germany",
 "defunct": false
 },
@@ -6920,7 +6920,7 @@
 {
 "club": "AS Roma",
 "year": 2024,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 },
@@ -7055,7 +7055,7 @@
 {
 "club": "AIK",
 "year": 2023,
-"kind": "loan",
+"kind": "free",
 "country": "Sweden",
 "defunct": false
 },
@@ -7197,7 +7197,7 @@
 {
 "club": "Deportivo Alavés",
 "year": 2018,
-"kind": "loan",
+"kind": "sale",
 "country": "Spain",
 "defunct": false
 },
@@ -7297,14 +7297,14 @@
 {
 "club": "Huddersfield Town",
 "year": 2016,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
 {
 "club": "Brighton & Hove Albion",
 "year": 2019,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -7468,14 +7468,14 @@
 {
 "club": "Delfino Pescara 1936",
 "year": 2015,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 },
 {
 "club": "FC Crotone",
 "year": 2018,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 },
@@ -7653,7 +7653,7 @@
 {
 "club": "Birmingham City",
 "year": 2025,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 }
@@ -7696,7 +7696,7 @@
 {
 "club": "FC Schalke 04",
 "year": 2015,
-"kind": "loan",
+"kind": "sale",
 "country": "Germany",
 "defunct": false
 },
@@ -8009,7 +8009,7 @@
 {
 "club": "Deportivo Alavés",
 "year": 2016,
-"kind": "loan",
+"kind": "sale",
 "country": "Spain",
 "defunct": false
 },
@@ -8023,7 +8023,7 @@
 {
 "club": "Cádiz CF",
 "year": 2021,
-"kind": "loan",
+"kind": "free",
 "country": "Spain",
 "defunct": false
 },
@@ -8158,7 +8158,7 @@
 {
 "club": "Oldham Athletic",
 "year": 2012,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -8684,7 +8684,7 @@
 {
 "club": "Hellas Verona",
 "year": 2017,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 },
@@ -8755,7 +8755,7 @@
 {
 "club": "Sydney FC",
 "year": 2019,
-"kind": "loan",
+"kind": "free",
 "country": "Australia",
 "defunct": false
 },
@@ -8883,7 +8883,7 @@
 {
 "club": "Leeds United",
 "year": 2018,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -9530,7 +9530,7 @@
 {
 "club": "Norwich City",
 "year": 2012,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -9672,7 +9672,7 @@
 {
 "club": "Southampton FC",
 "year": 2023,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -9793,7 +9793,7 @@
 {
 "club": "RCD Mallorca",
 "year": 2021,
-"kind": "loan",
+"kind": "sale",
 "country": "Spain",
 "defunct": false
 },
@@ -9978,7 +9978,7 @@
 {
 "club": "Girona FC",
 "year": 2022,
-"kind": "loan",
+"kind": "sale",
 "country": "Spain",
 "defunct": false
 },
@@ -10798,14 +10798,14 @@
 {
 "club": "Sporting CP",
 "year": 2020,
-"kind": "loan",
+"kind": "sale",
 "country": "Portugal",
 "defunct": false
 },
 {
 "club": "Tottenham Hotspur",
 "year": 2023,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 }
@@ -11133,7 +11133,7 @@
 {
 "club": "CA Talleres",
 "year": 2023,
-"kind": "loan",
+"kind": "free",
 "country": "Argentina",
 "defunct": false
 },
@@ -11318,7 +11318,7 @@
 {
 "club": "Manchester City",
 "year": 2011,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -11346,7 +11346,7 @@
 {
 "club": "Nottingham Forest",
 "year": 2018,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -11460,7 +11460,7 @@
 {
 "club": "Wolverhampton Wanderers",
 "year": 2023,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -11560,7 +11560,7 @@
 {
 "club": "Stoke City",
 "year": 2013,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -11702,7 +11702,7 @@
 {
 "club": "Tranmere Rovers",
 "year": 2000,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -11944,7 +11944,7 @@
 {
 "club": "Manchester City",
 "year": 1999,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -12157,7 +12157,7 @@
 {
 "club": "Aris Thessaloniki",
 "year": 2011,
-"kind": "loan",
+"kind": "free",
 "country": "Greece",
 "defunct": false
 },
@@ -12320,7 +12320,7 @@
 {
 "club": "US Sassuolo",
 "year": 2025,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 }
@@ -12640,7 +12640,7 @@
 {
 "club": "ESTAC Troyes",
 "year": 2021,
-"kind": "loan",
+"kind": "free",
 "country": "France",
 "defunct": false
 },
@@ -12676,7 +12676,7 @@
 {
 "club": "Derby County",
 "year": 1995,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -12711,14 +12711,14 @@
 {
 "club": "Coventry City",
 "year": 2001,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
 {
 "club": "Stoke City",
 "year": 2003,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -13850,7 +13850,7 @@
 {
 "club": "Wrexham AFC",
 "year": 2025,
-"kind": "loan",
+"kind": "sale",
 "country": "Wales",
 "defunct": false
 }
@@ -14000,7 +14000,7 @@
 {
 "club": "Mansfield Town",
 "year": 2002,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -14078,7 +14078,7 @@
 {
 "club": "Borussia Dortmund",
 "year": 2024,
-"kind": "loan",
+"kind": "sale",
 "country": "Germany",
 "defunct": false
 },
@@ -14357,7 +14357,7 @@
 {
 "club": "1.FC Nuremberg",
 "year": 2006,
-"kind": "loan",
+"kind": "sale",
 "country": "Germany",
 "defunct": false
 },
@@ -14428,7 +14428,7 @@
 {
 "club": "Doncaster Rovers",
 "year": 2013,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -14805,7 +14805,7 @@
 {
 "club": "Como 1907",
 "year": 2024,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 }
@@ -14914,7 +14914,7 @@
 {
 "club": "Aston Villa",
 "year": 2005,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -15106,14 +15106,14 @@
 {
 "club": "AC Milan",
 "year": 2014,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 },
 {
 "club": "Atlético de Madrid",
 "year": 2015,
-"kind": "loan",
+"kind": "free",
 "country": "Spain",
 "defunct": false
 },
@@ -15292,7 +15292,7 @@
 {
 "club": "AS Roma",
 "year": 2015,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 },
@@ -15484,7 +15484,7 @@
 {
 "club": "Liverpool FC",
 "year": 2007,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -15712,7 +15712,7 @@
 {
 "club": "AZ Alkmaar",
 "year": 2009,
-"kind": "loan",
+"kind": "sale",
 "country": "Netherlands",
 "defunct": false
 },
@@ -15997,7 +15997,7 @@
 {
 "club": "Coventry City",
 "year": 2015,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -16161,7 +16161,7 @@
 {
 "club": "Inter Milan",
 "year": 2015,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 },
@@ -16382,7 +16382,7 @@
 {
 "club": "Sevilla FC",
 "year": 2014,
-"kind": "loan",
+"kind": "sale",
 "country": "Spain",
 "defunct": false
 },
@@ -16610,7 +16610,7 @@
 {
 "club": "Aston Villa",
 "year": 2022,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -16624,7 +16624,7 @@
 {
 "club": "Clube de Regatas Vasco da Gama",
 "year": 2024,
-"kind": "loan",
+"kind": "free",
 "country": "Brazil",
 "defunct": false
 },
@@ -16781,14 +16781,14 @@
 {
 "club": "Sunderland AFC",
 "year": 2014,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
 {
 "club": "Sporting CP",
 "year": 2016,
-"kind": "loan",
+"kind": "sale",
 "country": "Portugal",
 "defunct": false
 },
@@ -16945,7 +16945,7 @@
 {
 "club": "Borussia Dortmund",
 "year": 2020,
-"kind": "loan",
+"kind": "sale",
 "country": "Germany",
 "defunct": false
 }
@@ -17272,7 +17272,7 @@
 {
 "club": "AS Monaco",
 "year": 2013,
-"kind": "loan",
+"kind": "sale",
 "country": "Monaco",
 "defunct": false
 },
@@ -17507,7 +17507,7 @@
 {
 "club": "VfB Stuttgart",
 "year": 2019,
-"kind": "loan",
+"kind": "sale",
 "country": "Germany",
 "defunct": false
 },
@@ -17550,7 +17550,7 @@
 {
 "club": "Middlesbrough FC",
 "year": 2003,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -17878,7 +17878,7 @@
 {
 "club": "FC Aarau",
 "year": 2003,
-"kind": "loan",
+"kind": "free",
 "country": "Switzerland",
 "defunct": false
 },
@@ -17892,7 +17892,7 @@
 {
 "club": "FC Sion",
 "year": 2006,
-"kind": "loan",
+"kind": "sale",
 "country": "Switzerland",
 "defunct": false
 },
@@ -18149,7 +18149,7 @@
 {
 "club": "Blackpool FC",
 "year": 2009,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -18348,7 +18348,7 @@
 {
 "club": "Spartak Moscow",
 "year": 2020,
-"kind": "loan",
+"kind": "sale",
 "country": "Russia",
 "defunct": false
 },
@@ -18655,7 +18655,7 @@
 {
 "club": "Manchester City",
 "year": 2019,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 }
@@ -18734,7 +18734,7 @@
 {
 "club": "Notts County",
 "year": 1996,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -18833,7 +18833,7 @@
 {
 "club": "Wigan Athletic",
 "year": 2016,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -18983,7 +18983,7 @@
 {
 "club": "Portsmouth FC",
 "year": 2006,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -19033,7 +19033,7 @@
 {
 "club": "Sheffield Wednesday",
 "year": 2009,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -19496,7 +19496,7 @@
 {
 "club": "Borussia Dortmund",
 "year": 2013,
-"kind": "loan",
+"kind": "sale",
 "country": "Germany",
 "defunct": false
 },
@@ -19546,7 +19546,7 @@
 {
 "club": "West Ham United",
 "year": 2012,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -19638,7 +19638,7 @@
 {
 "club": "Sevilla FC",
 "year": 2020,
-"kind": "loan",
+"kind": "sale",
 "country": "Spain",
 "defunct": false
 },
@@ -19674,7 +19674,7 @@
 {
 "club": "Bolton Wanderers",
 "year": 2012,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -19788,7 +19788,7 @@
 {
 "club": "Crystal Palace",
 "year": 2017,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -19895,7 +19895,7 @@
 {
 "club": "Heart of Midlothian FC",
 "year": 2013,
-"kind": "loan",
+"kind": "free",
 "country": "Scotland",
 "defunct": false
 },
@@ -20045,7 +20045,7 @@
 {
 "club": "Wolverhampton Wanderers",
 "year": 2017,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -20139,7 +20139,7 @@
 {
 "club": "AS Roma",
 "year": 2011,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 },
@@ -20153,14 +20153,14 @@
 {
 "club": "Sunderland AFC",
 "year": 2013,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
 {
 "club": "AC Milan",
 "year": 2017,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 },
@@ -20267,7 +20267,7 @@
 {
 "club": "Southampton FC",
 "year": 2018,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -20495,7 +20495,7 @@
 {
 "club": "Swindon Town",
 "year": 2015,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -20552,7 +20552,7 @@
 {
 "club": "Juventus FC",
 "year": 2020,
-"kind": "loan",
+"kind": "sale",
 "country": "Italy",
 "defunct": false
 },
@@ -20652,7 +20652,7 @@
 {
 "club": "Liverpool FC",
 "year": 2007,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -21414,7 +21414,7 @@
 {
 "club": "Ferencvárosi TC",
 "year": 2025,
-"kind": "loan",
+"kind": "free",
 "country": "Hungary",
 "defunct": false
 }
@@ -21699,7 +21699,7 @@
 {
 "club": "Real Betis Balompié",
 "year": 2017,
-"kind": "loan",
+"kind": "sale",
 "country": "Spain",
 "defunct": false
 },
@@ -22033,7 +22033,7 @@
 {
 "club": "Rangers FC",
 "year": 2018,
-"kind": "loan",
+"kind": "sale",
 "country": "Scotland",
 "defunct": false
 },
@@ -22211,7 +22211,7 @@
 {
 "club": "FC Porto",
 "year": 2020,
-"kind": "loan",
+"kind": "sale",
 "country": "Portugal",
 "defunct": false
 },
@@ -22876,21 +22876,21 @@
 {
 "club": "Leicester City",
 "year": 2008,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
 {
 "club": "Hull City",
 "year": 2011,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
 {
 "club": "Nottingham Forest",
 "year": 2013,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -22926,7 +22926,7 @@
 {
 "club": "FC Twente Enschede",
 "year": 2007,
-"kind": "loan",
+"kind": "sale",
 "country": "Netherlands",
 "defunct": false
 },
@@ -23089,7 +23089,7 @@
 {
 "club": "CD Universidad Católica",
 "year": 2014,
-"kind": "loan",
+"kind": "free",
 "country": "Chile",
 "defunct": false
 },
@@ -23238,7 +23238,7 @@
 {
 "club": "1.FC Union Berlin",
 "year": 2020,
-"kind": "loan",
+"kind": "sale",
 "country": "Germany",
 "defunct": false
 },
@@ -23430,7 +23430,7 @@
 {
 "club": "Wigan Athletic",
 "year": 2006,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -23579,7 +23579,7 @@
 {
 "club": "Stoke City",
 "year": 2006,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 }
@@ -24550,7 +24550,7 @@
 {
 "club": "Cheltenham Town",
 "year": 2005,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -24628,7 +24628,7 @@
 {
 "club": "Valencia CF",
 "year": 2021,
-"kind": "loan",
+"kind": "sale",
 "country": "Spain",
 "defunct": false
 },
@@ -24814,7 +24814,7 @@
 {
 "club": "Millwall FC",
 "year": 2005,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -24835,7 +24835,7 @@
 {
 "club": "Derby County",
 "year": 2013,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -24935,7 +24935,7 @@
 {
 "club": "Hibernian FC",
 "year": 2018,
-"kind": "loan",
+"kind": "free",
 "country": "Scotland",
 "defunct": false
 },
@@ -25014,7 +25014,7 @@
 {
 "club": "Stockport County",
 "year": 2007,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },
@@ -25078,7 +25078,7 @@
 {
 "club": "Reading FC",
 "year": 2019,
-"kind": "loan",
+"kind": "sale",
 "country": "England",
 "defunct": false
 },
@@ -25171,14 +25171,14 @@
 {
 "club": "Paris Saint-Germain",
 "year": 2022,
-"kind": "loan",
+"kind": "sale",
 "country": "France",
 "defunct": false
 },
 {
 "club": "Eintracht Frankfurt",
 "year": 2024,
-"kind": "loan",
+"kind": "sale",
 "country": "Germany",
 "defunct": false
 },
@@ -25249,7 +25249,7 @@
 {
 "club": "Udinese Calcio",
 "year": 2011,
-"kind": "loan",
+"kind": "free",
 "country": "Italy",
 "defunct": false
 },
@@ -25954,7 +25954,7 @@
 {
 "club": "Bradford City",
 "year": 2010,
-"kind": "loan",
+"kind": "free",
 "country": "England",
 "defunct": false
 },

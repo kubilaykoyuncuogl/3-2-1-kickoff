@@ -33,7 +33,9 @@ def path(pid: int) -> list:
     out = []
     for cid, name, date, kind, fee, country, defunct in db.execute(PATH_SQL, (pid,)):
         if kind == "loan_end": continue
-        if out and out[-1]["club_id"] == cid: continue
+        if out and out[-1]["club_id"] == cid:
+            if out[-1]["kind"] == "loan" and kind != "loan": out[-1]["kind"] = "sale" if (fee or 0) > 0 else "free"      # kiralık geldi, sonra bonservisi alındı
+            continue
         k = "start" if not out else ("loan" if kind == "loan" else ("sale" if (fee or 0) > 0 else "free"))
         out.append({"club_id": cid, "club": name, "year": int(date[:4]) if date else None, "kind": k, "country": country, "defunct": bool(defunct)})
     return out
