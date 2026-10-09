@@ -1,0 +1,84 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Sora;font-weight:500;src:url("file:///home/vector/workspace/321-kickoff/app/node_modules/@expo-google-fonts/sora/500Medium/Sora_500Medium.ttf")}
+@font-face{font-family:Sora;font-weight:600;src:url("file:///home/vector/workspace/321-kickoff/app/node_modules/@expo-google-fonts/sora/600SemiBold/Sora_600SemiBold.ttf")}
+@font-face{font-family:Sora;font-weight:700;src:url("file:///home/vector/workspace/321-kickoff/app/node_modules/@expo-google-fonts/sora/700Bold/Sora_700Bold.ttf")}
+@font-face{font-family:Sora;font-weight:800;src:url("file:///home/vector/workspace/321-kickoff/app/node_modules/@expo-google-fonts/sora/800ExtraBold/Sora_800ExtraBold.ttf")}
+:root{--bg:#F2F2F5;--surface:#fff;--fg:#1B1A21;--muted:#5F5D6B;--line:#C9C8D3;--violet:#5E4BC9;--ink:#4A3AAE;--soft:#E9E5FA}
+*{box-sizing:border-box}
+body{margin:0;background:#E4E4EA;font-family:Sora,sans-serif;color:var(--fg);padding:36px 40px 44px;width:1780px}
+h1{font-size:30px;font-weight:800;margin:0 0 6px} .sub{color:var(--muted);font-size:16px;font-weight:500;margin:0 0 26px;max-width:1200px;line-height:1.5}
+.grid{display:grid;grid-template-columns:repeat(4,390px);gap:26px 46px}
+.col{display:flex;flex-direction:column;gap:10px}
+.cap{font-size:20px;font-weight:800} .cap span{color:var(--ink)}
+.why{font-size:14px;font-weight:500;color:var(--muted);line-height:1.45;min-height:82px}
+.why b{color:var(--fg);font-weight:700}
+.lab{font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.phone{width:390px;border-radius:30px;border:3px solid #1B1A21;background:var(--bg);overflow:hidden}
+.scr{padding:22px 20px 18px;display:flex;flex-direction:column;gap:12px}
+.top{display:flex;align-items:center;margin-bottom:6px} .logo{flex:1;font-weight:800;font-style:italic;font-size:42px;line-height:1} .logo small{display:block;font-style:normal;font-size:11px;letter-spacing:.6px;color:var(--muted);font-weight:700;margin-top:4px}
+.nick{font-weight:700;font-size:15px;margin-right:10px} .gear{width:44px;height:44px;border-radius:50%;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+.btn{border-radius:16px;min-height:68px;padding:0 18px;display:flex;align-items:center;gap:14px;font-weight:700;font-size:20px}
+.btn.p{background:var(--violet);color:#fff} .btn.s{background:var(--soft);color:var(--ink);min-height:62px} .btn .elo{font-size:13px;font-weight:600;border-left:1px solid #fff;padding-left:14px} .grow{flex:1}
+.foot{text-align:center;color:var(--muted);font-size:11px;font-weight:600;margin-top:10px}
+svg.i{flex:none}
+.wk{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.h{display:flex;align-items:center;gap:8px;padding:10px 14px}
+.t{font-size:12px;font-weight:600;color:var(--muted)} .m{font-size:13px;font-weight:800;color:var(--ink)} .dot{color:var(--line)}
+.left{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--fg)} .left.pill{background:var(--bg);border-radius:99px;padding:4px 10px}
+.band{position:relative;display:flex;height:72px} .band .bg{position:absolute;left:0;top:0;width:100%;height:100%}
+.side{position:relative;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}
+.side.r{align-items:flex-end;text-align:right}
+.n{font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px;white-space:nowrap} .p{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lose .p{font-size:16px;font-weight:700} .lose .n{font-size:13px}
+.f{display:flex;align-items:center;gap:10px;padding:10px 14px} .d{flex:1;font-size:12.5px;font-weight:500;color:var(--muted);line-height:1.35} .go{font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;display:flex;align-items:center;gap:4px}
+/* B: başlık dışarıda, güçlü */
+.sec{display:flex;align-items:baseline;gap:10px;margin-top:8px} .sec .st{font-size:20px;font-weight:700} .sec .sn{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted)}
+.chipm{font-size:12px;font-weight:700;color:var(--ink);background:var(--soft);border-radius:99px;padding:4px 10px}
+/* C: yalnız bant */
+.solo{border-radius:16px;overflow:hidden;border:1px solid var(--line)} .solo .band{height:96px} .solo .side{justify-content:flex-end;padding-bottom:12px}
+.over{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:8px;padding:9px 14px;z-index:2}
+.over .om{font-size:12px;font-weight:700;color:#fff;background:rgba(0,0,0,.38);border-radius:99px;padding:3px 10px} .over .ol{margin-left:auto;font-size:12px;font-weight:700;color:#fff;background:rgba(0,0,0,.38);border-radius:99px;padding:3px 10px;display:flex;gap:5px;align-items:center}
+.under{display:flex;align-items:center;padding:2px 4px 0;font-size:13px;font-weight:600;color:var(--muted)} .under .go{margin-left:auto}
+/* D: üçüncü düğme */
+.tri{border-radius:16px;overflow:hidden;position:relative;height:92px;display:flex}
+.tri .band{height:92px;flex:1} .tri .side{justify-content:flex-end;padding-bottom:12px}
+.tri .over .om{background:transparent;padding:0;font-size:12px;font-weight:600;opacity:.95}
+.tri .chev{position:absolute;right:14px;top:50%;margin-top:-9px;z-index:3}
+.tri .side.r{padding-right:44px}
+</style></head><body>
+<h1>Ana menüde haftanın maçı: dört öneri</h1>
+<p class="sub">Hepsinde Tolga'nın düzeni duruyor: Ayarlar sağ üstte dişli, iki büyük düğme. Değişen yalnızca haftanın maçının menüye nasıl oturduğu. Her önerinin üstte tek maçlı, altta iki maçlı hali var.</p>
+<div class="grid" id="g"></div>
+<script>
+const trophy=(c)=>'<svg class="i" width="16" height="16" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8.5 20h7" stroke="'+c+'" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const clock=(c="#1B1A21")=>'<svg class="i" width="13" height="13" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="'+c+'" stroke-width="2.2" fill="none"/><path d="M12 7v5l3 2" stroke="'+c+'" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>';
+const chev=(c,s=14)=>'<svg class="i" width="'+s+'" height="'+s+'" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke="'+c+'" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const gear='<svg class="i" width="22" height="22" viewBox="0 0 24 24"><path d="M9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1 1-3ZM15.5 12a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" stroke="#1B1A21" stroke-width="1.7" fill="none" stroke-linejoin="round"/></svg>';
+const nf=(n)=>n.toLocaleString("tr-TR");
+function band(w,extra=""){
+  const sum=w.a.total+w.b.total; let share=Math.max(.3,Math.min(.7,sum?w.a.total/sum:.5)); const mid=share*100,sk=5;
+  const lead=w.a.total===w.b.total?"":w.a.total>w.b.total?"a":"b";
+  const side=(k)=>{const d=w[k],L=lead===k;return '<div class="side '+(k==="b"?"r ":"")+(lead&&!L?"lose":"")+'" style="color:'+d.fg+';flex:'+(k==="a"?share:1-share)+'"><div class="n">'+(L&&k==="a"?trophy(d.fg):"")+d.name+(L&&k==="b"?trophy(d.fg):"")+'</div><div class="p">'+nf(d.total)+' puan</div></div>';};
+  return '<div class="band"><svg class="bg" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="0,0 '+(mid+sk)+',0 '+(mid-sk)+',100 0,100" fill="'+w.a.bg+'"/><polygon points="'+(mid+sk)+',0 100,0 100,100 '+(mid-sk)+',100" fill="'+w.b.bg+'"/></svg>'+extra+side("a")+side("b")+'</div>';
+}
+const TS={name:"Trabzonspor",bg:"#7A1230",fg:"#8FD0F5"},BJK={name:"Beşiktaş",bg:"#111111",fg:"#FFFFFF"},MCI={name:"Man City",bg:"#6CABDD",fg:"#1C2C5B"},LIV={name:"Liverpool",bg:"#C8102E",fg:"#FFFFFF"};
+const W1={mode:"O mu bu mu",left:"1 gün",a:{...TS,total:12480},b:{...BJK,total:13920},info:"Tarafını seç, puanın takımına yansısın."};
+const W2={mode:"Kariyer yolu",left:"5 gün",a:{...MCI,total:8640},b:{...LIV,total:9120},info:"Kulüpler açılır, oyuncuyu bil."};
+const go='<span class="go">Tarafını seç'+chev("#4A3AAE")+'</span>';
+// A: başlık kartın içinde, açıklama altta
+const A=(ws)=>ws.map((w)=>'<div class="wk"><div class="h"><span class="t">Haftanın maçı</span><span class="dot">·</span><span class="m">'+w.mode+'</span><span class="left">'+clock()+w.left+'</span></div>'+band(w)+'<div class="f"><span class="d">'+w.info+'</span>'+go+'</div></div>').join("");
+// B: güçlü bölüm başlığı dışarıda, kart iki satır
+const B=(ws)=>'<div class="sec"><span class="st">'+(ws.length>1?"Haftanın maçları":"Haftanın maçı")+'</span><span class="sn">Tarafını seç, puan kazandır</span></div>'+ws.map((w)=>'<div class="wk">'+band(w)+'<div class="f"><span class="chipm">'+w.mode+'</span><span class="left" style="margin-left:0">'+clock()+w.left+'</span><span class="grow"></span>'+go+'</div></div>').join("");
+// C: yalnız bant; mod ve süre bandın üstünde, altında tek satır
+const C=(ws)=>ws.map((w)=>'<div><div class="solo">'+band(w,'<div class="over"><span class="om">'+w.mode+'</span><span class="ol">'+clock("#fff")+w.left+'</span></div>')+'</div><div class="under" style="margin-top:6px"><span>Haftanın maçı</span>'+go+'</div></div>').join("");
+// D: üçüncü düğme; Online ve Tek oyna ile aynı aile
+const D=(ws)=>ws.map((w)=>'<div class="tri">'+band(w,'<div class="over"><span class="om" style="color:'+w.a.fg+'">Haftanın maçı · '+w.mode+'</span><span class="ol" style="background:transparent;padding:0;margin-right:30px;color:'+w.b.fg+'">'+clock(w.b.fg)+w.left+'</span></div>')+'<span class="chev">'+chev(w.b.fg,18)+'</span></div>').join("");
+const menu=(inner)=>'<div class="top"><div class="logo">3·2·1<small>KICKOFF</small></div><div class="nick">kubi</div><div class="gear">'+gear+'</div></div>'
+ +'<div class="btn p"><span class="grow">Online oyna</span><span class="elo">Elo 1000</span>'+chev("#fff",18)+'</div><div class="btn s"><span class="grow">Tek oyna</span>'+chev("#4A3AAE",18)+'</div>'+inner+'<div class="foot">v0.1 beta · mükemmellik Allah\'a mahsus</div>';
+const V=[["A","Başlık kartın içinde","<b>Senin beğendiğin kart, Tolga'nın düzeninde.</b> “Haftanın maçı” kartın kendi başlığı; açıklama boş duran alt satıra indi. Çizgi ve dışarıdaki başlık yok.",A],
+ ["B","Güçlü bölüm başlığı","<b>Tolga'nın fikrinin toparlanmış hali.</b> Başlık dışarıda ama düğmelerle aynı ağırlıkta, çizgi yok. Kart iki satır: bant ve altında mod, süre, eylem. İki maçta başlık çoğul olur.",B],
+ ["C","Yalnız bant","<b>En sade olan.</b> Kart çerçevesi yok, bant kendisi düğme. Mod ve süre bandın üstünde küçük rozet. Altında tek satır. Tolga'nın “yoğun” itirazına en yakın cevap.",C],
+ ["D","Üçüncü düğme","<b>“Alakasız” hissine en doğrudan cevap.</b> Haftanın maçı, Online ve Tek oyna ile aynı kalıpta üçüncü büyük düğme; yalnızca kulüp renklerinde. Açıklama yok, dokununca giriş sayfası anlatıyor.",D]];
+document.getElementById("g").innerHTML=V.map(([k,n,why,f])=>'<div class="col"><div class="cap"><span>'+k+'</span> · '+n+'</div><div class="why">'+why+'</div><div class="lab">Tek maç</div><div class="phone"><div class="scr">'+menu(f([W1]))+'</div></div><div class="lab">İki maç</div><div class="phone"><div class="scr">'+menu(f([W1,W2]))+'</div></div></div>').join("");
+</script></body></html>
