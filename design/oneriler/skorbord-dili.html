@@ -1,0 +1,89 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/noto-sans@5.3.0/wdth.css">
+<style>
+:root{--night:#0C0E0D;--chalk:#F3F2EC;--dim:#9B9D97;--line:rgba(243,242,236,.22);--you:#8C7CF0;--opp:#F0B45A;--hot:#FF5A6E;
+ --f:"Noto Sans Variable","Noto Sans CJK JP","Noto Sans CJK KR","Noto Sans CJK SC",sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:#D9D9D4;font-family:var(--f);color:#16181A;padding:36px 40px 40px;width:1820px}
+h1{font-size:34px;font-weight:800;font-stretch:75%;margin:0 0 6px;letter-spacing:.2px} .sub{font-size:16px;font-weight:500;color:#4d4f4b;margin:0 0 24px;max-width:1250px;line-height:1.5}
+.row{display:flex;gap:34px;align-items:flex-start}
+.col{display:flex;flex-direction:column;gap:10px}
+.lab{font-size:13px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#4d4f4b;font-stretch:80%} .lab.n{color:#3b2fb0}
+.phone{width:390px;height:844px;border-radius:30px;border:3px solid #000;overflow:hidden;position:relative;background:var(--night);color:var(--chalk)}
+.phone img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.c{font-stretch:62.5%;text-transform:uppercase;letter-spacing:.3px}      /* dar, büyük harf: forma numarası / tabela */
+.num{font-variant-numeric:tabular-nums;font-stretch:62.5%;font-weight:900}
+.scr{height:100%;display:flex;flex-direction:column}
+.pad{padding:0 20px}
+.hd{display:flex;align-items:flex-end;padding:22px 20px 16px}
+.logo{flex:1;font-weight:900;font-stretch:62.5%;font-size:54px;line-height:.9;font-style:italic;letter-spacing:-1px} .logo small{display:block;font-style:normal;font-size:12px;font-weight:800;letter-spacing:3px;color:var(--dim);margin-top:6px}
+.me{font-weight:800;font-size:16px;margin-right:12px} .gear{width:40px;height:40px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center}
+.ln{height:1.5px;background:var(--line)}
+.act{display:flex;align-items:center;padding:18px 20px;gap:14px;position:relative}
+.act .t{flex:1;font-weight:900;font-size:44px;line-height:1}
+.act .k{font-size:12px;font-weight:800;color:var(--dim);letter-spacing:1.5px} .act .v{font-size:26px;line-height:1}
+.act.you::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:5px;background:var(--you)}
+.sec{display:flex;align-items:baseline;padding:16px 20px 8px} .sec .t{flex:1;font-weight:800;font-size:15px;letter-spacing:2px;color:var(--dim)} .sec .r{font-weight:800;font-size:15px;letter-spacing:1px}
+.board{display:flex;height:128px;border-top:1.5px solid var(--line);border-bottom:1.5px solid var(--line)}
+.half{padding:14px 20px;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.half.r{align-items:flex-end;text-align:right}
+.half .nm{font-weight:800;font-size:22px;line-height:1;display:flex;gap:8px;align-items:center;white-space:nowrap} .half .pt{font-size:52px;line-height:.9} .half .u{font-size:12px;font-weight:800;letter-spacing:1.5px;opacity:.85}
+.half.lose .pt{font-size:38px}
+.meta{display:flex;align-items:center;gap:14px;padding:12px 20px;font-weight:800;font-size:15px;letter-spacing:1.2px} .meta .go{margin-left:auto;color:var(--chalk);display:flex;align-items:center;gap:6px} .meta .md{color:var(--you)}
+.foot{margin-top:auto;padding:14px 20px;text-align:center;color:var(--dim);font-size:11px;font-weight:700;letter-spacing:1.2px}
+/* tur */
+.sb{display:flex;height:132px;position:relative}
+.sb .half{flex:1;padding:14px 16px} .sb .who{font-size:11px;font-weight:800;letter-spacing:1.5px;display:flex;align-items:center;gap:6px} .sb .tick{width:14px;height:4px}
+.sb .tm{font-weight:900;font-size:30px;line-height:.95}
+.score{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#000;border:1.5px solid var(--chalk);padding:4px 14px 6px;font-size:54px;line-height:1;color:var(--chalk);white-space:nowrap}
+.time{display:flex;align-items:flex-end;padding:14px 20px 8px} .time .k{flex:1;font-weight:800;font-size:14px;letter-spacing:2px;color:var(--dim)} .time .v{font-size:84px;line-height:.78}
+.bar{height:4px;background:var(--line);margin:0 20px} .bar i{display:block;height:100%;background:var(--chalk);width:62%}
+.fld{padding:18px 20px 0} .fld .k{font-weight:800;font-size:13px;letter-spacing:2px;color:var(--dim)} .fld .in{font-size:30px;font-weight:700;font-stretch:75%;padding:6px 0 8px;border-bottom:2.5px solid var(--you);display:flex;align-items:center} .caret{width:2px;height:30px;background:var(--you);margin-left:2px}
+.sug{display:flex;align-items:baseline;padding:13px 20px;border-bottom:1.5px solid var(--line)} .sug .n{flex:1;font-weight:800;font-size:24px;line-height:1} .sug .m{font-weight:700;font-size:14px;letter-spacing:1px;color:var(--dim)}
+/* geri sayım */
+.cd{flex:1;display:flex;position:relative}
+.cd .half{flex:1;justify-content:space-between;padding:26px 20px}
+.big{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:420px;line-height:1;color:var(--chalk);text-shadow:0 0 0 #000}
+.ring{position:absolute;left:50%;top:50%;width:300px;height:300px;margin:-150px 0 0 -150px;border:2px solid rgba(243,242,236,.55);border-radius:50%}
+.mid{position:absolute;left:0;right:0;top:50%;height:2px;background:rgba(243,242,236,.55)}
+/* dil şeridi */
+.langs{margin-top:28px;background:var(--night);color:var(--chalk);padding:22px 26px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px 30px;border-radius:6px}
+.langs .k{font-size:11px;font-weight:800;letter-spacing:2px;color:var(--dim);margin-bottom:4px} .langs .s{font-weight:900;font-size:32px;line-height:1.1;white-space:nowrap}
+.notes{flex:1;min-width:0;font-size:15px;line-height:1.5;font-weight:500;display:flex;flex-direction:column;gap:12px} .notes h2{font-size:20px;font-weight:800;font-stretch:80%;margin:0} .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px} .notes b{font-weight:800}
+</style></head><body>
+<h1>Skorbord dili: üç hamle</h1>
+<p class="sub">Dar ve büyük harfli yazı (forma numarası, stadyum tabelası), mor yalnızca “sen” işareti olarak kalıyor ve renk kulüplerden geliyor, kutular yerine saha çizgileri. Yazı ailesi Noto Sans: Latin, Kiril, Yunan ve Çince, Japonca, Korece aynı aileden.</p>
+<div class="row">
+  <div class="col"><div class="lab">Bugün · ana menü</div><div class="phone"><img src="../../screenshots/kit/koyu/01-acilis-menu/01A-ana-menu.png"></div></div>
+  <div class="col"><div class="lab n">Skorbord · ana menü</div><div class="phone"><div class="scr" id="home"></div></div></div>
+  <div class="col"><div class="lab n">Skorbord · tur</div><div class="phone"><div class="scr" id="round"></div></div></div>
+  <div class="col"><div class="lab n">Skorbord · geri sayım</div><div class="phone"><div class="scr" id="cd"></div></div></div>
+</div>
+<div class="langs" id="langs"></div>
+<script>
+const trophy=(c,s=18)=>'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8.5 20h7" stroke="'+c+'" stroke-width="2.2" fill="none" stroke-linecap="square"/></svg>';
+const chev=(c,s=20)=>'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke="'+c+'" stroke-width="3" fill="none" stroke-linecap="square"/></svg>';
+const gear='<svg width="20" height="20" viewBox="0 0 24 24"><path d="M9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1 1-3ZM15.5 12a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" stroke="#F3F2EC" stroke-width="1.7" fill="none"/></svg>';
+const TS={bg:"#7A1230",fg:"#8FD0F5"},BJK={bg:"#101010",fg:"#FFFFFF"},GS={bg:"#A90432",fg:"#FDB912"},INT={bg:"#0A2A8C",fg:"#FFFFFF"};
+document.getElementById("home").innerHTML=
+ '<div class="hd"><div class="logo">3·2·1<small>KICKOFF</small></div><div class="me c">kubi</div><div class="gear">'+gear+'</div></div><div class="ln"></div>'
+ +'<div class="act you"><div class="t c">Online oyna</div><div style="text-align:right"><div class="k c">Elo</div><div class="v num">1000</div></div>'+chev("#F3F2EC",24)+'</div><div class="ln"></div>'
+ +'<div class="act"><div class="t c">Tek oyna</div>'+chev("#F3F2EC",24)+'</div><div class="ln"></div>'
+ +'<div class="sec"><div class="t c">Haftanın maçı</div><div class="r c">1 gün kaldı</div></div>'
+ +'<div class="board"><div class="half lose" style="flex:.47;background:'+TS.bg+';color:'+TS.fg+'"><div class="nm c">Trabzonspor</div><div><div class="pt num">12.480</div><div class="u c">puan</div></div></div>'
+ +'<div class="half r" style="flex:.53;background:'+BJK.bg+';color:'+BJK.fg+';border-left:1.5px solid var(--chalk)"><div class="nm c">Beşiktaş '+trophy("#fff")+'</div><div><div class="pt num">13.920</div><div class="u c">puan</div></div></div></div>'
+ +'<div class="meta c"><span class="md">O mu bu mu</span><span class="go">Tarafını seç '+chev("#F3F2EC",16)+'</span></div><div class="ln"></div>'
+ +'<div class="foot c">v0.1 beta · futbol delilerinden, futbol delilerine</div>';
+document.getElementById("round").innerHTML=
+ '<div class="sb"><div class="half" style="background:'+GS.bg+';color:'+GS.fg+'"><div class="who c"><span class="tick" style="background:var(--you)"></span>Sen · kubi</div><div class="tm c">Galata-<br>saray</div></div>'
+ +'<div class="half r" style="background:'+INT.bg+';color:'+INT.fg+'"><div class="who c">Rakip · arda_1907<span class="tick" style="background:var(--opp)"></span></div><div class="tm c" lang="en">Inter<br>Milan</div></div><div class="score num">1 : 0</div></div>'
+ +'<div class="time"><div class="k c">Kalan süre</div><div class="v num">09</div></div><div class="bar"><i></i></div>'
+ +'<div class="fld"><div class="k c">Oyuncu adı</div><div class="in">snei<span class="caret"></span></div></div>'
+ +[["Wesley Sneijder","1984 · Hollanda"],["Rodney Sneijder","1991 · Hollanda"],["Jeffrey Sneijder","1982 · Hollanda"],["Ben Sneijder","1945 · Hollanda"],["Sneider Villada","1999 · Kolombiya"]].map(([n,m])=>'<div class="sug"><div class="n c" lang="en">'+n+'</div><div class="m c">'+m+'</div></div>').join("");
+document.getElementById("cd").innerHTML=
+ '<div class="cd"><div class="half" style="background:'+GS.bg+';color:'+GS.fg+'"><div class="who c" style="font-size:12px;font-weight:800;letter-spacing:1.5px">Sen · kubi</div><div class="tm c" style="font-weight:900;font-size:34px;line-height:.95">Galata-<br>saray</div></div>'
+ +'<div class="half r" style="background:'+INT.bg+';color:'+INT.fg+'"><div class="who c" style="font-size:12px;font-weight:800;letter-spacing:1.5px">Rakip · arda_1907</div><div class="tm c" lang="en" style="font-weight:900;font-size:34px;line-height:.95">Inter<br>Milan</div></div>'
+ +'<div class="mid"></div><div class="ring"></div><div class="big num">3</div></div>';
+const L=[["tr","Türkçe","İki kulüp. Tek isim."],["en","English","Two clubs. One name."],["de","Deutsch","Zwei Vereine. Ein Name."],["pl","Polski","Dwa kluby. Jedno nazwisko."],["ru","Русский","Два клуба. Одно имя."],["el","Ελληνικά","Δύο σύλλογοι. Ένα όνομα."],["ja","日本語","2つのクラブ、1つの名前"],["ko","한국어","두 클럽. 한 이름."],["zh","中文","两家俱乐部，一个名字"]];
+document.getElementById("langs").innerHTML=L.map(([l,k,s])=>'<div lang="'+l+'"><div class="k c" lang="en">'+k+'</div><div class="s c">'+s+'</div></div>').join("");
+</script></body></html>
