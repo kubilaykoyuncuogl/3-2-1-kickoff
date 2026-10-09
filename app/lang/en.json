@@ -521,7 +521,7 @@
  "country.Zambia": "Zambia",
  "scope.league.pick": "Pick a league",
  "scope.league.pick_sub": "clubs with 3+ seasons in the league",
- "menu.elo": "Elo",
+ "menu.elo": "Elo %d",
  "timer.left": "Time left",
  "timer.secs": "%d s",
  "field.player": "Player name",

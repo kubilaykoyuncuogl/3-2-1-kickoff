@@ -521,7 +521,7 @@
  "country.Zambia": "Zambiya",
  "scope.league.pick": "Lig seç",
  "scope.league.pick_sub": "ligde en az 3 sezon oynamış kulüpler",
- "menu.elo": "Elo",
+ "menu.elo": "Elo %d",
  "timer.left": "Kalan süre",
  "timer.secs": "%d sn",
  "field.player": "Oyuncu adı",
