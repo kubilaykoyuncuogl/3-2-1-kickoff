@@ -31,6 +31,8 @@ h1 { font-size: 24px; font-weight: 800; margin: 0; text-wrap: balance }
 .chip { border: 1px solid var(--control); background: var(--surface); border-radius: 99px; padding: 7px 14px; font-weight: 600; font-size: 13px; cursor: pointer }
 .chip[aria-pressed="true"] { background: var(--violet-soft); border-color: var(--violet); color: var(--violet-ink) }
 .chip:focus-visible, .ok:focus-visible, .pair button:focus-visible, textarea:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px }
+.note-bar button { margin-left: 8px; border: 1px solid currentColor; background: transparent; border-radius: 99px; padding: 5px 14px; font-weight: 700; cursor: pointer }
+.note-bar textarea { margin-top: 10px; min-height: 120px; font-size: 13px }
 .note-bar { padding: 10px 14px; border-radius: 12px; background: var(--amber-soft); color: var(--amber-ink); font-weight: 600; font-size: 13px }
 .common { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 28px; padding-block: 4px }
 .common h2, .item h2 { font-size: 18px; font-weight: 800; margin: 0 }
@@ -96,7 +98,11 @@ dialog p { color: #fff; font-weight: 700; text-align: center; margin: 8px 0 0; f
       <button class="chip" data-t="koyu" aria-pressed="false">Koyu tema</button>
     </div>
   </div>
-  <div class="note-bar" id="local" hidden>Notların yalnızca bu cihazda duruyor (ortak kayda yazma iznin yok). Yazdıklarını Kubilay'a ayrıca gönder.</div>
+  <div class="note-bar" id="local" hidden>
+    <span>Notların ortak kayda yazılamadı, yalnızca bu cihazda duruyor: sayfa seninle “yalnızca görüntüleme” yetkisiyle paylaşılmış. Kubilay yetkini Contributor yaparsa kendiliğinden kaydolur; o zamana kadar notlarını kopyalayıp gönder.</span>
+    <button type="button" id="copy">Notlarımı kopyala</button>
+    <textarea id="copyText" readonly hidden aria-label="Notların metni"></textarea>
+  </div>
 
   <main id="main" style="display:flex;flex-direction:column;gap:28px"></main>
 </div>
@@ -196,6 +202,12 @@ async function resolveNames() {
 }
 document.addEventListener("click", (e) => { const th = e.target.closest("[data-t]"); if (th) { shots = th.dataset.t; save(); paint(); } });
 $("zoom").addEventListener("click", () => $("zoom").close());
+$("copy").addEventListener("click", async () => {
+  const lines = ITEMS.map((it) => { const s = state[it.id] || {}; return (s.ok || s.note) ? it.title + ": " + [s.ok ? "ONAY" : "", s.note].filter(Boolean).join(" · ") : ""; }).filter(Boolean);
+  const text = lines.join("\n") || "Henüz not yok.";
+  const box = $("copyText"); box.value = text;
+  try { await navigator.clipboard.writeText(text); $("copy").textContent = "Kopyalandı"; } catch (e) { box.hidden = false; box.focus(); box.select(); }
+});
 build(); paint();
 if (window.claude && window.claude.use) {
   window.claude.use("user").then(async (u) => { user = u; if (u && u.id) { try { myId = await u.id(); } catch (e) {} } resolveNames(); });
