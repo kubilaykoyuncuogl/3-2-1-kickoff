@@ -384,7 +384,34 @@ Klavye açık ekranlar (kategori 14) özellikle: en dar alan orası.
 Sonrası: yayındaki bir dilde yeni anahtar eklendiğinde aynı dört kapı yalnızca o anahtar için işler. Çevirisi gelmemiş
 anahtar İngilizce görünür; yayını durdurmaz ama denetim aracı listeler.
 
-## 11. Kısa kontrol listesi (çevirmen için)
+## 11. Slogan
+
+Seçilen slogan (2026-10-09): **"By football obsessives, for football obsessives."** Her dilde "futbol delisi"nin o dilde gerçekten
+söylenen karşılığıyla kurulur, kelime kelime çevrilmez. Aşağıdakiler taslaktır; onaylayıcı doğrulamadan kesinleşmez.
+Henüz arayüzde kullanılmıyor (ana menünün altındaki satır 27 karakterlik; bu cümleler oraya tek satır sığmaz).
+
+| Kod | Slogan |
+|---|---|
+| `tr` | Futbol delilerinden, futbol delilerine. |
+| `en` | By football obsessives, for football obsessives. |
+| `es` | De futboleros, para futboleros. |
+| `it` | Da malati di calcio, per malati di calcio. |
+| `de` | Von Fußballverrückten, für Fußballverrückte. |
+| `fr` | Par des fous de foot, pour des fous de foot. |
+| `nl` | Door voetbalgekken, voor voetbalgekken. |
+| `pt-PT` | De doentes da bola, para doentes da bola. |
+| `pt-BR` | De loucos por futebol, para loucos por futebol. |
+| `el` | Από τρελούς για την μπάλα, για τρελούς για την μπάλα. |
+| `ru` | От помешанных на футболе для помешанных на футболе. |
+| `uk` | Від схиблених на футболі для схиблених на футболі. |
+| `sr` | Od fudbalskih zaluđenika, za fudbalske zaluđenike. |
+| `ro` | De la împătimiți de fotbal, pentru împătimiți de fotbal. |
+| `pl` | Od futbolowych maniaków dla futbolowych maniaków. |
+
+Özellikle bakılacaklar: `el` ("για" dört kez geçiyor; yedek: "Από ποδοσφαιρόφιλους, για ποδοσφαιρόφιλους."), `ru` / `uk` (uzun; kısa
+kalıp "От фанатов для фанатов" vurguyu zayıflatır), `pt-PT` (fazla argo bulunursa `pt-BR`'deki biçim), `sr` ve `uk` (doğallık).
+
+## 12. Kısa kontrol listesi (çevirmen için)
 
 - [ ] Cümleyi çevirmedim, o dilde yeniden kurdum.
 - [ ] Süslü parantez içlerine dokunmadım; hepsi yerinde.
