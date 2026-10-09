@@ -1,0 +1,42 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/sofia-sans-extra-condensed@5/500.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/sofia-sans-extra-condensed@5/700.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/sofia-sans-extra-condensed@5/800.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/sofia-sans-extra-condensed@5/900.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/roboto-condensed@5/500.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/roboto-condensed@5/700.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/roboto-condensed@5/800.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/roboto-condensed@5/900.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/fira-sans-extra-condensed@5/500.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/fira-sans-extra-condensed@5/700.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/fira-sans-extra-condensed@5/800.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/fira-sans-extra-condensed@5/900.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/anton@5/400.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/noto-sans@5.3.0/wdth.css">
+<style>
+:root{--night:#0C0E0D;--chalk:#F3F2EC;--dim:#9B9D97;--line:rgba(243,242,236,.22);--you:#8C7CF0;--opp:#F0B45A}
+*{box-sizing:border-box}
+body{margin:0;background:#D9D9D4;font-family:"Noto Sans Variable",sans-serif;color:#16181A;padding:34px 36px 40px;width:1900px}
+h1{font-size:32px;font-weight:800;font-stretch:75%;margin:0 0 6px} .sub{font-size:16px;font-weight:500;color:#4d4f4b;margin:0 0 22px;max-width:1300px;line-height:1.5}
+.row{display:grid;grid-template-columns:repeat(5,340px);gap:32px}
+.col{display:flex;flex-direction:column;gap:8px}
+.lab{font-size:19px;font-weight:800;font-stretch:80%} .lab b{color:#3b2fb0} .why{font-size:13.5px;font-weight:500;color:#4d4f4b;line-height:1.4;min-height:58px}
+.phone{width:340px;border-radius:26px;border:3px solid #000;overflow:hidden;background:var(--night);color:var(--chalk);font-family:var(--f);font-stretch:var(--st,100%)}
+.c{text-transform:uppercase;letter-spacing:var(--ls,.3px)} .num{font-variant-numeric:tabular-nums;font-weight:900;font-family:var(--nf,var(--f))}
+.sb{display:flex;height:120px;position:relative} .half{flex:1;padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;min-width:0} .half.r{align-items:flex-end;text-align:right}
+.who{font-size:11px;font-weight:800;letter-spacing:1.4px;display:flex;align-items:center;gap:6px} .tick{width:14px;height:4px}
+.tm{font-weight:900;font-size:var(--tm,28px);line-height:.95}
+.score{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#000;border:1.5px solid var(--chalk);padding:4px 12px 6px;font-size:var(--sc,50px);line-height:1;white-space:nowrap}
+.time{display:flex;align-items:flex-end;padding:12px 18px 8px} .time .k{flex:1;font-weight:800;font-size:13px;letter-spacing:2px;color:var(--dim)} .time .v{font-size:var(--tv,78px);line-height:.8}
+.bar{height:4px;background:var(--line);margin:0 18px} .bar i{display:block;height:100%;background:var(--chalk);width:62%}
+.fld{padding:16px 18px 0} .fld .k{font-weight:800;font-size:12px;letter-spacing:2px;color:var(--dim)} .in{font-size:var(--in,28px);font-weight:700;padding:6px 0 8px;border-bottom:2.5px solid var(--you);display:flex;align-items:center} .caret{width:2px;height:28px;background:var(--you);margin-left:2px}
+.sug{display:flex;align-items:baseline;padding:12px 18px;border-bottom:1.5px solid var(--line);gap:8px} .sug .n{flex:1;font-weight:800;font-size:var(--sn,23px);line-height:1;white-space:nowrap} .sug .m{font-weight:700;font-size:var(--sm,13px);letter-spacing:1px;color:var(--dim);white-space:nowrap}
+.langs{padding:14px 18px 18px;display:flex;flex-direction:column;gap:7px;border-top:1.5px solid var(--line);margin-top:10px} .langs div{font-weight:900;font-size:var(--lg,24px);line-height:1.05;white-space:nowrap;font-family:var(--f),"Noto Sans CJK JP","Noto Sans CJK KR","Noto Sans CJK SC"}
+.langs .k{font-size:10px;font-weight:800;letter-spacing:2px;color:var(--dim)}
+</style></head><body>
+<h1>Skorbord yazısı: beş aday, aynı ekran</h1>
+<p class="sub">Aynı tur ekranı beş yazıyla. Altındaki satırlar aynı cümlenin Türkçe, Rusça, Yunanca, Japonca ve Korece hali; Japonca ve Korece hepsinde Noto Sans CJK'dan geliyor (dar CJK yazısı yok).</p>
+<div class="row" id="row"></div>
+<script>
+const V=[
+ ["A","Sofia Sans Extra Condensed","En “tabela” olanı: çok dar, köşeli. Dar olduğu için puntolar büyüyebiliyor.",'--f:"Sofia Sans Extra Condensed";--tm:30px;--sc:54px;--tv:96px;--in:34px;--sn:30px;--sm:16px;--lg:32px;--ls:.6px'],
+ ["B","Roboto Condensed","Nötr ve temiz; Android'in kendi yazısının darı. Güvenli seçim.",'--f:"Roboto Condensed";--tm:26px;--sc:46px;--tv:72px;--in:26px;--sn:21px;--sm:12px;--lg:23px'],
+ ["C","Fira Sans Extra Condensed","Daha yumuşak ve insancıl; uzun metinde en rahat okunan.",'--f:"Fira Sans Extra Condensed";--tm:27px;--sc:48px;--tv:86px;--in:30px;--sn:26px;--sm:14px;--lg:28px'],
+ ["D","Noto Sans (dar)","Önceki çizimdeki yazı. Bütün diller tek aileden.",'--f:"Noto Sans Variable";--st:62.5%;--tm:28px;--sc:50px;--tv:78px;--in:28px;--sn:23px;--sm:13px;--lg:24px'],
+ ["E","Rakamlar Anton, metin Sofia","Rakamlara ayrı tabela yazısı (yalnız Latin, ama rakam her dilde aynı); metin her dili taşıyan aileden.",'--f:"Sofia Sans Extra Condensed";--nf:"Anton";--tm:30px;--sc:46px;--tv:86px;--in:34px;--sn:30px;--sm:16px;--lg:32px;--ls:.6px'],
+];
+const GS={bg:"#A90432",fg:"#FDB912"},INT={bg:"#0A2A8C",fg:"#FFFFFF"};
+const round='<div class="sb"><div class="half" style="background:'+GS.bg+';color:'+GS.fg+'"><div class="who c"><span class="tick" style="background:var(--you)"></span>Sen · kubi</div><div class="tm c">Galata-<br>saray</div></div>'
+ +'<div class="half r" style="background:'+INT.bg+';color:'+INT.fg+'"><div class="who c">Rakip · arda<span class="tick" style="background:var(--opp)"></span></div><div class="tm c" lang="en">Inter<br>Milan</div></div><div class="score num"'+'>1 : 0</div></div>'
+ +'<div class="time"><div class="k c">Kalan süre</div><div class="v num">09</div></div><div class="bar"><i></i></div>'
+ +'<div class="fld"><div class="k c">Oyuncu adı</div><div class="in">snei<span class="caret"></span></div></div>'
+ +[["Wesley Sneijder","1984 · Hollanda"],["Rodney Sneijder","1991 · Hollanda"],["Sneider Villada","1999 · Kolombiya"]].map(([n,m])=>'<div class="sug"><div class="n c" lang="en">'+n+'</div><div class="m c">'+m+'</div></div>').join("")
+ +'<div class="langs"><div class="k c" lang="en">Aynı cümle, beş dil</div><div class="c">İki kulüp. Tek isim.</div><div class="c" lang="ru">Два клуба. Одно имя.</div><div class="c" lang="el">Δύο σύλλογοι. Ένα όνομα.</div><div lang="ja">2つのクラブ、1つの名前</div><div lang="ko">두 클럽. 한 이름.</div></div>';
+document.getElementById("row").innerHTML=V.map(([k,n,why,st])=>'<div class="col"><div class="lab"><b>'+k+'</b> · '+n+'</div><div class="why">'+why+'</div><div class="phone" style=\''+st+'\'>'+round+'</div></div>').join("");
+</script></body></html>
