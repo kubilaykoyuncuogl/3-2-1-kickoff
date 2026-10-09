@@ -10,8 +10,19 @@ export const MIN_SCALE = 0.8;
 export const MIN_H = 720;            // geniş ekranda bir sayfanın sığması gereken tasarım yüksekliği
 export const MAX_COL = 520;
 
-export const FONT = { 500: "Sora_500Medium", 600: "Sora_600SemiBold", 700: "Sora_700Bold", 800: "Sora_800ExtraBold" } as const;
+export const FONT = { 400: "Sora_400Regular", 500: "Sora_500Medium", 600: "Sora_600SemiBold", 700: "Sora_700Bold", 800: "Sora_800ExtraBold" } as const;
 export type Weight = keyof typeof FONT;
+
+// Yazı rolleri (design/DESIGN.md "Tipografi kararları"): [boyut, satır yüksekliği, ağırlık]. Değerler 400 genişlikteki tasarım ölçüsüdür;
+// ekranda useTheme().s ile ekran genişliğine orantılı ölçeklenir (ekip kararı 2026-10-09: orantılı ölçek kalır, sayfa kaymaz; kaydırma gereken yerde eleman içinde).
+export const TYPE = {
+  display: [40, 48, 800], countdown: [64, 72, 800], screenTitle: [28, 36, 700], navTitle: [20, 28, 600], sectionTitle: [20, 28, 700],
+  score: [32, 40, 700], scoreCompact: [20, 28, 700], timer: [24, 32, 700],
+  body: [16, 24, 400], bodyStrong: [16, 24, 600], label: [16, 22, 600], fieldLabel: [14, 20, 600], input: [18, 26, 400], caption: [14, 20, 500],
+} as const satisfies Record<string, readonly [number, number, Weight]>;
+export type TypeRole = keyof typeof TYPE;
+// Ölçüler (design/tokens.json "size"): en az dokunma alanı, düğme, yazı kutusu / öneri / ayar satırı
+export const SIZE = { touch: 48, button: 52, input: 56, row: 56, icon: 24 } as const;
 
 export function useTheme() {
   const scheme = useColorScheme();

@@ -264,9 +264,13 @@ def _players_suggest(n: str, limit: int, era: int = 0):
     if has_full_names():
         got = {r[0] for r in rows}
         rows += [r for r in db.execute(sql.format(t="names_full"), (m, SUGGEST_POOL // 2)).fetchall() if r[0] not in got]
+    toks = n.split()
     def score(r):
         norm = r[4] or ""; fame = (r[5] or 0) + 0.01
-        return fame * (3.0 if norm == n else 1.5 if norm.startswith(n) else 1.0)
+        words = norm.split()
+        # görünen adın bir kelimesi yazılanla başlıyorsa da öne alınır ("snei" → Ben Sneijder; yalnız tam adı tutan Jailerth Navarro'nun önünde)
+        shown = all(any(w.startswith(tk) for w in words) for tk in toks)
+        return fame * (3.0 if norm == n else 1.5 if shown else 1.0)
     rows.sort(key=lambda r: -score(r))
     return [{"id": i, "name": nm, "born": by, "nat": nat} for i, nm, by, nat, _norm, _fame in rows[:limit]]      # nat: milliyet (ülke adı; istemci çevirir), adaşları ayırt etmeye yarar
 

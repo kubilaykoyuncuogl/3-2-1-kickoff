@@ -1,0 +1,534 @@
+{
+  "scope": "Opaque token pairs only; decorative borders are not automatically failures.",
+  "checks": [
+    {
+      "theme": "light",
+      "foreground": "textPrimary",
+      "background": "background",
+      "ratio": 15.452,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "textPrimary",
+      "background": "surface",
+      "ratio": 17.265,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "textPlaceholder",
+      "background": "surface",
+      "ratio": 6.433,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "textPlaceholder",
+      "background": "background",
+      "ratio": 5.757,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "iconSecondary",
+      "background": "surface",
+      "ratio": 6.433,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "iconSecondary",
+      "background": "background",
+      "ratio": 5.757,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "textSecondary",
+      "background": "background",
+      "ratio": 5.757,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "textSecondary",
+      "background": "surface",
+      "ratio": 6.433,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "textSecondary",
+      "background": "surfaceSubtle",
+      "ratio": 5.32,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "textPrimary",
+      "background": "surfaceSubtle",
+      "ratio": 14.278,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "primaryText",
+      "background": "primary",
+      "ratio": 6.314,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "primaryText",
+      "background": "primaryPressed",
+      "ratio": 8.375,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "secondaryText",
+      "background": "secondary",
+      "ratio": 6.801,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "secondaryText",
+      "background": "secondaryPressed",
+      "ratio": 5.944,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "selfText",
+      "background": "selfSubtle",
+      "ratio": 6.801,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "opponentText",
+      "background": "opponentSubtle",
+      "ratio": 5.377,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "successText",
+      "background": "successSubtle",
+      "ratio": 4.576,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "dangerText",
+      "background": "dangerSubtle",
+      "ratio": 4.868,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "warningText",
+      "background": "warningSubtle",
+      "ratio": 5.377,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "disabledText",
+      "background": "disabledSurface",
+      "ratio": 5.32,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "controlBorder",
+      "background": "surface",
+      "ratio": 3.746,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "controlBorder",
+      "background": "background",
+      "ratio": 3.353,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "focus",
+      "background": "surface",
+      "ratio": 6.314,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "focus",
+      "background": "background",
+      "ratio": 5.651,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "dangerText",
+      "background": "surface",
+      "ratio": 6.004,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "successText",
+      "background": "surface",
+      "ratio": 5.33,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "selfText",
+      "background": "surface",
+      "ratio": 8.375,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "opponentText",
+      "background": "surface",
+      "ratio": 6.123,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "timerFill",
+      "background": "background",
+      "ratio": 5.757,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "foreground": "timerFill",
+      "background": "surface",
+      "ratio": 6.433,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "textPrimary",
+      "background": "background",
+      "ratio": 15.728,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "textPrimary",
+      "background": "surface",
+      "ratio": 14.411,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "textPlaceholder",
+      "background": "surface",
+      "ratio": 6.493,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "textPlaceholder",
+      "background": "background",
+      "ratio": 7.086,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "iconSecondary",
+      "background": "surface",
+      "ratio": 6.493,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "iconSecondary",
+      "background": "background",
+      "ratio": 7.086,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "textSecondary",
+      "background": "background",
+      "ratio": 7.086,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "textSecondary",
+      "background": "surface",
+      "ratio": 6.493,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "textSecondary",
+      "background": "surfaceSubtle",
+      "ratio": 5.681,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "textPrimary",
+      "background": "surfaceSubtle",
+      "ratio": 12.61,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "primaryText",
+      "background": "primary",
+      "ratio": 5.549,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "primaryText",
+      "background": "primaryPressed",
+      "ratio": 6.69,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "secondaryText",
+      "background": "secondary",
+      "ratio": 6.965,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "secondaryText",
+      "background": "secondaryPressed",
+      "ratio": 5.795,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "selfText",
+      "background": "selfSubtle",
+      "ratio": 6.965,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "opponentText",
+      "background": "opponentSubtle",
+      "ratio": 8.495,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "successText",
+      "background": "successSubtle",
+      "ratio": 6.785,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "dangerText",
+      "background": "dangerSubtle",
+      "ratio": 6.271,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "warningText",
+      "background": "warningSubtle",
+      "ratio": 8.495,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "disabledText",
+      "background": "disabledSurface",
+      "ratio": 5.681,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "controlBorder",
+      "background": "surface",
+      "ratio": 3.607,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "controlBorder",
+      "background": "background",
+      "ratio": 3.936,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "focus",
+      "background": "surface",
+      "ratio": 8.036,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "focus",
+      "background": "background",
+      "ratio": 8.771,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "dangerText",
+      "background": "surface",
+      "ratio": 7.011,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "successText",
+      "background": "surface",
+      "ratio": 8.679,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "selfText",
+      "background": "surface",
+      "ratio": 8.036,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "opponentText",
+      "background": "surface",
+      "ratio": 10.807,
+      "minimum": 4.5,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "timerFill",
+      "background": "background",
+      "ratio": 7.086,
+      "minimum": 3,
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "timerFill",
+      "background": "surface",
+      "ratio": 6.493,
+      "minimum": 3,
+      "passed": true
+    }
+  ],
+  "observedPaletteExamples": [
+    {
+      "theme": "light",
+      "pairing": "decorative border on white",
+      "ratio": 1.655,
+      "minimum": 3,
+      "passed": false
+    },
+    {
+      "theme": "light",
+      "pairing": "old strong border on white",
+      "ratio": 2.658,
+      "minimum": 3,
+      "passed": false
+    },
+    {
+      "theme": "dark",
+      "pairing": "decorative border on surface",
+      "ratio": 1.506,
+      "minimum": 3,
+      "passed": false
+    },
+    {
+      "theme": "dark",
+      "pairing": "old strong border on surface",
+      "ratio": 2.535,
+      "minimum": 3,
+      "passed": false
+    },
+    {
+      "theme": "light",
+      "pairing": "white text on amber fill (prohibited pairing)",
+      "ratio": 2.166,
+      "minimum": 4.5,
+      "passed": false
+    },
+    {
+      "theme": "dark",
+      "pairing": "white text on purple fill (prohibited pairing)",
+      "ratio": 3.357,
+      "minimum": 4.5,
+      "passed": false
+    }
+  ],
+  "summary": {
+    "total": 60,
+    "passed": 60,
+    "failed": 0
+  }
+}

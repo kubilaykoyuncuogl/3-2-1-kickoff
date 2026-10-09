@@ -7,7 +7,7 @@ import { remaining, useNow } from "@/hooks";
 import { api } from "@/net/socket";
 import { Player, Room, State, useGame, useSettings } from "@/store";
 import { useTheme } from "@/theme";
-import { Btn, Chip, Eyebrow, ListCard, Nav, Page, Panel, Progress, Spacer, TimerBox, Toast, Txt, t } from "@/ui";
+import { Btn, Chip, Eyebrow, Feedback, ListCard, Nav, Page, Panel, Progress, RoundTimer, Scoreboard, Spacer, Toast, Txt, t } from "@/ui";
 import { Autocomplete } from "@/ui/autocomplete";
 import { eraLabel, scopeLabel } from "@/ui/pickers";
 import { ResultCard, Section, pairLines } from "@/ui/result";
@@ -199,28 +199,23 @@ function Round({ room, mine, opp, rem, me, awaySecs }: { room: Room; mine?: Play
   const penRem = Math.max(0, pen - (Date.now() - penAt));
   const last = room.last ?? {};
   const [clearKey, setClearKey] = useState(0);
-  let toast: { text: string; kind: "no" | "muted" } | null = null;
-  if (opp?.away) toast = { text: t("match.opp_away", awaySecs), kind: "muted" };
-  else if (last.type === "wrong") toast = last.pid === (room.me ?? me) ? { text: t("match.wrong_me", last.name), kind: "no" } : { text: t("match.wrong_opp", last.name, Math.ceil((opp?.penalty_ms ?? 0) / 1000)), kind: "muted" };
+  // tek durum alanı (kit): yanlış / kilit, rakibin yanlışı ya da kopması; yazı kutusunun hemen altında, klavye açık ya da kapalı aynı yerde
+  const mineWrong = last.type === "wrong" && last.pid === (room.me ?? me);
+  const lockSecs = Math.ceil(penRem / 1000);
+  const oppSecs = Math.ceil((opp?.penalty_ms ?? 0) / 1000);
+  const status = opp?.away ? <Feedback kind="warn" title={t("match.opp_away_title")} text={t("match.opp_away_text", awaySecs)} />
+    : mineWrong ? <Feedback kind="no" title={t("match.locked_title", last.name)} text={lockSecs > 0 ? t("match.locked_text", lockSecs) : undefined} />
+    : last.type === "wrong" ? <Feedback kind="warn" title={t("match.opp_wrong_title", last.name)} text={oppSecs > 0 ? t("match.opp_wrong_text", oppSecs) : undefined} />
+    : undefined;
   void penaltyAt;
   return (
     <>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: s(8) }}>
-        <View style={{ flex: 1, gap: s(4) }}>
-          <Chip text={mine?.team_name ?? ""} kind="violet" style={{ maxWidth: s(250) }} />
-          <Chip text={opp?.team_name ?? ""} kind="amber" style={{ maxWidth: s(250) }} />
-        </View>
-        <TimerBox text={String(Math.ceil(rem / 1000))} hot={hot} />
-      </View>
-      <Progress value={rem} max={room.round_ms ?? 15000} hot={hot} />
-      {/* klavye açıkken: bildirim kutunun altında, skor satırı tek satır özet */}
+      <Scoreboard compact={kb} me={{ nick: mine?.nick ?? "", team: mine?.team_name, score: mine?.score ?? 0 }} opp={{ nick: opp?.nick ?? "", team: opp?.team_name, score: opp?.score ?? 0 }} />
+      <RoundTimer ms={rem} total={room.round_ms ?? 15000} hot={hot} compact={kb} />
       <View style={{ flex: 1, minHeight: 0 }}>
-        <Autocomplete kind="player" fill locked={penRem > 0} lockedText={t("locked_fmt", Math.ceil(penRem / 1000))} clearKey={clearKey}
-          onPick={(id, name) => { api.guess(id, name); setClearKey((k) => k + 1); }}
-          below={kb && toast ? <Toast text={toast.text} kind={toast.kind} /> : undefined} />
+        <Autocomplete kind="player" label fill locked={penRem > 0} lockedText={t("ph.player")} clearKey={clearKey}
+          onPick={(id, name) => { api.guess(id, name); setClearKey((k) => k + 1); }} below={status} />
       </View>
-      {toast && !kb ? <Toast text={toast.text} kind={toast.kind} /> : null}
-      {kb ? <Txt size={13} w={700} color="muted" center lines={1}>{`${mine?.nick ?? ""}  ${mine?.score ?? 0} : ${opp?.score ?? 0}  ${opp?.nick ?? ""}`}</Txt> : <ScoreRow mine={mine} opp={opp} />}
     </>
   );
 }

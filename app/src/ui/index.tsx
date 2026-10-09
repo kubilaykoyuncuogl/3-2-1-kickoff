@@ -4,19 +4,23 @@ import { Pressable, ScrollView, StyleProp, Text, TextInput, TextInputProps, Text
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 import { useRouter } from "expo-router";
-import { FONT, Token, Weight, useTheme } from "../theme";
+import { FONT, SIZE, TYPE, Token, TypeRole, Weight, useTheme } from "../theme";
 import { t } from "../i18n";
 
 export const RADIUS = 14;
-export const BORDER = 2;
+export const BORDER = 1;      // dekoratif çizgi ve kontrol sınırı (kit: 1); odak / seçili vurgu FOCUS
+export const FOCUS = 2;
 
 // ---------- metin ----------
-type TxtProps = PropsWithChildren<{ size?: number; w?: Weight; color?: Token; center?: boolean; style?: StyleProp<TextStyle>; lines?: number; upper?: boolean }>;
-export function Txt({ children, size = 17, w = 500, color = "fg", center, style, lines, upper }: TxtProps) {
+// `role`: kitin yazı rolü (theme TYPE: body, label, caption…); verilirse boyut, satır yüksekliği ve ağırlık oradan gelir. Yeni ekranlarda rol kullan;
+// `size` / `w` kite geçmemiş ekranlar için duruyor.
+type TxtProps = PropsWithChildren<{ role?: TypeRole; size?: number; w?: Weight; color?: Token; center?: boolean; style?: StyleProp<TextStyle>; lines?: number; upper?: boolean }>;
+export function Txt({ children, role, size = 17, w = 500, color = "fg", center, style, lines, upper }: TxtProps) {
   const { c, s } = useTheme();
   const text = upper && typeof children === "string" ? children.toLocaleUpperCase("tr") : children;
+  const [fs, lh, fw] = role ? TYPE[role] : [size, size * 1.3, w];
   return (
-    <Text numberOfLines={lines} style={[{ fontFamily: FONT[w], fontSize: s(size), lineHeight: s(size * 1.3), color: c[color], textAlign: center ? "center" : "left" }, style]}>
+    <Text numberOfLines={lines} style={[{ fontFamily: FONT[fw as Weight], fontSize: s(fs), lineHeight: s(lh), color: c[color], textAlign: center ? "center" : "left" }, style]}>
       {text}
     </Text>
   );
@@ -113,26 +117,116 @@ export function Badge({ text, kind = "muted" }: { text: string; kind?: "muted" |
 }
 
 // ---------- düğmeler ----------
-type BtnKind = "violet" | "amber" | "line" | "ghost";
-export function Btn({ text, kind = "violet", right, onPress, disabled, style, color }: {
-  text: string; kind?: BtnKind; right?: string; onPress?: () => void; disabled?: boolean; style?: StyleProp<ViewStyle>; color?: Token;
+// Kit: violet = ana eylem (ekranda bir tane), soft = ikincil (soluk mor), line = nötr, ghost = metin düğmesi. Düz renk, gölge / alt kenar yok;
+// basılıyken yalnızca zemin koyulaşır. amber kite geçmemiş ekranlarda kalan eski tür (amber rakibin rengidir, eylem rengi değil).
+type BtnKind = "violet" | "soft" | "amber" | "line" | "ghost";
+export function Btn({ text, kind = "violet", right, onPress, disabled, style, color, label }: {
+  text: string; kind?: BtnKind; right?: string; onPress?: () => void; disabled?: boolean; style?: StyleProp<ViewStyle>; color?: Token; label?: string;
 }) {
   const { c, s } = useTheme();
-  const fg: Token = color ?? ({ violet: "violet_on", amber: "amber_on", line: "fg", ghost: "muted" }[kind] as Token);
-  const bg = { violet: c.violet_fill, amber: c.amber_fill, line: c.surface, ghost: "transparent" }[kind];
-  const shadow = kind === "violet" ? c.violet_shade : kind === "amber" ? c.amber_shade : undefined;
+  const fg: Token = disabled ? "muted" : color ?? ({ violet: "violet_on", soft: "violet_ink", amber: "amber_on", line: "fg", ghost: "muted" }[kind] as Token);
+  const bg = { violet: c.violet_fill, soft: c.violet_soft, amber: c.amber_fill, line: c.surface, ghost: "transparent" }[kind];
+  const down = { violet: c.violet_pressed, soft: c.violet_soft_pressed, amber: c.amber_shade, line: c.surface_subtle, ghost: c.surface_subtle }[kind];
   return (
     <Pressable
-      onPress={onPress} disabled={disabled}
+      onPress={onPress} disabled={disabled} accessibilityRole="button" accessibilityLabel={label ?? text} accessibilityState={{ disabled: !!disabled }}
       style={({ pressed }) => [{
-        backgroundColor: bg, borderRadius: s(RADIUS), minHeight: s(kind === "ghost" ? 44 : 54), paddingHorizontal: s(18),
-        borderWidth: kind === "line" ? BORDER : 0, borderColor: pressed ? c.line_strong : c.line,
-        flexDirection: "row", alignItems: "center", justifyContent: right ? "space-between" : "center",
-        opacity: disabled ? 0.45 : 1,
-        borderBottomWidth: shadow && !pressed ? 2 + (kind === "line" ? BORDER : 0) : kind === "line" ? BORDER : 0, borderBottomColor: shadow ?? c.line,
+        backgroundColor: disabled ? c.surface_subtle : pressed ? down : bg, borderRadius: s(12), minHeight: s(kind === "ghost" ? SIZE.touch : SIZE.button), paddingHorizontal: s(16),
+        borderWidth: kind === "line" ? BORDER : 0, borderColor: c.control,
+        flexDirection: "row", alignItems: "center", justifyContent: right ? "space-between" : "center", gap: s(8),
       }, style]}>
-      <Txt size={16} w={kind === "ghost" ? 600 : 700} color={fg} lines={1} style={{ flexShrink: 1 }}>{text}</Txt>
-      {right === ">" ? <Chevron color={fg} /> : right ? <Txt size={17} w={800} color={fg}>{right}</Txt> : null}
+      <Txt role="label" color={fg} lines={1} style={{ flexShrink: 1 }}>{text}</Txt>
+      {right === ">" ? <Chevron color={fg} /> : right ? <Txt size={17} w={700} color={fg}>{right}</Txt> : null}
+    </Pressable>
+  );
+}
+
+// ---------- kit bileşenleri (design/COMPONENTS.md) ----------
+export function Gear({ color = "muted", size = SIZE.icon }: { color?: Token; size?: number }) {
+  const { c, s } = useTheme();
+  return (
+    <Svg width={s(size)} height={s(size)} viewBox="0 0 24 24">
+      <Path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3 1a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.5 2.6a7.6 7.6 0 0 0-2.6 1.5l-2.3-1-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-1a7.6 7.6 0 0 0 2.6 1.5l.5 2.6h4l.5-2.6a7.6 7.6 0 0 0 2.6-1.5l2.3 1 2-3.4z" stroke={c[color]} strokeWidth={1.8} fill="none" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+// Yazı kutusunun üstündeki kalıcı etiket + kutu (+ altında yardım / hata). Placeholder etiketin yerine geçmez.
+export function Field({ label, children, gap = 6 }: PropsWithChildren<{ label: string; gap?: number }>) {
+  const { s } = useTheme();
+  return (
+    <View style={{ gap: s(gap) }}>
+      <Txt role="fieldLabel" color="muted">{label}</Txt>
+      {children}
+    </View>
+  );
+}
+
+// Tek açık durum alanı: başlık (+ açıklama). ok: başarı, no: hata / yanlış, warn: uyarı (rakip, bağlantı), muted: nötr bilgi.
+// Aynı olay için ikinci bir bildirim gösterilmez; kalan süre gibi ayrıntı açıklama satırında tam cümleyle yazılır.
+export function Feedback({ title, text, kind = "ok", style }: { title: string; text?: string; kind?: "ok" | "no" | "warn" | "muted"; style?: StyleProp<ViewStyle> }) {
+  const { c, s } = useTheme();
+  const bg = { ok: c.ok_soft, no: c.no_soft, warn: c.amber_soft, muted: c.surface_subtle }[kind];
+  const fg: Token = { ok: "ok", no: "no", warn: "amber_ink", muted: "fg" }[kind] as Token;
+  return (
+    <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={[{ backgroundColor: bg, borderRadius: s(12), paddingHorizontal: s(16), paddingVertical: s(10), gap: s(2) }, style]}>
+      <Txt role="bodyStrong" color={fg}>{title}</Txt>
+      {text ? <Txt role="caption" color={fg}>{text}</Txt> : null}
+    </View>
+  );
+}
+
+// Maç üst bandı: solda sen (etiket + takım rozeti), ortada skor, sağda rakip. Skor hep üsttedir; klavye açıkken küçülür (compact), altta tekrarlanmaz.
+export function Scoreboard({ me, opp, compact }: { me: { nick: string; team?: string; score: number }; opp: { nick: string; team?: string; score: number }; compact?: boolean }) {
+  const { c, s } = useTheme();
+  const side = (p: { nick: string; team?: string }, mine: boolean) => (
+    <View style={{ flex: 1, gap: s(4), alignItems: mine ? "flex-start" : "flex-end" }}>
+      <Txt role="caption" color="muted" lines={1}>{`${mine ? t("you") : t("opponent")} · ${p.nick}`}</Txt>
+      {p.team ? (
+        <View style={{ backgroundColor: mine ? c.violet_soft : c.amber_soft, borderRadius: 999, paddingHorizontal: s(12), paddingVertical: s(compact ? 3 : 5), maxWidth: "100%" }}>
+          <Txt role={compact ? "caption" : "bodyStrong"} color={mine ? "violet_ink" : "amber_ink"} lines={1}>{p.team}</Txt>
+        </View>
+      ) : null}
+    </View>
+  );
+  return (
+    <View accessible accessibilityLabel={t("a11y.score", me.score, opp.score)} style={{ flexDirection: "row", alignItems: "center", gap: s(10) }}>
+      {side(me, true)}
+      <Txt role={compact ? "scoreCompact" : "score"} style={{ fontVariant: ["tabular-nums"] }}>{`${me.score} : ${opp.score}`}</Txt>
+      {side(opp, false)}
+    </View>
+  );
+}
+
+// Kalan süre: etiket + saniye, altında ilerleme çubuğu. hot: son saniyeler (kırmızı).
+export function RoundTimer({ ms, total, hot, compact }: { ms: number; total: number; hot?: boolean; compact?: boolean }) {
+  const { c, s } = useTheme();
+  const secs = Math.ceil(ms / 1000);
+  const pct = total > 0 ? Math.max(0, Math.min(1, ms / total)) : 0;
+  return (
+    <View accessible accessibilityRole="timer" accessibilityLabel={t("a11y.time_left", secs)} style={{ gap: s(compact ? 4 : 6) }}>
+      <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" }}>
+        <Txt role="caption" color="muted">{t("timer.left")}</Txt>
+        <Txt role={compact ? "scoreCompact" : "timer"} color={hot ? "no" : "fg"} style={{ fontVariant: ["tabular-nums"] }}>{t("timer.secs", secs)}</Txt>
+      </View>
+      <View style={{ height: s(6), borderRadius: 999, backgroundColor: c.line, overflow: "hidden" }}>
+        <View style={{ width: `${pct * 100}%`, height: "100%", backgroundColor: hot ? c.no : c.muted, borderRadius: 999 }} />
+      </View>
+    </View>
+  );
+}
+
+// Giriş satırı (ör. ana menüde Ayarlar): [ikon] ad ……… ok. Tek dokunma hedefi; ikon ve ok süs.
+export function EntryRow({ title, lead, onPress }: { title: string; lead?: ReactNode; onPress?: () => void }) {
+  const { c, s } = useTheme();
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={title} style={({ pressed }) => ({
+      backgroundColor: pressed ? c.surface_subtle : c.surface, borderRadius: s(16), borderWidth: BORDER, borderColor: c.line, minHeight: s(SIZE.row),
+      paddingHorizontal: s(16), flexDirection: "row", alignItems: "center", gap: s(12),
+    })}>
+      {lead}
+      <Txt role="label" style={{ flex: 1 }}>{title}</Txt>
+      <Chevron color="muted" />
     </Pressable>
   );
 }
@@ -169,8 +263,9 @@ export function Segment<T extends string>({ values, labels, current, onChange }:
       {values.map((v, i) => {
         const on = v === current;
         return (
-          <Pressable key={v} onPress={() => onChange(v)} style={{ backgroundColor: on ? c.fg : "transparent", borderRadius: s(8), borderWidth: on ? 0 : BORDER, borderColor: c.line_strong, paddingHorizontal: s(10), minHeight: s(36), justifyContent: "center" }}>
-            <Txt size={12} w={600} color={on ? "bg" : "fg"}>{labels[i]}</Txt>
+          <Pressable key={v} onPress={() => onChange(v)} accessibilityRole="button" accessibilityLabel={labels[i]} accessibilityState={{ selected: on }}
+            style={{ backgroundColor: on ? c.violet_soft : c.surface, borderRadius: s(10), borderWidth: on ? FOCUS : BORDER, borderColor: on ? c.violet_fill : c.control, paddingHorizontal: s(10), minHeight: s(40), minWidth: s(44), alignItems: "center", justifyContent: "center" }}>
+            <Txt role="caption" w={600} color={on ? "violet_ink" : "fg"} style={{ fontFamily: FONT[600] }}>{labels[i]}</Txt>
           </Pressable>
         );
       })}
@@ -181,8 +276,9 @@ export function Segment<T extends string>({ values, labels, current, onChange }:
 export function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   const { c, s } = useTheme();
   return (
-    <Pressable onPress={() => onChange(!value)} hitSlop={8} style={{ width: s(44), height: s(26), borderRadius: 999, backgroundColor: value ? c.fg : c.line, padding: s(3), justifyContent: "center" }}>
-      <View style={{ width: s(20), height: s(20), borderRadius: 999, backgroundColor: value ? c.bg : c.surface, alignSelf: value ? "flex-end" : "flex-start" }} />
+    <Pressable onPress={() => onChange(!value)} hitSlop={10} accessibilityRole="switch" accessibilityState={{ checked: value }}
+      style={{ width: s(50), height: s(30), borderRadius: 999, backgroundColor: value ? c.violet_fill : c.control, padding: s(3), justifyContent: "center" }}>
+      <View style={{ width: s(24), height: s(24), borderRadius: 999, backgroundColor: value ? c.violet_on : c.surface, alignSelf: value ? "flex-end" : "flex-start" }} />
     </Pressable>
   );
 }
@@ -191,8 +287,8 @@ export function Toggle({ value, onChange }: { value: boolean; onChange: (v: bool
 export function SettingRow({ title, children, dim }: PropsWithChildren<{ title: string; dim?: boolean }>) {
   const { c, s } = useTheme();
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: s(12), paddingVertical: s(7), borderBottomWidth: BORDER, borderBottomColor: c.line, opacity: dim ? 0.55 : 1 }}>
-      <Txt size={14} w={600} color={dim ? "muted" : "fg"} style={{ flex: 1 }} lines={1}>{title}</Txt>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: s(12), minHeight: s(SIZE.row), borderBottomWidth: BORDER, borderBottomColor: c.line }}>
+      <Txt role="label" color={dim ? "muted" : "fg"} style={{ flex: 1 }} lines={2}>{title}</Txt>
       {children}
     </View>
   );
@@ -253,8 +349,8 @@ export const Input = React.forwardRef<TextInput, TextInputProps & { big?: boolea
     <TextInput ref={ref}
       placeholderTextColor={c.muted} selectionColor={c.violet_fill} autoCorrect={false} autoCapitalize="none"
       style={[{
-        backgroundColor: c.surface, borderRadius: s(big ? 14 : 12), borderWidth: BORDER, borderColor: accent ? c.violet_fill : c.line_strong,
-        minHeight: s(big ? 64 : 56), paddingHorizontal: s(16), color: c.fg, fontFamily: FONT[big ? 800 : 600], fontSize: s(big ? 28 : 20),
+        backgroundColor: c.surface, borderRadius: s(12), borderWidth: accent ? FOCUS : BORDER, borderColor: accent ? c.violet_fill : c.control,
+        minHeight: s(big ? 64 : SIZE.input), paddingHorizontal: s(16), color: c.fg, fontFamily: FONT[big ? 800 : 400], fontSize: s(big ? 28 : 18),
         textAlign: big ? "center" : "left", ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as any) : {}),
       }, style]}
       {...rest}
@@ -313,11 +409,11 @@ export function Nav({ title, onBack, right, keep }: { title: string; onBack?: ()
   const back = onBack ?? (() => (router.canGoBack() ? router.back() : router.replace("/")));
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: s(8) }}>
-      <Pressable onPress={back} hitSlop={8} style={({ pressed }) => ({ width: s(40), height: s(40), borderRadius: s(12), backgroundColor: c.surface, borderWidth: BORDER, borderColor: pressed ? c.line_strong : c.line, alignItems: "center", justifyContent: "center" })}>
+      <Pressable onPress={back} hitSlop={6} accessibilityRole="button" accessibilityLabel={t("back")} style={({ pressed }) => ({ width: s(44), height: s(44), borderRadius: s(12), backgroundColor: pressed ? c.surface_subtle : c.surface, borderWidth: BORDER, borderColor: c.line, alignItems: "center", justifyContent: "center" })}>
         <Chevron color="fg" left />
       </Pressable>
-      <Eyebrow center style={{ flex: 1 }}>{title}</Eyebrow>
-      <View style={{ width: s(40), alignItems: "flex-end" }}>{right}</View>
+      <Txt role="navTitle" center lines={1} style={{ flex: 1 }} >{title}</Txt>
+      <View style={{ minWidth: s(44), alignItems: "flex-end" }}>{right}</View>
     </View>
   );
 }

@@ -7,7 +7,7 @@ import { getLang, t } from "../i18n";
 import { Weekly, useGame } from "../store";
 import { FONT, useTheme } from "../theme";
 import { Text } from "react-native";
-import { Chevron } from "./index";
+import { Chevron, Txt } from "./index";
 
 export const num = (n: number) => Math.round(n).toLocaleString(getLang() === "tr" ? "tr-TR" : "en-US");
 
@@ -28,35 +28,40 @@ export function WeeklyButton({ w }: { w: Weekly }) {
   const router = useRouter();
   const { c, s } = useTheme();
   const lead = w.a.total === w.b.total ? "" : w.a.total > w.b.total ? w.a.short : w.b.short;
-  const label = (text: string, color: string, size: number, weight: 600 | 700 | 800 = 800) =>
-    <Text numberOfLines={1} style={{ fontFamily: FONT[weight], fontSize: s(size), color }}>{text}</Text>;
-  // üst satır: solda "Haftanın maçı", ortada oyun modu (amber, büyük harf), sağda kim önde · orta: çapraz bölünmüş kulüp renklerinde adlar ve puanlar · alt: mod açıklaması
+  const mode = t(w.format === "career" ? "mode.career" : "weekly.mode_name");
+  const label = (text: string, color: string, role: "sectionTitle" | "caption") =>
+    <Txt role={role} lines={1} style={{ color }}>{text}</Txt>;
+  // kit: üstte bölüm adı + mod (+ kim önde), ortada çapraz bölünmüş kulüp renklerinde adlar ve puanlar, altta açıklama + eylem. Kart tek dokunma hedefidir.
+  // Kulüp arması yok (lisanslı varlık yok); renk ve ad yeter.
   return (
-    <Pressable onPress={() => router.push({ pathname: "/weekly", params: { slug: w.slug } })} style={({ pressed }) => ({ borderRadius: s(14), overflow: "hidden", borderWidth: 2, borderColor: pressed ? c.line_strong : c.line, backgroundColor: c.surface })}>
-      <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: s(14), paddingVertical: s(8), gap: s(6) }}>
-        <Text numberOfLines={2} style={{ flex: 1, fontFamily: FONT[700], fontSize: s(9.5), lineHeight: s(12), color: c.muted }}>{t("weekly.title").toLocaleUpperCase("tr")}</Text>
-        <Text numberOfLines={1} style={{ fontFamily: FONT[800], fontSize: s(14), color: c.amber_ink }}>{t(w.format === "career" ? "mode.career" : "weekly.mode_name").toLocaleUpperCase("tr")}</Text>
-        <Text numberOfLines={2} style={{ flex: 1, textAlign: "right", fontFamily: FONT[700], fontSize: s(9.5), lineHeight: s(12), color: c.muted }}>{(lead ? t("weekly.lead_short", lead) : t("weekly.tied")).toLocaleUpperCase("tr")}</Text>
+    <Pressable onPress={() => router.push({ pathname: "/weekly", params: { slug: w.slug } })} accessibilityRole="button"
+      accessibilityLabel={`${t("weekly.title")}, ${mode}. ${w.a.short} ${t("weekly.points", num(w.a.total))}, ${w.b.short} ${t("weekly.points", num(w.b.total))}. ${t("weekly.pick")}`}
+      style={({ pressed }) => ({ borderRadius: s(16), overflow: "hidden", borderWidth: 1, borderColor: pressed ? c.control : c.line, backgroundColor: c.surface })}>
+      <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: s(16), paddingVertical: s(10), gap: s(10) }}>
+        <Txt role="caption" color="muted" lines={1} style={{ flexShrink: 0 }}>{t("weekly.title")}</Txt>
+        <Txt role="bodyStrong" color="amber_ink" lines={1} style={{ flexShrink: 0 }}>{mode}</Txt>
+        <Txt role="caption" color="muted" lines={1} style={{ flex: 1, textAlign: "right" }}>{lead ? t("weekly.lead_short", lead) : t("weekly.tied")}</Txt>
       </View>
-      <View style={{ height: s(66) }}>
+      <View style={{ height: s(72) }}>
         <Svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: "absolute" }}>
           <Polygon points="0,0 58,0 42,100 0,100" fill={w.a.colors[0]} />
           <Polygon points="58,0 100,0 100,100 42,100" fill={w.b.colors[0]} />
         </Svg>
-        <View style={{ flex: 1, flexDirection: "row", paddingHorizontal: s(14), paddingVertical: s(9) }}>
+        <View style={{ flex: 1, flexDirection: "row", paddingHorizontal: s(16), paddingVertical: s(10) }}>
           <View style={{ flex: 1, justifyContent: "space-between" }}>
-            {label(w.a.short, w.a.colors[1], 20)}
-            {label(t("weekly.points", num(w.a.total)), w.a.colors[1], 13, 700)}
+            {label(w.a.short, w.a.colors[1], "sectionTitle")}
+            {label(t("weekly.points", num(w.a.total)), w.a.colors[1], "caption")}
           </View>
           <View style={{ flex: 1, justifyContent: "space-between", alignItems: "flex-end" }}>
-            {label(w.b.short, w.b.colors[1], 20)}
-            {label(t("weekly.points", num(w.b.total)), w.b.colors[1], 13, 700)}
+            {label(w.b.short, w.b.colors[1], "sectionTitle")}
+            {label(t("weekly.points", num(w.b.total)), w.b.colors[1], "caption")}
           </View>
         </View>
       </View>
-      <View style={{ paddingHorizontal: s(14), paddingVertical: s(8), flexDirection: "row", alignItems: "center", gap: s(8) }}>
-        <Text numberOfLines={2} style={{ flex: 1, fontFamily: FONT[600], fontSize: s(12), lineHeight: s(16), color: c.muted }}>{w.format === "career" ? t("weekly.menu_info_career") : t("weekly.menu_info")}</Text>
-        <Chevron color="muted" />
+      <View style={{ paddingHorizontal: s(16), paddingVertical: s(10), flexDirection: "row", alignItems: "center", gap: s(10) }}>
+        <Txt role="caption" color="muted" lines={2} style={{ flex: 1 }}>{w.format === "career" ? t("weekly.menu_info_career") : t("weekly.menu_info")}</Txt>
+        <Txt role="caption" color="violet_ink" lines={1} style={{ fontFamily: FONT[600] }}>{w.me ? t("weekly.go") : t("weekly.pick")}</Txt>
+        <Chevron color="violet_ink" />
       </View>
     </Pressable>
   );

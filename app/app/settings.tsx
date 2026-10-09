@@ -25,12 +25,12 @@ export default function Settings() {
       <OptionCard
         title={prof.linked ? st.nickname : t("acct.guest_title")}
         sub={prof.linked ? (prof.verified ? t("verified") : t("acct.linked_chip")) : t("acct.create")}
-        tail={<Chevron color={prof.linked ? "violet_ink" : "muted"} />} selected={prof.linked} height={60}
+        tail={<Chevron color={prof.linked ? "violet_ink" : "muted"} />} selected={prof.linked} height={64}
         onPress={() => router.push("/account")}
       />
       <SettingRow title={t("set.nick")}>
         <Input value={nick} onChangeText={setNick} onBlur={commitNick} onSubmitEditing={commitNick} maxLength={16} accent={false}
-          style={{ width: s(160), minHeight: s(40), fontSize: s(14), paddingVertical: s(6) }} />
+          accessibilityLabel={t("set.nick")} style={{ width: s(170), minHeight: s(44), fontSize: s(16), paddingVertical: s(6) }} />
       </SettingRow>
       {/* ses düzeyi kaydırıcıları oyuna ses eklenince geri gelecek (docs/TODO.md) */}
       <SettingRow title={t("set.sound")}><Toggle value={st.sound} onChange={(v) => st.set({ sound: v })} /></SettingRow>
@@ -45,7 +45,7 @@ export default function Settings() {
         <Segment values={LANGS} labels={LANGS.map((l) => l.toUpperCase())} current={st.lang} onChange={(v) => st.set({ lang: v })} />
       </SettingRow>
       <View style={{ height: s(12) }} />
-      <Txt size={11} color="muted" center>3-2-1 Kickoff v0.2 beta</Txt>
+      <Txt role="caption" color="muted" center>3-2-1 Kickoff v0.2 beta</Txt>
       <Spacer />
     </Page>
   );

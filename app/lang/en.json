@@ -520,5 +520,19 @@
  "country.Zaire": "Zaire",
  "country.Zambia": "Zambia",
  "scope.league.pick": "Pick a league",
- "scope.league.pick_sub": "clubs with 3+ seasons in the league"
+ "scope.league.pick_sub": "clubs with 3+ seasons in the league",
+ "menu.elo": "Elo",
+ "timer.left": "Time left",
+ "timer.secs": "%d s",
+ "field.player": "Player name",
+ "field.team": "Team name",
+ "weekly.go": "Play",
+ "a11y.score": "You %d, opponent %d",
+ "a11y.time_left": "%d seconds left",
+ "match.locked_title": "%s is wrong",
+ "match.locked_text": "You can try again in %d seconds.",
+ "match.opp_wrong_title": "Opponent guessed wrong: %s",
+ "match.opp_wrong_text": "Locked out for %d seconds.",
+ "match.opp_away_title": "Opponent disconnected",
+ "match.opp_away_text": "Waiting for them to reconnect · %d s"
 }

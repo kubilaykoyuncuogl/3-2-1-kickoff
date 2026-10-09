@@ -520,5 +520,19 @@
  "country.Zaire": "Zaire",
  "country.Zambia": "Zambiya",
  "scope.league.pick": "Lig seç",
- "scope.league.pick_sub": "ligde en az 3 sezon oynamış kulüpler"
+ "scope.league.pick_sub": "ligde en az 3 sezon oynamış kulüpler",
+ "menu.elo": "Elo",
+ "timer.left": "Kalan süre",
+ "timer.secs": "%d sn",
+ "field.player": "Oyuncu adı",
+ "field.team": "Takım adı",
+ "weekly.go": "Oyna",
+ "a11y.score": "Sen %d, rakip %d",
+ "a11y.time_left": "Kalan süre %d saniye",
+ "match.locked_title": "%s yanlış",
+ "match.locked_text": "%d saniye sonra yeniden deneyebilirsin.",
+ "match.opp_wrong_title": "Rakip yanlış bildi: %s",
+ "match.opp_wrong_text": "%d saniye yazamayacak.",
+ "match.opp_away_title": "Rakibin bağlantısı kesildi",
+ "match.opp_away_text": "Yeniden bağlanması bekleniyor · %d sn"
 }
