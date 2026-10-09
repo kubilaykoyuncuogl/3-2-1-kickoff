@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { hello } from "@/net/socket";
 import { useGame, useSettings } from "@/store";
-import { Btn, Input, Page, Txt, Wordmark, t } from "@/ui";
+import { Btn, Field, Input, Page, Txt, Wordmark, t } from "@/ui";
 
 export default function Nickname() {
   const router = useRouter();
@@ -21,11 +21,13 @@ export default function Nickname() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <Page scroll>
         <Wordmark />
-        <Txt size={22} w={800}>{t("nick.title")}</Txt>
-        <Txt size={13} color="muted">{t("nick.sub")}</Txt>
-        <Input value={v} onChangeText={setV} placeholder={t("nick.placeholder")} maxLength={16} autoFocus onSubmitEditing={submit} returnKeyType="done" style={{ fontFamily: "Sora_700Bold" }} />
+        <Txt role="screenTitle">{t("nick.title")}</Txt>
+        <Txt role="body" color="muted">{t("nick.sub")}</Txt>
+        <Field label={t("set.nick")}>
+          <Input value={v} onChangeText={setV} placeholder={t("nick.placeholder")} maxLength={16} autoFocus onSubmitEditing={submit} returnKeyType="done" accessibilityLabel={t("set.nick")} />
+        </Field>
         <Btn text={t("continue")} disabled={!ok} onPress={submit} />
-        <Txt size={12} color="muted">{t("nick.hint")}</Txt>
+        <Txt role="caption" color="muted">{t("nick.hint")}</Txt>
       </Page>
     </KeyboardAvoidingView>
   );

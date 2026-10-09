@@ -247,8 +247,8 @@ export function OptionCard({ title, sub, lead, tail, selected, kind = "surface",
     })}>
       {lead}
       <View style={{ flex: 1 }}>
-        <Txt size={17} w={800} color={ink} lines={1}>{title}</Txt>
-        {sub ? <Txt size={12} w={500} color={subInk} lines={height < 70 ? 1 : 2}>{sub}</Txt> : null}
+        <Txt size={17} w={700} color={ink} lines={1}>{title}</Txt>
+        {sub ? <Txt size={13} w={500} color={subInk} lines={height < 70 ? 1 : 2}>{sub}</Txt> : null}
       </View>
       {tail}
     </Pressable>
@@ -305,8 +305,8 @@ export function Row({ index, title, sub, right, state = "", defunct }: { index: 
       <Badge text={index} kind={state === "new" ? "violet" : "muted"} />
       {defunct ? <DefunctIcon color={state === "new" ? "violet_ink" : "muted"} /> : null}
       <View style={{ flex: 1 }}>
-        <Txt size={16} w={700} color={ink} lines={1}>{title}</Txt>
-        {sub ? <Txt size={12} w={500} color={state === "new" ? "violet_ink" : "muted"} lines={1}>{sub}</Txt> : null}
+        <Txt role="bodyStrong" color={ink} lines={1}>{title}</Txt>
+        {sub ? <Txt size={13} w={500} color={state === "new" ? "violet_ink" : "muted"} lines={1}>{sub}</Txt> : null}
       </View>
       {right}
     </View>
