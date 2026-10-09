@@ -1,0 +1,213 @@
+<title>Kickoff Kit Pilotu</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap">
+<style>
+/* Düzen: her değişen ekran bir satır: solda önce / sonra görüntü çifti, sağda ne değiştiği ve onay; dar ekranda alt alta */
+:root {
+  --bg: #F2F2F5; --surface: #FFFFFF; --fg: #1B1A21; --muted: #5F5D6B; --line: #C9C8D3; --control: #858292;
+  --violet: #5E4BC9; --violet-ink: #4A3AAE; --violet-soft: #E9E5FA; --on-violet: #FFFFFF;
+  --amber-ink: #895706; --amber-soft: #FBEFD8; --ok: #167A52; --ok-soft: #DCF3E8; --no: #B72E48; --frame: #1B1A21;
+  --font: "Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #131218; --surface: #1C1B23; --fg: #ECEBF2; --muted: #A09EAD; --line: #3A3946; --control: #747184;
+  --violet: #8C7CF0; --violet-ink: #B3A7FF; --violet-soft: #272443; --on-violet: #131218;
+  --amber-ink: #F4C77A; --amber-soft: #3A2D14; --ok: #4FCF93; --ok-soft: #163528; --no: #FF7D96; --frame: #000000; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #131218; --surface: #1C1B23; --fg: #ECEBF2; --muted: #A09EAD; --line: #3A3946; --control: #747184;
+  --violet: #8C7CF0; --violet-ink: #B3A7FF; --violet-soft: #272443; --on-violet: #131218;
+  --amber-ink: #F4C77A; --amber-soft: #3A2D14; --ok: #4FCF93; --ok-soft: #163528; --no: #FF7D96; --frame: #000000; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.5; padding-inline: 16px; padding-block: 0 56px }
+button, textarea { font: inherit; color: inherit }
+.wrap { max-width: 1040px; margin-inline: auto; display: flex; flex-direction: column; gap: 28px }
+header { padding-block: 24px 0; display: flex; flex-direction: column; gap: 8px }
+.mark { font-weight: 800; font-style: italic; font-size: 26px; line-height: 1 }
+.mark small { font-style: normal; font-size: 11px; letter-spacing: 1.4px; color: var(--muted); font-weight: 700; margin-left: 6px }
+h1 { font-size: 24px; font-weight: 800; margin: 0; text-wrap: balance }
+.lead { color: var(--muted); max-width: 64ch; margin: 0 }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center }
+.bar .count { flex: 1 1 160px; font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums }
+.chips { display: flex; gap: 6px }
+.chip { border: 1px solid var(--control); background: var(--surface); border-radius: 99px; padding: 7px 14px; font-weight: 600; font-size: 13px; cursor: pointer }
+.chip[aria-pressed="true"] { background: var(--violet-soft); border-color: var(--violet); color: var(--violet-ink) }
+.chip:focus-visible, .ok:focus-visible, .pair button:focus-visible, textarea:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px }
+.note-bar { padding: 10px 14px; border-radius: 12px; background: var(--amber-soft); color: var(--amber-ink); font-weight: 600; font-size: 13px }
+.common { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 28px; padding-block: 4px }
+.common h2, .item h2 { font-size: 18px; font-weight: 800; margin: 0 }
+.common ul, .item ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px }
+.common > div { display: flex; flex-direction: column; gap: 8px; min-width: 0 }
+.item { display: grid; grid-template-columns: minmax(0, 520px) minmax(0, 1fr); gap: 20px 32px; padding-top: 28px; border-top: 1px solid var(--line) }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; min-width: 0 }
+.pair figure { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0 }
+.pair figcaption { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted) }
+.pair figure.new figcaption { color: var(--violet-ink) }
+.pair button { display: block; width: 100%; padding: 0; border: 2px solid var(--frame); border-radius: 20px; overflow: hidden; background: var(--frame); cursor: zoom-in; aspect-ratio: 400 / 880 }
+.pair figure.new button { border-color: var(--violet) }
+.pair img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top }
+.pair .none { aspect-ratio: 400 / 880; border: 2px dashed var(--line); border-radius: 20px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 16px; color: var(--muted); font-size: 13px; font-weight: 600 }
+.side { display: flex; flex-direction: column; gap: 14px; min-width: 0 }
+.tag { align-self: flex-start; font-weight: 700; font-size: 12px; color: var(--violet-ink); background: var(--violet-soft); border-radius: 7px; padding: 2px 8px }
+.kept { color: var(--muted); font-size: 14px; margin: 0 }
+.ok { align-self: flex-start; border: 1px solid var(--control); background: var(--surface); border-radius: 12px; padding: 11px 18px; font-weight: 700; cursor: pointer; min-height: 48px }
+.item.approved .ok { background: var(--ok-soft); border-color: var(--ok); color: var(--ok) }
+textarea { width: 100%; min-height: 84px; resize: vertical; border: 1px solid var(--control); border-radius: 12px; background: var(--surface); padding: 10px 12px; font-size: 14px }
+.item.revise textarea { border-color: var(--amber-ink) }
+.meta { font-size: 12px; color: var(--muted); min-height: 16px }
+.meta.err { color: var(--no) }
+dialog { border: 0; padding: 0; background: transparent; max-width: min(92vw, 520px); max-height: 94vh }
+dialog::backdrop { background: rgba(10, 9, 14, .8) }
+dialog img { display: block; max-width: 100%; max-height: 88vh; border-radius: 18px }
+dialog p { color: #fff; font-weight: 700; text-align: center; margin: 8px 0 0; font-size: 13px }
+@media (max-width: 760px) { .item { grid-template-columns: minmax(0, 1fr) } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="mark">3·2·1<small>KICKOFF</small></div>
+    <h1>Tasarım kiti pilotu: ne değişti</h1>
+    <p class="lead">Yalnızca yeni görünüme geçen ekranlar. Solda bugün canlıdaki hali, sağda kite göre yapılan hali; yanında neyin değiştiği yazıyor. Olmuşsa onayla, olmamışsa ne değişsin yaz. Yazdıkların kendiliğinden kaydedilir.</p>
+  </header>
+
+  <section class="common" aria-label="Her ekranda ortak değişenler">
+    <div>
+      <h2>Her ekranda ortak</h2>
+      <ul>
+        <li>Düğmeler düz: altlarındaki koyu kenar kalktı.</li>
+        <li>Çizgiler inceldi (2 yerine 1).</li>
+        <li>Üst etiketlerdeki BÜYÜK HARF kalktı, yazılar büyüdü.</li>
+        <li>Amber artık yalnızca rakibin rengi.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Kitten farklı bırakılanlar</h2>
+      <ul>
+        <li>Ölçek orantılı kaldı, sayfa kaymıyor (ekip kararı).</li>
+        <li>Öneride yılın yanında milliyet de var.</li>
+        <li>Menüde iki haftanın maçı birlikte.</li>
+        <li>Kulüp arması yok, yalnızca renk ve ad.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="bar">
+    <div class="count" id="count" aria-live="polite"></div>
+    <div class="chips" role="group" aria-label="Görüntü teması">
+      <button class="chip" data-t="acik" aria-pressed="true">Açık tema</button>
+      <button class="chip" data-t="koyu" aria-pressed="false">Koyu tema</button>
+    </div>
+  </div>
+  <div class="note-bar" id="local" hidden>Notların yalnızca bu cihazda duruyor (ortak kayda yazma iznin yok). Yazdıklarını Kubilay'a ayrıca gönder.</div>
+
+  <main id="main" style="display:flex;flex-direction:column;gap:28px"></main>
+</div>
+<dialog id="zoom"><img id="zoomImg" alt=""><p id="zoomCap"></p></dialog>
+
+<script>
+const ITEMS = [
+  { id: "home", title: "Ana menü", old: "01-acilis-menu/01A-ana-menu.png", neu: "15-kit-pilotu/01A-ana-menu.png",
+    changes: ["“Tek oyna” amberden soluk mora geçti.", "“Online oyna”da çıplak 1000 yerine ayraç, “Elo 1000” ve ok.", "Haftanın maçı kartı üç katlı: üstte başlık, mod ve kim önde; ortada kulüp renkli bant; altta açıklama ve “Tarafını seç”.", "Ayarlar düğmesi dişlili ve oklu satır oldu.", "Sağ üstte BETA rozeti gitti; baş harfli yuvarlak ve takma ad geldi."],
+    kept: "Logo ve alt satır aynı." },
+  { id: "home2", title: "Ana menü: iki haftanın maçı", old: null, neu: "15-kit-pilotu/01B-ana-menu-iki-mac.png",
+    changes: ["İki maç alt alta iki kart; her biri kendi modunu yazıyor (o mu bu mu, kariyer yolu).", "Kit tek kart çizmişti; ikinci kart aynı kalıbın tekrarı."],
+    kept: "Eski hali bu ekran eklenmeden önce çekildiği için yok." },
+  { id: "round", title: "Tur: öneriler", old: "04-mac/04B-tur-oneriler.png", neu: "15-kit-pilotu/02-tur-oneriler.png",
+    changes: ["Skor alttan üste çıktı; iki yanında “Sen · kubi” ve “Rakip · arda” ile takım rozetleri.", "Süre kutusu yerine “Kalan süre” etiketi ve “9 sn”.", "Yazı kutusunun üstünde kalıcı “Oyuncu adı” etiketi.", "Öneri satırı: ad solda kalın, sağda soluk “1984 · Hollanda”.", "Yazı kutusundaki yazı inceldi (kalın yerine normal)."],
+    kept: "Altı öneri, süre çubuğu ve renkler aynı." },
+  { id: "roundkb", title: "Tur: klavye açık", old: "14-klavye-acik/04B-tur-oneriler.png", neu: "15-kit-pilotu/03-tur-klavye-acik.png",
+    changes: ["Skor üstte kalıyor, yalnızca küçülüyor; alttaki tek satırlık skor özeti kalktı.", "Etiket ve yeni öneri satırı burada da aynı.", "Satırlar yükseldiği için bir bakışta 3-4 öneri görünüyor; gerisi listenin içinde kayıyor."],
+    kept: "Sayfa kaymıyor; kayan yalnızca öneri listesi." },
+  { id: "settings", title: "Ayarlar", old: "02-ayarlar-hesap/01A-ayarlar.png", neu: "15-kit-pilotu/04-ayarlar.png",
+    changes: ["Satırlar yükseldi (dokunması kolay), yazılar büyüdü.", "Anahtarlar büyüdü; açıkken mor.", "Tema ve dil seçiminde seçili olan siyah dolgu yerine mor çerçeveli.", "Üstteki başlık normal yazımla ve daha büyük."],
+    kept: "Satırların sırası ve içeriği aynı; hâlâ tek ekrana sığıyor." },
+  { id: "lock", title: "Yanlış / kilit", old: "04-mac/04D-tur-yanlis-tahmin-kilit.png", neu: "15-kit-pilotu/05A-yanlis-kilit.png",
+    changes: ["İki ayrı yazı (“Yanlış · 3” kutunun içinde, “5 sn kilit” altta) tek bildirime indi.", "Bildirim tam cümle: “Lukas Hernandez yanlış” ve altında “3 saniye sonra yeniden deneyebilirsin.”", "Kilitliyken yazı kutusu kırmızı değil, soluk gri; kırmızı yalnızca bildirimde."],
+    kept: "Kilit süresi ve kural aynı." },
+  { id: "lockkb", title: "Yanlış / kilit: klavye açık", old: "14-klavye-acik/04C-tur-yanlis-tahmin-kilit.png", neu: "15-kit-pilotu/05B-yanlis-kilit-klavye-acik.png",
+    changes: ["Aynı tek bildirim, yazı kutusunun hemen altında.", "Skor üstte küçük halde."],
+    kept: "" },
+  { id: "away", title: "Tur: rakip koptu", old: "04-mac/04F-tur-rakip-koptu.png", neu: "15-kit-pilotu/05C-rakip-koptu.png",
+    changes: ["Bildirim amber zeminde (rakibin rengi) ve iki satır: “Rakibin bağlantısı kesildi” ve “Yeniden bağlanması bekleniyor · 7 sn”.", "Bildirim alttan yazı kutusunun altına taşındı."],
+    kept: "" },
+];
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const state = {}; const rows = {}; const names = {};
+let shots = "acik", db = null, user = null, myId = "", localOnly = false;
+const LS = "kickoff-pilot-v1";
+try { const s = JSON.parse(localStorage.getItem(LS) || "{}"); if (s.shots) shots = s.shots; if (s.local) Object.assign(state, s.local); } catch (e) {}
+const save = () => { try { localStorage.setItem(LS, JSON.stringify({ shots, local: localOnly ? state : undefined })); } catch (e) {} };
+const when = (ms) => { if (!ms) return ""; const d = new Date(ms); return d.toLocaleDateString("tr-TR", { day: "numeric", month: "short" }) + " " + d.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }); };
+
+function figure(kind, cap, file, title) {
+  const f = el("figure", kind); f.append(el("figcaption", null, cap));
+  if (!file) { f.append(el("div", "none", "Eski görüntü yok")); return { f, img: null }; }
+  const b = el("button"); b.type = "button"; b.setAttribute("aria-label", title + " (" + cap + ") görüntüsünü büyüt");
+  const img = el("img"); img.alt = title + ", " + cap; img.width = 400; img.height = 880; img.loading = "lazy"; img.dataset.file = file; b.append(img);
+  b.addEventListener("click", () => { $("zoomImg").src = img.src; $("zoomCap").textContent = title + " · " + cap; $("zoom").showModal(); });
+  f.append(b); return { f, img };
+}
+function build() {
+  for (const it of ITEMS) {
+    const item = el("section", "item"); item.id = it.id;
+    const pair = el("div", "pair"); const a = figure("old", "Önce", it.old, it.title), b = figure("new", "Sonra", it.neu, it.title); pair.append(a.f, b.f);
+    const side = el("div", "side");
+    side.append(el("h2", null, it.title));
+    const ul = el("ul"); for (const c of it.changes) ul.append(el("li", null, c)); side.append(ul);
+    if (it.kept) side.append(el("p", "kept", it.kept));
+    const ok = el("button", "ok", "Olmuş, onayla"); ok.type = "button"; ok.id = "ok-" + it.id; ok.setAttribute("aria-pressed", "false");
+    ok.addEventListener("click", () => write(it.id, { ok: !(state[it.id] && state[it.id].ok) }));
+    const ta = el("textarea"); ta.id = "note-" + it.id; ta.placeholder = "Ne değişsin?"; ta.setAttribute("aria-label", it.title + " için not");
+    let timer = null;
+    const commit = () => { clearTimeout(timer); const v = ta.value.trim(); if (v !== ((state[it.id] && state[it.id].note) || "")) write(it.id, { note: v }); };
+    ta.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(commit, 900); }); ta.addEventListener("blur", commit);
+    const meta = el("div", "meta");
+    side.append(ok, ta, meta); item.append(pair, side); $("main").append(item);
+    rows[it.id] = { item, ok, ta, meta, imgs: [a.img, b.img].filter(Boolean) };
+  }
+}
+function paint() {
+  let n = 0, r = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {}, row = rows[it.id];
+    row.item.classList.toggle("approved", !!s.ok); row.item.classList.toggle("revise", !!s.note);
+    row.ok.setAttribute("aria-pressed", s.ok ? "true" : "false"); row.ok.textContent = s.ok ? "Onaylandı" : "Olmuş, onayla";
+    if (document.activeElement !== row.ta) row.ta.value = s.note || "";
+    if (!row.meta.classList.contains("err")) row.meta.textContent = s.at ? ((s.by && names[s.by] ? names[s.by] + " · " : "") + when(s.at)) : "";
+    for (const img of row.imgs) { const src = shots + "/" + img.dataset.file; if (img.getAttribute("src") !== src) img.src = src; }
+    if (s.ok) n++; if (s.note) r++;
+  }
+  $("count").textContent = ITEMS.length + " ekran · " + n + " onaylı · " + r + " notlu";
+  for (const b of document.querySelectorAll("[data-t]")) b.setAttribute("aria-pressed", b.dataset.t === shots ? "true" : "false");
+}
+function goLocal() { localOnly = true; $("local").hidden = false; save(); }
+async function write(id, patch) {
+  const next = { ok: false, note: "", ...(state[id] || {}), ...patch, at: Date.now(), by: myId };
+  state[id] = next; paint();
+  const row = rows[id]; row.meta.classList.remove("err");
+  if (!db || localOnly) { goLocal(); return; }
+  try { await db.doc("pilot/" + id).set({ ok: !!next.ok, note: String(next.note || "").slice(0, 2000), at: next.at, by: next.by }); }
+  catch (e) { if (e && e.code === "invalid_argument") { goLocal(); return; } row.meta.classList.add("err"); row.meta.textContent = "Kaydedilemedi, tekrar dene"; }
+}
+async function resolveNames() {
+  if (!user || !user.profiles) return;
+  const ids = [...new Set(Object.values(state).map((s) => s.by).filter(Boolean))].filter((id) => !(id in names));
+  if (!ids.length) return;
+  try { const ps = await user.profiles(ids); for (const id of ids) names[id] = (ps[id] && ps[id].name) || "Biri"; paint(); } catch (e) {}
+}
+document.addEventListener("click", (e) => { const th = e.target.closest("[data-t]"); if (th) { shots = th.dataset.t; save(); paint(); } });
+$("zoom").addEventListener("click", () => $("zoom").close());
+build(); paint();
+if (window.claude && window.claude.use) {
+  window.claude.use("user").then(async (u) => { user = u; if (u && u.id) { try { myId = await u.id(); } catch (e) {} } resolveNames(); });
+  window.claude.use("db").then((d) => {
+    db = d;
+    if (!d) { goLocal(); paint(); return; }
+    d.collection("pilot").onSnapshot((snap) => {
+      if (localOnly) return;
+      for (const k in state) delete state[k];
+      for (const doc of snap.docs) { const v = doc.data(); if (v && rows[doc.id]) state[doc.id] = { ok: !!v.ok, note: String(v.note || ""), at: Number(v.at) || 0, by: String(v.by || "") }; }
+      paint(); resolveNames();
+    }, () => {});
+  });
+}
+</script>
