@@ -1,0 +1,89 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Sora;font-weight:500;src:url("file:///home/vector/workspace/321-kickoff/app/node_modules/@expo-google-fonts/sora/500Medium/Sora_500Medium.ttf")}
+@font-face{font-family:Sora;font-weight:600;src:url("file:///home/vector/workspace/321-kickoff/app/node_modules/@expo-google-fonts/sora/600SemiBold/Sora_600SemiBold.ttf")}
+@font-face{font-family:Sora;font-weight:700;src:url("file:///home/vector/workspace/321-kickoff/app/node_modules/@expo-google-fonts/sora/700Bold/Sora_700Bold.ttf")}
+@font-face{font-family:Sora;font-weight:800;src:url("file:///home/vector/workspace/321-kickoff/app/node_modules/@expo-google-fonts/sora/800ExtraBold/Sora_800ExtraBold.ttf")}
+:root{--bg:#F2F2F5;--surface:#fff;--fg:#1B1A21;--muted:#5F5D6B;--line:#C9C8D3;--violet:#5E4BC9;--ink:#4A3AAE;--soft:#E9E5FA;--amber:#895706}
+*{box-sizing:border-box}
+body{margin:0;background:#E4E4EA;font-family:Sora,sans-serif;color:var(--fg);padding:36px 40px 44px;width:1760px}
+h1{font-size:30px;font-weight:800;margin:0 0 6px} .sub{color:var(--muted);font-size:16px;font-weight:500;margin:0 0 28px;max-width:1100px;line-height:1.5}
+.row{display:flex;gap:36px;align-items:flex-start}
+.col{display:flex;flex-direction:column;gap:12px}
+.cap{font-size:13px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)} .cap.new{color:var(--ink)}
+.phone{width:390px;height:844px;border-radius:34px;border:3px solid #1B1A21;background:var(--bg);overflow:hidden;position:relative}
+.phone img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.scr{padding:22px 20px;display:flex;flex-direction:column;gap:12px;height:100%}
+.top{display:flex;align-items:center;margin-bottom:8px} .logo{flex:1;font-weight:800;font-style:italic;font-size:42px;line-height:1} .logo small{display:block;font-style:normal;font-size:11px;letter-spacing:.6px;color:var(--muted);font-weight:700;margin-top:4px}
+.av{width:36px;height:36px;border-radius:50%;background:var(--soft);color:var(--ink);font-weight:700;display:flex;align-items:center;justify-content:center;margin-right:8px} .nick{font-weight:600;font-size:14px}
+.btn{border-radius:16px;min-height:68px;padding:0 18px;display:flex;align-items:center;gap:14px;font-weight:700;font-size:20px}
+.btn.p{background:var(--violet);color:#fff} .btn.s{background:var(--soft);color:var(--ink);min-height:62px} .btn .elo{font-size:13px;font-weight:600;border-left:1px solid #fff;padding-left:14px} .grow{flex:1}
+.set{background:#fff;border:1px solid var(--line);border-radius:14px;min-height:54px;padding:0 16px;display:flex;align-items:center;gap:12px;font-weight:600;font-size:16px}
+.foot{margin-top:auto;text-align:center;color:var(--muted);font-size:11px;font-weight:600}
+svg.i{flex:none}
+/* ---- önerilen kart ---- */
+.wk{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.wk .h{display:flex;align-items:center;gap:8px;padding:10px 14px}
+.wk .h .t{font-size:12px;font-weight:600;color:var(--muted)} .wk .h .m{font-size:13px;font-weight:800;color:var(--ink)} .wk .h .dot{color:var(--line)}
+.wk .h .left{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--fg);background:var(--bg);border-radius:99px;padding:4px 10px}
+.band{position:relative;height:74px;display:flex}
+.band .bg{position:absolute;left:0;top:0;width:100%;height:100%}
+.side{position:relative;flex:1;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}
+.side.r{align-items:flex-end;text-align:right}
+.side .n{font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px;white-space:nowrap} .side .p{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.side.lose .p{font-size:16px;font-weight:700;opacity:.9} .side.lose .n{font-size:13px}
+.wk .f{display:flex;align-items:center;gap:10px;padding:10px 14px}
+.wk .f .d{flex:1;font-size:12.5px;font-weight:500;color:var(--muted);line-height:1.35} .wk .f .go{font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;display:flex;align-items:center;gap:4px}
+.notes{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px;font-size:15px;line-height:1.5;font-weight:500}
+.notes h2{font-size:19px;font-weight:800;margin:0} .notes ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px} .notes b{font-weight:700}
+.states{display:grid;grid-template-columns:repeat(4,390px);gap:28px;margin-top:30px}
+.states .lbl{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px}
+.hr{height:1px;background:var(--line);margin:34px 0 0}
+</style></head><body>
+<h1>Öneri: ana menüde haftanın maçı kartı</h1>
+<p class="sub">Şimdiki kart altı satır ve iki maç varken ekrana sığmıyor. Öneri üç satır: başlıkla oyun türü aynı hizada, sağ üstte maça kalan süre; renkli bant puana göre bölünüyor ve öndeki taraf kupayla vurgulanıyor.</p>
+<div class="row">
+  <div class="col"><div class="cap">Şimdiki · tek maç</div><div class="phone"><img src="../../screenshots/kit/acik/01-acilis-menu/01A-ana-menu.png"></div></div>
+  <div class="col"><div class="cap new">Öneri · tek maç</div><div class="phone"><div class="scr" id="p1"></div></div></div>
+  <div class="col"><div class="cap new">Öneri · iki maç (sığıyor)</div><div class="phone"><div class="scr" id="p2"></div></div></div>
+  <div class="notes">
+    <h2>Ne değişiyor</h2>
+    <ol>
+      <li><b>Üç satır.</b> Kart yaklaşık 265 birimden 170'e iniyor; iki maç alt alta ekrana sığıyor, menü kaymıyor.</li>
+      <li><b>Başlık satırı:</b> “Haftanın maçı · O mu bu mu” yan yana. Büyük mod başlığı ve mor çizgi kalkıyor.</li>
+      <li><b>Sağ üstte kalan süre:</b> “2 gün 4 sa”. Maç günü “Bugün”, başlayınca “Maç başladı”.</li>
+      <li><b>Bant puana göre bölünüyor:</b> öndeki tarafın rengi daha geniş. Fark ne kadar büyük olursa olsun geride kalan en az yüzde 30 yer tutuyor (adı ve puanı sığsın diye).</li>
+      <li><b>Kupa öndekinde:</b> “kim önde” rozeti ayrı satır olmaktan çıkıyor; öndeki tarafın adının yanında kupa var, puanı daha büyük.</li>
+      <li><b>Alt satır:</b> tek satır açıklama ve sağda “Tarafını seç”. Taraf seçildiyse “Beşiktaş için oyna”.</li>
+    </ol>
+    <h2>Açık soru</h2>
+    <div>Geride kalan tarafın bantta küçük görünmesi o tarafı daha çok oynamaya iter mi, yoksa moral mi bozar? Canlıda deneyip görebiliriz.</div>
+  </div>
+</div>
+<div class="hr"></div>
+<div class="states" id="states"></div>
+<script>
+const trophy=(c)=>'<svg class="i" width="16" height="16" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8.5 20h7" stroke="'+c+'" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const clock='<svg class="i" width="13" height="13" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="#1B1A21" stroke-width="2.2" fill="none"/><path d="M12 7v5l3 2" stroke="#1B1A21" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>';
+const chev=(c,s=14)=>'<svg class="i" width="'+s+'" height="'+s+'" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke="'+c+'" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const nf=(n)=>n.toLocaleString("tr-TR");
+function card(w){
+  const sum=w.a.total+w.b.total; let share=sum?w.a.total/sum:.5; share=Math.max(.3,Math.min(.7,share));
+  const mid=share*100, sk=5;      // çapraz ayraç: ortası paya göre kayar
+  const lead=w.a.total===w.b.total?"":w.a.total>w.b.total?"a":"b";
+  const side=(k)=>{const d=w[k],L=lead===k;return '<div class="side '+(k==="b"?"r ":"")+(lead&&!L?"lose":"")+'" style="color:'+d.fg+';flex:'+(k==="a"?share:1-share)+'"><div class="n">'+(L&&k==="a"?trophy(d.fg):"")+d.name+(L&&k==="b"?trophy(d.fg):"")+'</div><div class="p">'+nf(d.total)+' puan</div></div>';};
+  return '<div class="wk"><div class="h"><span class="t">Haftanın maçı</span><span class="dot">·</span><span class="m">'+w.mode+'</span><span class="left">'+clock+w.left+'</span></div>'
+   +'<div class="band"><svg class="bg" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="0,0 '+(mid+sk)+',0 '+(mid-sk)+',100 0,100" fill="'+w.a.bg+'"/><polygon points="'+(mid+sk)+',0 100,0 100,100 '+(mid-sk)+',100" fill="'+w.b.bg+'"/></svg>'+side("a")+side("b")+'</div>'
+   +'<div class="f"><span class="d">'+w.info+'</span><span class="go">'+w.go+chev("#4A3AAE")+'</span></div></div>';
+}
+const TS={name:"Trabzonspor",bg:"#7A1230",fg:"#8FD0F5"},BJK={name:"Beşiktaş",bg:"#111111",fg:"#FFFFFF"},MCI={name:"Man City",bg:"#6CABDD",fg:"#1C2C5B"},LIV={name:"Liverpool",bg:"#C8102E",fg:"#FFFFFF"};
+const W1={mode:"O mu bu mu",left:"2 gün 4 sa",a:{...TS,total:12480},b:{...BJK,total:13920},info:"İki kulübün oyuncuları karşı karşıya.",go:"Tarafını seç"};
+const W2={mode:"Kariyer yolu",left:"5 gün",a:{...MCI,total:8640},b:{...LIV,total:9120},info:"Kulüpler açılır, oyuncuyu bil.",go:"Tarafını seç"};
+const gear='<svg class="i" width="22" height="22" viewBox="0 0 24 24"><path d="M9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1 1-3ZM15.5 12a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" stroke="#1B1A21" stroke-width="1.7" fill="none" stroke-linejoin="round"/></svg>';
+const menu=(cards)=>'<div class="top"><div class="logo">3·2·1<small>KICKOFF</small></div><div class="av">K</div><div class="nick">kubi</div></div>'
+ +'<div class="btn p"><span class="grow">Online oyna</span><span class="elo">Elo 1000</span>'+chev("#fff",18)+'</div><div class="btn s"><span class="grow">Tek oyna</span>'+chev("#4A3AAE",18)+'</div>'
+ +cards.map(card).join("")+'<div class="set">'+gear+'<span class="grow">Ayarlar</span>'+chev("#5F5D6B",18)+'</div><div class="foot">v0.1 beta · mükemmellik Allah\'a mahsus</div>';
+document.getElementById("p1").innerHTML=menu([W1]); document.getElementById("p2").innerHTML=menu([W1,W2]);
+const ST=[["Az farkla önde (yüzde 53)",W1],["Berabere: yarı yarıya, kupa yok",{...W1,a:{...TS,total:13920},left:"Bugün 20.00"}],["Büyük fark: geride kalan en az yüzde 30",{...W1,a:{...TS,total:39644},b:{...BJK,total:744},left:"6 sa"}],["Taraf seçilmiş · maç başladı",{...W1,left:"Maç başladı",go:"Beşiktaş için oyna",info:"Katkın 1.860 puan."}]];
+document.getElementById("states").innerHTML=ST.map(([l,w])=>'<div><div class="lbl">'+l+'</div>'+card(w)+'</div>').join("");
+</script></body></html>
