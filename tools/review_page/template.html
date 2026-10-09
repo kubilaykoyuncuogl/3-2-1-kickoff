@@ -1,0 +1,357 @@
+<title>Kickoff Ekran Onayı</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap">
+<style>
+/* Düzen: yapışkan üst bant (ilerleme + süzgeç) altında kategori başlıkları ve telefon ekranı kartlarından ızgara; her kart = görüntü, mühür düğmesi, revize kutusu */
+:root {
+  --bg: #F2F2F5; --surface: #FFFFFF; --fg: #1B1A21; --muted: #5F5D6B; --line: #C9C8D3; --line-strong: #9F9DAD;
+  --violet: #5E4BC9; --violet-ink: #4A3AAE; --violet-soft: #E9E5FA; --on-violet: #FFFFFF;
+  --amber: #E9A23B; --amber-ink: #9A6207; --amber-soft: #FBEFD8;
+  --ok: #167A52; --ok-soft: #DCF3E8; --no: #C2334F; --no-soft: #FBE1E7;
+  --seal: #B3202F; --frame: #1B1A21;
+  --font: "Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #131218; --surface: #1C1B23; --fg: #ECEBF2; --muted: #A09EAD; --line: #3A3946; --line-strong: #5B5A6B;
+  --violet: #8C7CF0; --violet-ink: #B3A7FF; --violet-soft: #272443; --on-violet: #131218;
+  --amber: #F0B45A; --amber-ink: #F4C77A; --amber-soft: #3A2D14;
+  --ok: #4FCF93; --ok-soft: #163528; --no: #FF7D96; --no-soft: #3C1B25; --seal: #FF6B7A; --frame: #000000; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #131218; --surface: #1C1B23; --fg: #ECEBF2; --muted: #A09EAD; --line: #3A3946; --line-strong: #5B5A6B;
+  --violet: #8C7CF0; --violet-ink: #B3A7FF; --violet-soft: #272443; --on-violet: #131218;
+  --amber: #F0B45A; --amber-ink: #F4C77A; --amber-soft: #3A2D14;
+  --ok: #4FCF93; --ok-soft: #163528; --no: #FF7D96; --no-soft: #3C1B25; --seal: #FF6B7A; --frame: #000000; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.45; padding-inline: 16px; padding-block: 0 48px }
+button, textarea { font: inherit; color: inherit }
+.wrap { max-width: 1180px; margin-inline: auto }
+header.top { padding-block: 20px 12px; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 20px }
+.mark { font-weight: 800; font-style: italic; font-size: 30px; letter-spacing: -0.5px; line-height: 1 }
+.mark small { font-style: normal; font-size: 11px; letter-spacing: 1.4px; color: var(--muted); font-weight: 700; margin-left: 6px }
+h1 { font-size: 20px; font-weight: 800; margin: 0; text-wrap: balance }
+.lead { color: var(--muted); max-width: 62ch; margin: 4px 0 0 }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; border-bottom: 2px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center }
+.meter { flex: 1 1 220px; min-width: 0 }
+.meter .nums { font-weight: 700; font-variant-numeric: tabular-nums; font-size: 13px }
+.meter .track { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; margin-top: 5px; display: flex }
+.meter .track i { display: block; height: 100% } .meter .a { background: var(--ok) } .meter .r { background: var(--amber) }
+.chips { display: flex; flex-wrap: wrap; gap: 6px }
+.chip { border: 2px solid var(--line); background: var(--surface); border-radius: 99px; padding: 6px 12px; font-weight: 700; font-size: 12.5px; cursor: pointer }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg) }
+.chip:focus-visible, .stamp:focus-visible, .shot:focus-visible, textarea:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px }
+.note-bar { margin-top: 12px; padding: 10px 14px; border-radius: 12px; background: var(--amber-soft); color: var(--amber-ink); font-weight: 600; font-size: 13px }
+.note-bar button { margin-left: 8px; border: 2px solid currentColor; background: transparent; border-radius: 99px; padding: 4px 12px; font-weight: 700; cursor: pointer }
+section.cat { margin-top: 28px }
+.cat h2 { font-size: 13px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 0 0 12px; display: flex; gap: 10px; align-items: baseline }
+.cat h2 b { color: var(--fg); font-size: 18px; letter-spacing: 0; text-transform: none; font-weight: 800 }
+.cat h2 span { font-variant-numeric: tabular-nums }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 18px 16px }
+.card { min-width: 0; display: flex; flex-direction: column; gap: 8px }
+.card .head { display: flex; gap: 8px; align-items: baseline; min-width: 0 }
+.card .tag { font-weight: 800; font-variant-numeric: tabular-nums; color: var(--violet-ink); background: var(--violet-soft); border-radius: 7px; padding: 2px 7px; font-size: 12px; flex: none }
+.card .name { font-weight: 700; font-size: 13.5px; min-width: 0; overflow-wrap: anywhere }
+.shot { position: relative; display: block; width: 100%; padding: 0; border: 3px solid var(--frame); border-radius: 22px; overflow: hidden; background: var(--frame); cursor: zoom-in; aspect-ratio: 400 / 880 }
+.shot img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top }
+.card.approved .shot { border-color: var(--ok) }
+.card.revise .shot { border-color: var(--amber) }
+.seal { position: absolute; right: 8%; top: 7%; transform: rotate(-14deg); border: 3px solid var(--seal); color: var(--seal); border-radius: 10px; padding: 6px 10px 5px; font-weight: 800; font-size: 13px; letter-spacing: 1.2px; text-transform: uppercase; background: color-mix(in srgb, var(--surface) 82%, transparent); text-align: center; line-height: 1.15; pointer-events: none }
+.seal small { display: block; font-size: 9px; letter-spacing: 0.8px; font-weight: 700 }
+.stamp { border: 2px solid var(--line-strong); background: var(--surface); border-radius: 12px; padding: 10px 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px }
+.stamp::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor }
+.card.approved .stamp { background: var(--ok-soft); border-color: var(--ok); color: var(--ok) }
+.card.approved .stamp::before { background: currentColor }
+textarea { width: 100%; min-height: 62px; resize: vertical; border: 2px solid var(--line); border-radius: 12px; background: var(--surface); padding: 9px 11px; font-size: 13px }
+.card.revise textarea { border-color: var(--amber) }
+.meta { font-size: 11.5px; color: var(--muted); min-height: 16px }
+.meta.err { color: var(--no) }
+.empty { color: var(--muted); padding: 28px 0; font-weight: 600 }
+dialog.zoom { border: 0; padding: 0; background: transparent; max-width: min(92vw, 520px); max-height: 94vh }
+dialog.zoom::backdrop { background: rgba(10, 9, 14, .78) }
+dialog.zoom img { display: block; max-width: 100%; max-height: 86vh; border-radius: 18px; border: 3px solid var(--frame) }
+dialog.zoom .cap { color: #fff; font-weight: 700; text-align: center; padding: 8px 0 0; font-size: 13px }
+dialog.out { border: 2px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--fg); padding: 18px; width: min(92vw, 560px) }
+dialog.out textarea { min-height: 220px; font-family: ui-monospace, Menlo, monospace; font-size: 12px }
+dialog.out .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px }
+.btn { border: 2px solid var(--line-strong); background: var(--surface); border-radius: 10px; padding: 8px 14px; font-weight: 700; cursor: pointer }
+.btn.primary { background: var(--violet); border-color: var(--violet); color: var(--on-violet) }
+.kit { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px 24px; padding-block: 4px 18px }
+.kit-h { font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 0 0 8px }
+.sw { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px }
+.sw li { min-width: 0; display: flex; flex-direction: column; gap: 1px; font-size: 11px }
+.sw i { display: block; height: 34px; border-radius: 9px; border: 2px solid var(--line) }
+.sw b { font-weight: 700; overflow-wrap: anywhere; margin-top: 3px } .sw code { font-family: ui-monospace, Menlo, monospace; color: var(--muted); font-size: 10.5px }
+.type p { margin: 0 0 10px } .type span { display: block; font: 500 11px/1.4 var(--font); letter-spacing: 0; text-transform: none; color: var(--muted); font-style: normal }
+.acts { display: flex; gap: 6px }
+.act { flex: 1 1 0; min-width: 0; border: 2px solid var(--line); background: transparent; border-radius: 10px; padding: 7px 6px; font-weight: 700; font-size: 12px; cursor: pointer; color: var(--muted) }
+.act:hover { border-color: var(--line-strong); color: var(--fg) }
+.act:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px }
+.card.crossed .act.x { background: var(--no-soft); border-color: var(--no); color: var(--no) }
+.card.crossed .shot { border-color: var(--no) }
+.card.crossed .shot img { filter: grayscale(.7) opacity(.55) }
+.cross { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none }
+.cross line { stroke: var(--seal); stroke-width: 7; stroke-linecap: round; vector-effect: non-scaling-stroke }
+.card.fresh .tag { background: var(--amber-soft); color: var(--amber-ink) }
+.ghost { aspect-ratio: 400 / 880; border: 3px dashed var(--amber); border-radius: 22px; background: var(--amber-soft); color: var(--amber-ink); display: flex; flex-direction: column; padding: 14px 12px; gap: 8px }
+.ghost b { font-size: 15px; font-weight: 800 } .ghost span { font-size: 12px; font-weight: 600 }
+.ghost textarea { flex: 1; min-height: 0; resize: none; border-color: var(--amber); color: var(--fg) }
+@media (max-width: 520px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 10px } .seal { font-size: 10px; padding: 4px 6px } }
+@media (prefers-reduced-motion: no-preference) { .seal { animation: thunk .22s ease-out } @keyframes thunk { from { transform: rotate(-14deg) scale(1.5); opacity: 0 } } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="mark">3·2·1<small>KICKOFF</small></div>
+    <div>
+      <h1>Ekran onayı</h1>
+      <p class="lead">Oyundaki bütün ekranlar sırayla; 14. bölümde telefonda klavye açıkken görülen düzenler, en sonda tasarım kitine göre yeniden yapılan beş pilot ekran var. Beğendiğin ekrana Tolga mührünü bas; değişmesini istediğin bir şey varsa altındaki kutuya yaz. Bir ekran hiç olmasın diyorsan çarpı at; iki ekranın arasına yeni bir ekran gelsin istiyorsan “Araya ekle”ye basıp ne olacağını yaz. Yazdıkların kendiliğinden kaydedilir.</p>
+    </div>
+  </header>
+
+
+  <section class="kit" aria-label="Palet ve font">
+    <div class="kit-col">
+      <h2 class="kit-h">Palet · açık tema</h2>
+      <ul class="sw"><li><i style="background:#F2F2F5"></i><b>Zemin</b><code>#F2F2F5</code></li><li><i style="background:#FFFFFF"></i><b>Yüzey</b><code>#FFFFFF</code></li><li><i style="background:#1B1A21"></i><b>Yazı</b><code>#1B1A21</code></li><li><i style="background:#5F5D6B"></i><b>Soluk yazı</b><code>#5F5D6B</code></li><li><i style="background:#C9C8D3"></i><b>Çizgi</b><code>#C9C8D3</code></li><li><i style="background:#9F9DAD"></i><b>Koyu çizgi</b><code>#9F9DAD</code></li><li><i style="background:#3E3193"></i><b>Mor gölge</b><code>#3E3193</code></li><li><i style="background:#5E4BC9"></i><b>Mor (sen)</b><code>#5E4BC9</code></li><li><i style="background:#4A3AAE"></i><b>Mor yazı</b><code>#4A3AAE</code></li><li><i style="background:#E9E5FA"></i><b>Mor zemin</b><code>#E9E5FA</code></li><li><i style="background:#B57618"></i><b>Amber gölge</b><code>#B57618</code></li><li><i style="background:#E9A23B"></i><b>Amber (rakip)</b><code>#E9A23B</code></li><li><i style="background:#9A6207"></i><b>Amber yazı</b><code>#9A6207</code></li><li><i style="background:#FBEFD8"></i><b>Amber zemin</b><code>#FBEFD8</code></li><li><i style="background:#167A52"></i><b>Doğru</b><code>#167A52</code></li><li><i style="background:#DCF3E8"></i><b>Doğru zemin</b><code>#DCF3E8</code></li><li><i style="background:#C2334F"></i><b>Yanlış</b><code>#C2334F</code></li><li><i style="background:#FBE1E7"></i><b>Yanlış zemin</b><code>#FBE1E7</code></li></ul>
+    </div>
+    <div class="kit-col">
+      <h2 class="kit-h">Palet · koyu tema</h2>
+      <ul class="sw dark"><li><i style="background:#131218"></i><b>Zemin</b><code>#131218</code></li><li><i style="background:#1C1B23"></i><b>Yüzey</b><code>#1C1B23</code></li><li><i style="background:#ECEBF2"></i><b>Yazı</b><code>#ECEBF2</code></li><li><i style="background:#A09EAD"></i><b>Soluk yazı</b><code>#A09EAD</code></li><li><i style="background:#3A3946"></i><b>Çizgi</b><code>#3A3946</code></li><li><i style="background:#5B5A6B"></i><b>Koyu çizgi</b><code>#5B5A6B</code></li><li><i style="background:#6657C4"></i><b>Mor gölge</b><code>#6657C4</code></li><li><i style="background:#8C7CF0"></i><b>Mor (sen)</b><code>#8C7CF0</code></li><li><i style="background:#B3A7FF"></i><b>Mor yazı</b><code>#B3A7FF</code></li><li><i style="background:#272443"></i><b>Mor zemin</b><code>#272443</code></li><li><i style="background:#C58C34"></i><b>Amber gölge</b><code>#C58C34</code></li><li><i style="background:#F0B45A"></i><b>Amber (rakip)</b><code>#F0B45A</code></li><li><i style="background:#F4C77A"></i><b>Amber yazı</b><code>#F4C77A</code></li><li><i style="background:#3A2D14"></i><b>Amber zemin</b><code>#3A2D14</code></li><li><i style="background:#4FCF93"></i><b>Doğru</b><code>#4FCF93</code></li><li><i style="background:#163528"></i><b>Doğru zemin</b><code>#163528</code></li><li><i style="background:#FF7D96"></i><b>Yanlış</b><code>#FF7D96</code></li><li><i style="background:#3C1B25"></i><b>Yanlış zemin</b><code>#3C1B25</code></li></ul>
+    </div>
+    <div class="kit-col">
+      <h2 class="kit-h">Font · Sora</h2>
+      <div class="type">
+        <p style="font-weight:800;font-style:italic;font-size:34px;line-height:1">3·2·1 <span>ExtraBold 800 italik · logo, geri sayım</span></p>
+        <p style="font-weight:800;font-size:22px">Galatasaray × Inter Milan <span>ExtraBold 800 · başlık, takım adı, skor</span></p>
+        <p style="font-weight:700;font-size:16px">Wesley Sneijder +1 <span>Bold 700 · düğme, bildirim, satır başlığı</span></p>
+        <p style="font-weight:600;font-size:16px">Oyuncu adı yaz… <span>SemiBold 600 · yazı kutusu, öneri, rozet</span></p>
+        <p style="font-weight:500;font-size:13px">Elo satranç gibi, yalnızca Ara maçları işler <span>Medium 500 · açıklama, alt satır</span></p>
+        <p style="font-weight:700;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)">Basamak 4 · Rakip <span>Bold 700 büyük harf · üst etiket</span></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="bar">
+    <div class="meter" aria-live="polite">
+      <div class="nums" id="nums">__COUNT__ ekran</div>
+      <div class="track"><i class="a" id="mA"></i><i class="r" id="mR"></i></div>
+    </div>
+    <div class="chips" role="group" aria-label="Süzgeç">
+      <button class="chip" data-f="all" aria-pressed="true">Hepsi</button>
+      <button class="chip" data-f="todo" aria-pressed="false">Bekleyen</button>
+      <button class="chip" data-f="ok" aria-pressed="false">Mühürlü</button>
+      <button class="chip" data-f="rev" aria-pressed="false">Revizeli</button>
+      <button class="chip" data-f="x" aria-pressed="false">Çarpılı</button>
+      <button class="chip" data-f="new" aria-pressed="false">Yeni ekran</button>
+    </div>
+    <div class="chips" role="group" aria-label="Görüntü teması">
+      <button class="chip" data-t="acik" aria-pressed="true">Açık tema</button>
+      <button class="chip" data-t="koyu" aria-pressed="false">Koyu tema</button>
+    </div>
+  </div>
+  <div class="note-bar" id="local" hidden></div>
+
+  <main id="main"></main>
+  <p class="empty" id="empty" hidden>Bu süzgeçte ekran yok.</p>
+</div>
+
+<dialog class="zoom" id="zoom"><img id="zoomImg" alt=""><div class="cap" id="zoomCap"></div></dialog>
+<dialog class="out" id="out">
+  <strong>Notlarım</strong>
+  <p class="lead" style="margin:4px 0 10px">Bu metni kopyalayıp Kubilay'a gönder.</p>
+  <textarea id="outText" readonly></textarea>
+  <div class="row"><button class="btn" id="outClose">Kapat</button><button class="btn primary" id="outCopy">Kopyala</button></div>
+</dialog>
+
+<script>
+const CATS = __MANIFEST__;
+const ALL = CATS.flatMap((c) => c.items.map((it) => ({ ...it, cat: c })));
+const state = {};                 // id -> { ok, note, x, by, at }; araya eklenen ekran: "new-…" -> { kind: "new", after, note, by, at }
+let filter = "all", shots = "acik", db = null, user = null, myId = null, canWrite = true, localOnly = false;
+const names = {};                 // kullanıcı kimliği -> ad (her çizimde yeniden çözülür, saklanmaz)
+const LS = "kickoff-review-v1";
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+try { const s = JSON.parse(localStorage.getItem(LS) || "{}"); if (s.shots) shots = s.shots; if (s.filter) filter = s.filter; } catch (e) {}
+const savePrefs = () => { try { localStorage.setItem(LS, JSON.stringify({ shots, filter, local: localOnly ? state : undefined })); } catch (e) {} };
+
+// ---------- çizim ----------
+const cards = {};
+function build() {
+  const main = $("main");
+  for (const c of CATS) {
+    const sec = el("section", "cat"); sec.dataset.cat = c.num;
+    const h = el("h2"); h.append(el("span", null, c.num), el("b", null, c.title), el("span", "count")); sec.append(h);
+    const grid = el("div", "grid");
+    for (const it of c.items) {
+      const card = el("article", "card"); card.id = it.id;
+      const head = el("div", "head"); head.append(el("span", "tag", c.num + " · " + it.label), el("span", "name", it.title));
+      const shot = el("button", "shot"); shot.type = "button"; shot.setAttribute("aria-label", it.title + " görüntüsünü büyüt");
+      const img = el("img"); img.loading = "lazy"; img.alt = it.title; img.width = 400; img.height = 880; shot.append(img);
+      shot.addEventListener("click", () => { $("zoomImg").src = img.src; $("zoomCap").textContent = c.num + " · " + it.label + "  " + it.title; $("zoom").showModal(); });
+      const stamp = el("button", "stamp", "Tolga mührü"); stamp.type = "button"; stamp.id = "stamp-" + it.id; stamp.setAttribute("aria-pressed", "false");
+      stamp.addEventListener("click", () => { const on = !(state[it.id] && state[it.id].ok); write(it.id, on ? { ok: true, x: false } : { ok: false }); });
+      const ta = el("textarea"); ta.id = "note-" + it.id; ta.placeholder = "Revize: neyi değiştirelim?"; ta.setAttribute("aria-label", it.title + " için revize notu");
+      let timer = null;
+      const commit = () => { clearTimeout(timer); const v = ta.value.trim(); if (v !== ((state[it.id] && state[it.id].note) || "")) write(it.id, { note: v }); };
+      ta.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(commit, 900); });
+      ta.addEventListener("blur", commit);
+      const meta = el("div", "meta");
+      const acts = el("div", "acts");
+      const xb = el("button", "act x", "Çarpı at"); xb.type = "button"; xb.setAttribute("aria-pressed", "false");
+      xb.addEventListener("click", () => { const on = !(state[it.id] && state[it.id].x); write(it.id, on ? { x: true, ok: false } : { x: false }); });
+      const add = el("button", "act", "+ Araya ekle"); add.type = "button"; add.title = "Bu ekrandan sonra yeni bir ekran ekle";
+      add.addEventListener("click", () => addScreen(it.id));
+      acts.append(xb, add);
+      card.append(head, shot, stamp, acts, ta, meta); grid.append(card);
+      cards[it.id] = { card, img, stamp, ta, meta, shot, it, sec, xb };
+    }
+    sec.append(grid); main.append(sec);
+  }
+}
+function paintShots() { for (const id in cards) cards[id].img.src = shots + "/" + cards[id].it.file; }
+function when(ms) { if (!ms) return ""; const d = new Date(ms); return d.toLocaleDateString("tr-TR", { day: "numeric", month: "short" }) + " " + d.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }); }
+function paint(id) {
+  const c = cards[id], s = state[id] || {};
+  c.card.classList.toggle("approved", !!s.ok); c.card.classList.toggle("revise", !!s.note);
+  c.stamp.setAttribute("aria-pressed", s.ok ? "true" : "false"); c.stamp.textContent = s.ok ? "Mühürlendi" : "Tolga mührü";
+  const old = c.shot.querySelector(".seal");
+  if (s.ok && !old) { const seal = el("span", "seal"); seal.append(document.createTextNode("Tolga mührü"), el("small", null, "onaylandı")); c.shot.append(seal); }
+  if (!s.ok && old) old.remove();
+  c.card.classList.toggle("crossed", !!s.x); c.xb.setAttribute("aria-pressed", s.x ? "true" : "false"); c.xb.textContent = s.x ? "Çarpıyı kaldır" : "Çarpı at";
+  const oldX = c.shot.querySelector(".cross");
+  if (s.x && !oldX) { const NS = "http://www.w3.org/2000/svg"; const svg = document.createElementNS(NS, "svg"); svg.setAttribute("class", "cross"); svg.setAttribute("viewBox", "0 0 100 100"); svg.setAttribute("preserveAspectRatio", "none"); svg.setAttribute("aria-label", "Çarpı atıldı");
+    for (const [x1, x2] of [[4, 96], [96, 4]]) { const l = document.createElementNS(NS, "line"); l.setAttribute("x1", x1); l.setAttribute("y1", 3); l.setAttribute("x2", x2); l.setAttribute("y2", 97); svg.append(l); }
+    c.shot.append(svg); }
+  if (!s.x && oldX) oldX.remove();
+  if (document.activeElement !== c.ta) c.ta.value = s.note || "";
+  const who = s.by ? (names[s.by] || "") : "";
+  if (!c.meta.classList.contains("err")) c.meta.textContent = s.at ? ((who ? who + " · " : "") + when(s.at)) : "";
+}
+// ---------- araya eklenen ekranlar ----------
+const extra = {};                 // "new-…" -> { card, ta, meta }
+const isNew = (id) => state[id] && state[id].kind === "new";
+function syncExtra() {
+  for (const id in extra) if (!isNew(id)) { extra[id].card.remove(); delete extra[id]; }
+  const ids = Object.keys(state).filter(isNew).sort((a, b) => (state[a].at0 || state[a].at) - (state[b].at0 || state[b].at));
+  for (const id of ids) {
+    const s = state[id]; const anchor = cards[s.after]; if (!anchor) continue;
+    if (!extra[id]) {
+      const card = el("article", "card fresh"); card.id = id;
+      const head = el("div", "head"); head.append(el("span", "tag", "YENİ"), el("span", "name", anchor.it.title + " ekranından sonra"));
+      const ghost = el("div", "ghost"); ghost.append(el("b", null, "Yeni ekran"), el("span", null, "Görseli hazır olana kadar burada ne olacağını yaz."));
+      const ta = el("textarea"); ta.placeholder = "Bu ekranda ne olsun?"; ta.setAttribute("aria-label", "Yeni ekranın açıklaması");
+      let timer = null;
+      const commit = () => { clearTimeout(timer); const v = ta.value.trim(); if (isNew(id) && v !== (state[id].note || "")) write(id, { note: v }); };
+      ta.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(commit, 900); }); ta.addEventListener("blur", commit);
+      ghost.append(ta);
+      const acts = el("div", "acts"); const del = el("button", "act", "Bu ekranı kaldır"); del.type = "button"; del.addEventListener("click", () => removeScreen(id)); acts.append(del);
+      const meta = el("div", "meta");
+      card.append(head, ghost, acts, meta);
+      extra[id] = { card, ta, meta };
+    }
+    const x = extra[id];
+    // aynı ekrandan sonra birden çok yeni ekran: eklenme sırasıyla dizilir
+    let prev = anchor.card; while (prev.nextElementSibling && prev.nextElementSibling.classList.contains("fresh") && prev.nextElementSibling !== x.card && ids.indexOf(prev.nextElementSibling.id) < ids.indexOf(id)) prev = prev.nextElementSibling;
+    if (prev.nextElementSibling !== x.card) prev.after(x.card);
+    if (document.activeElement !== x.ta) x.ta.value = s.note || "";
+    const who = s.by ? (names[s.by] || "") : "";
+    if (!x.meta.classList.contains("err")) x.meta.textContent = s.at ? ((who ? who + " · " : "") + when(s.at)) : "";
+  }
+}
+function addScreen(after) {
+  const id = "new-" + after + "-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  write(id, { kind: "new", after, note: "", at0: Date.now() });
+  if (filter !== "all" && filter !== "new") { filter = "all"; savePrefs(); paintAll(); }
+  const x = extra[id]; if (x) { x.card.scrollIntoView({ block: "center", behavior: "smooth" }); x.ta.focus({ preventScroll: true }); }
+}
+async function removeScreen(id) {
+  delete state[id]; paintAll();
+  if (!db || localOnly) { goLocal(); return; }
+  try { await db.doc("reviews/" + id).delete(); } catch (e) { if (e && e.code === "invalid_argument") goLocal(); }
+}
+
+function paintAll() {
+  syncExtra();
+  let ok = 0, rev = 0, shown = 0;
+  for (const id in cards) {
+    paint(id); const s = state[id] || {};
+    if (s.ok) ok++; if (s.note) rev++;
+    const vis = filter === "all" || (filter === "ok" && s.ok) || (filter === "rev" && s.note) || (filter === "x" && s.x) || (filter === "todo" && !s.ok && !s.note && !s.x);
+    cards[id].card.hidden = !vis; if (vis) shown++;
+  }
+  for (const id in extra) { const vis = filter === "all" || filter === "new"; extra[id].card.hidden = !vis; if (vis) shown++; }
+  for (const sec of document.querySelectorAll("section.cat")) {
+    const vis = [...sec.querySelectorAll(".card")].filter((x) => !x.hidden).length;
+    sec.hidden = vis === 0; sec.querySelector(".count").textContent = vis + " ekran";
+  }
+  $("empty").hidden = shown > 0;
+  const n = ALL.length;
+  const touched = (x) => { const s = state[x.id] || {}; return s.ok || s.note || s.x; };
+  const crossed = ALL.filter((x) => (state[x.id] || {}).x).length, fresh = Object.keys(extra).length;
+  $("nums").textContent = ok + " mühürlü · " + rev + " revizeli" + (crossed ? " · " + crossed + " çarpılı" : "") + (fresh ? " · " + fresh + " yeni" : "") + " · " + (n - ALL.filter(touched).length) + " bekliyor / " + n + " ekran";
+  $("mA").style.width = (100 * ok / n) + "%"; $("mR").style.width = (100 * ALL.filter((x) => !(state[x.id] || {}).ok && ((state[x.id] || {}).note || (state[x.id] || {}).x)).length / n) + "%";
+  for (const b of document.querySelectorAll("[data-f]")) b.setAttribute("aria-pressed", b.dataset.f === filter ? "true" : "false");
+  for (const b of document.querySelectorAll("[data-t]")) b.setAttribute("aria-pressed", b.dataset.t === shots ? "true" : "false");
+}
+
+// ---------- kayıt ----------
+async function write(id, patch) {
+  const next = { ok: false, note: "", ...(state[id] || {}), ...patch, at: Date.now(), by: myId || "" };
+  state[id] = next; paintAll();
+  const c = cards[id] || extra[id]; if (!c) return; c.meta.classList.remove("err");
+  if (!db || localOnly) { goLocal(); return; }
+  const note = String(next.note || "").slice(0, 2000);
+  const doc = next.kind === "new" ? { kind: "new", after: next.after, note, at0: next.at0 || next.at, at: next.at, by: next.by } : { ok: !!next.ok, x: !!next.x, note, at: next.at, by: next.by };
+  try { await db.doc("reviews/" + id).set(doc); }
+  catch (e) {
+    if (e && e.code === "invalid_argument") { goLocal(); return; }      // bu görüntüleyen ortak kayda yazamıyor: notlar bu cihazda tutulur
+    c.meta.classList.add("err"); c.meta.textContent = "Kaydedilemedi, tekrar dene";
+  }
+}
+function goLocal() {
+  localOnly = true; savePrefs();
+  const n = ALL.filter((x) => (state[x.id] || {}).ok || (state[x.id] || {}).note || (state[x.id] || {}).x).length + Object.keys(state).filter(isNew).length;
+  const bar = $("local"); bar.hidden = false; bar.textContent = "Notların bu cihazda duruyor (ortak kayda yazma iznin yok). Bitirince hepsini kopyalayıp gönder.";
+  const b = el("button", null, "Notlarımı kopyala (" + n + ")"); b.type = "button"; b.addEventListener("click", openOut); bar.append(b);
+}
+function openOut() {
+  const lines = [];
+  for (const c of CATS) for (const it of c.items) { const s = state[it.id] || {}; if (s.ok || s.note || s.x) lines.push(c.num + " · " + it.label + " " + it.title + ": " + [s.ok ? "MÜHÜRLÜ" : "", s.x ? "ÇARPI (kaldırılsın)" : "", s.note ? "REVİZE: " + s.note : ""].filter(Boolean).join(" · "));
+    for (const id of Object.keys(state).filter((k) => isNew(k) && state[k].after === it.id)) lines.push("   + YENİ EKRAN (" + it.label + " sonrasına): " + (state[id].note || "(açıklama yazılmadı)")); }
+  $("outText").value = lines.join("\n") || "Henüz not yok."; $("out").showModal();
+}
+$("outClose").addEventListener("click", () => $("out").close());
+$("outCopy").addEventListener("click", async () => { const t = $("outText"); try { await navigator.clipboard.writeText(t.value); $("outCopy").textContent = "Kopyalandı"; } catch (e) { t.focus(); t.select(); } });
+$("zoom").addEventListener("click", () => $("zoom").close());
+document.addEventListener("click", (e) => {
+  const f = e.target.closest("[data-f]"); if (f) { filter = f.dataset.f; savePrefs(); paintAll(); }
+  const th = e.target.closest("[data-t]"); if (th) { shots = th.dataset.t; savePrefs(); paintShots(); paintAll(); }
+});
+
+async function resolveNames() {
+  if (!user || !user.profiles) return;
+  const ids = [...new Set(Object.values(state).map((s) => s.by).filter(Boolean))].filter((id) => !(id in names));
+  if (!ids.length) return;
+  try { const ps = await user.profiles(ids); for (const id of ids) names[id] = (ps[id] && ps[id].name) || "Biri"; paintAll(); } catch (e) {}
+}
+
+function start() {
+  build(); paintShots(); paintAll();
+  if (window.claude && window.claude.use) {
+    window.claude.use("user").then(async (u) => { user = u; if (u && u.id) { try { myId = await u.id(); } catch (e) {} } resolveNames(); });
+    window.claude.use("db").then((d) => {
+      db = d;
+      if (!d) { try { const s = JSON.parse(localStorage.getItem(LS) || "{}"); if (s.local) Object.assign(state, s.local); } catch (e) {} goLocal(); paintAll(); return; }
+      d.collection("reviews").onSnapshot((snap) => {
+        if (localOnly) return;
+        for (const k in state) delete state[k];
+        for (const doc of snap.docs) { const v = doc.data(); if (!v) continue;
+          if (cards[doc.id]) state[doc.id] = { ok: !!v.ok, x: !!v.x, note: String(v.note || ""), at: Number(v.at) || 0, by: String(v.by || "") };
+          else if (v.kind === "new" && cards[v.after]) state[doc.id] = { kind: "new", after: String(v.after), note: String(v.note || ""), at0: Number(v.at0) || 0, at: Number(v.at) || 0, by: String(v.by || "") }; }
+        paintAll(); resolveNames();
+      }, () => {});
+    });
+  }
+}
+start();
+</script>

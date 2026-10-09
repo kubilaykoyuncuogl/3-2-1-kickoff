@@ -1,0 +1,962 @@
+[
+{
+"num": "01",
+"title": "Açılış menü",
+"items": [
+{
+"id": "c01-01A",
+"label": "01A",
+"title": "Ana menü",
+"file": "01-acilis-menu/01A-ana-menu.png"
+},
+{
+"id": "c01-01B",
+"label": "01B",
+"title": "Ana menü haftanın maçı yok",
+"file": "01-acilis-menu/01B-ana-menu-haftanin-maci-yok.png"
+},
+{
+"id": "c01-02A",
+"label": "02A",
+"title": "Takma ad boş",
+"file": "01-acilis-menu/02A-takma-ad-bos.png"
+},
+{
+"id": "c01-02B",
+"label": "02B",
+"title": "Takma ad yazılı",
+"file": "01-acilis-menu/02B-takma-ad-yazili.png"
+}
+]
+},
+{
+"num": "02",
+"title": "Ayarlar hesap",
+"items": [
+{
+"id": "c02-01A",
+"label": "01A",
+"title": "Ayarlar",
+"file": "02-ayarlar-hesap/01A-ayarlar.png"
+},
+{
+"id": "c02-01B",
+"label": "01B",
+"title": "Ayarlar hesap bağlı",
+"file": "02-ayarlar-hesap/01B-ayarlar-hesap-bagli.png"
+},
+{
+"id": "c02-02A",
+"label": "02A",
+"title": "Hesap misafir",
+"file": "02-ayarlar-hesap/02A-hesap-misafir.png"
+},
+{
+"id": "c02-02B",
+"label": "02B",
+"title": "Hesap bağlı",
+"file": "02-ayarlar-hesap/02B-hesap-bagli.png"
+},
+{
+"id": "c02-02C",
+"label": "02C",
+"title": "Hesap kurtarma kodu",
+"file": "02-ayarlar-hesap/02C-hesap-kurtarma-kodu.png"
+},
+{
+"id": "c02-02D",
+"label": "02D",
+"title": "Hesap cihaz kodu",
+"file": "02-ayarlar-hesap/02D-hesap-cihaz-kodu.png"
+},
+{
+"id": "c02-02E",
+"label": "02E",
+"title": "Hesabım var kod",
+"file": "02-ayarlar-hesap/02E-hesabim-var-kod.png"
+},
+{
+"id": "c02-02F",
+"label": "02F",
+"title": "Hesabım var kurtarma",
+"file": "02-ayarlar-hesap/02F-hesabim-var-kurtarma.png"
+},
+{
+"id": "c02-02G",
+"label": "02G",
+"title": "Hesabım var hatalı kod",
+"file": "02-ayarlar-hesap/02G-hesabim-var-hatali-kod.png"
+},
+{
+"id": "c02-02H",
+"label": "02H",
+"title": "Hesap silme onayı",
+"file": "02-ayarlar-hesap/02H-hesap-silme-onayi.png"
+}
+]
+},
+{
+"num": "03",
+"title": "Online",
+"items": [
+{
+"id": "c03-01A",
+"label": "01A",
+"title": "Online menü",
+"file": "03-online/01A-online-menu.png"
+},
+{
+"id": "c03-01B",
+"label": "01B",
+"title": "Online menü lig dönem süre",
+"file": "03-online/01B-online-menu-lig-donem-sure.png"
+},
+{
+"id": "c03-01C",
+"label": "01C",
+"title": "Online menü 5 büyük lig",
+"file": "03-online/01C-online-menu-5-buyuk-lig.png"
+},
+{
+"id": "c03-02",
+"label": "02",
+"title": "Rakip aranıyor",
+"file": "03-online/02-rakip-araniyor.png"
+},
+{
+"id": "c03-03",
+"label": "03",
+"title": "Oda kuruldu bekleniyor",
+"file": "03-online/03-oda-kuruldu-bekleniyor.png"
+},
+{
+"id": "c03-04A",
+"label": "04A",
+"title": "Odaya katıl",
+"file": "03-online/04A-odaya-katil.png"
+},
+{
+"id": "c03-04B",
+"label": "04B",
+"title": "Odaya katıl kod yazılı",
+"file": "03-online/04B-odaya-katil-kod-yazili.png"
+},
+{
+"id": "c03-04C",
+"label": "04C",
+"title": "Odaya katıl oda bulunamadı",
+"file": "03-online/04C-odaya-katil-oda-bulunamadi.png"
+}
+]
+},
+{
+"num": "04",
+"title": "Maç",
+"items": [
+{
+"id": "c04-01A",
+"label": "01A",
+"title": "Takım seçimi boş",
+"file": "04-mac/01A-takim-secimi-bos.png"
+},
+{
+"id": "c04-01B",
+"label": "01B",
+"title": "Takım seçimi öneriler",
+"file": "04-mac/01B-takim-secimi-oneriler.png"
+},
+{
+"id": "c04-01C",
+"label": "01C",
+"title": "Takım seçimi hızlı seçenekler",
+"file": "04-mac/01C-takim-secimi-hizli-secenekler.png"
+},
+{
+"id": "c04-01D",
+"label": "01D",
+"title": "Takım seçildi değiştir hazırım",
+"file": "04-mac/01D-takim-secildi-degistir-hazirim.png"
+},
+{
+"id": "c04-01E",
+"label": "01E",
+"title": "Hazır rakip bekleniyor",
+"file": "04-mac/01E-hazir-rakip-bekleniyor.png"
+},
+{
+"id": "c04-01F",
+"label": "01F",
+"title": "Rakip hazır seni bekliyor",
+"file": "04-mac/01F-rakip-hazir-seni-bekliyor.png"
+},
+{
+"id": "c04-01G",
+"label": "01G",
+"title": "Süre azaldı",
+"file": "04-mac/01G-sure-azaldi.png"
+},
+{
+"id": "c04-01H",
+"label": "01H",
+"title": "Uyarı aynı takım",
+"file": "04-mac/01H-uyari-ayni-takim.png"
+},
+{
+"id": "c04-01I",
+"label": "01I",
+"title": "Uyarı takım kullanıldı",
+"file": "04-mac/01I-uyari-takim-kullanildi.png"
+},
+{
+"id": "c04-01J",
+"label": "01J",
+"title": "Uyarı kapsam dışı",
+"file": "04-mac/01J-uyari-kapsam-disi.png"
+},
+{
+"id": "c04-01K",
+"label": "01K",
+"title": "Rakibin bağlantısı koptu",
+"file": "04-mac/01K-rakibin-baglantisi-koptu.png"
+},
+{
+"id": "c04-02",
+"label": "02",
+"title": "Geri sayım",
+"file": "04-mac/02-geri-sayim.png"
+},
+{
+"id": "c04-03",
+"label": "03",
+"title": "Takımlar açıklandı",
+"file": "04-mac/03-takimlar-aciklandi.png"
+},
+{
+"id": "c04-04A",
+"label": "04A",
+"title": "Tur boş",
+"file": "04-mac/04A-tur-bos.png"
+},
+{
+"id": "c04-04B",
+"label": "04B",
+"title": "Tur öneriler",
+"file": "04-mac/04B-tur-oneriler.png"
+},
+{
+"id": "c04-04C",
+"label": "04C",
+"title": "Tur son saniyeler",
+"file": "04-mac/04C-tur-son-saniyeler.png"
+},
+{
+"id": "c04-04D",
+"label": "04D",
+"title": "Tur yanlış tahmin kilit",
+"file": "04-mac/04D-tur-yanlis-tahmin-kilit.png"
+},
+{
+"id": "c04-04E",
+"label": "04E",
+"title": "Tur rakip yanlış",
+"file": "04-mac/04E-tur-rakip-yanlis.png"
+},
+{
+"id": "c04-04F",
+"label": "04F",
+"title": "Tur rakip koptu",
+"file": "04-mac/04F-tur-rakip-koptu.png"
+},
+{
+"id": "c04-04G",
+"label": "04G",
+"title": "Tur 30 saniye",
+"file": "04-mac/04G-tur-30-saniye.png"
+},
+{
+"id": "c04-05A",
+"label": "05A",
+"title": "Tur sonu sen bildin",
+"file": "04-mac/05A-tur-sonu-sen-bildin.png"
+},
+{
+"id": "c04-05B",
+"label": "05B",
+"title": "Tur sonu rakip bildi",
+"file": "04-mac/05B-tur-sonu-rakip-bildi.png"
+},
+{
+"id": "c04-05C",
+"label": "05C",
+"title": "Tur sonu kimse bilemedi",
+"file": "04-mac/05C-tur-sonu-kimse-bilemedi.png"
+},
+{
+"id": "c04-05D",
+"label": "05D",
+"title": "Tur sonu rakip takım seçmedi",
+"file": "04-mac/05D-tur-sonu-rakip-takim-secmedi.png"
+},
+{
+"id": "c04-05E",
+"label": "05E",
+"title": "Tur sonu sen takım seçmedin",
+"file": "04-mac/05E-tur-sonu-sen-takim-secmedin.png"
+},
+{
+"id": "c04-06",
+"label": "06",
+"title": "Ortak oyuncu yok",
+"file": "04-mac/06-ortak-oyuncu-yok.png"
+},
+{
+"id": "c04-07A",
+"label": "07A",
+"title": "Maç sonu kazandın",
+"file": "04-mac/07A-mac-sonu-kazandin.png"
+},
+{
+"id": "c04-07B",
+"label": "07B",
+"title": "Maç sonu kaybettin",
+"file": "04-mac/07B-mac-sonu-kaybettin.png"
+},
+{
+"id": "c04-07C",
+"label": "07C",
+"title": "Maç sonu berabere",
+"file": "04-mac/07C-mac-sonu-berabere.png"
+},
+{
+"id": "c04-07D",
+"label": "07D",
+"title": "Maç sonu rakip ayrıldı",
+"file": "04-mac/07D-mac-sonu-rakip-ayrildi.png"
+},
+{
+"id": "c04-07E",
+"label": "07E",
+"title": "Maç sonu rövanş bekleniyor",
+"file": "04-mac/07E-mac-sonu-rovans-bekleniyor.png"
+},
+{
+"id": "c04-07F",
+"label": "07F",
+"title": "Maç sonu rakip rövanş istiyor",
+"file": "04-mac/07F-mac-sonu-rakip-rovans-istiyor.png"
+}
+]
+},
+{
+"num": "05",
+"title": "Tek oyna",
+"items": [
+{
+"id": "c05-01A",
+"label": "01A",
+"title": "Mod menüsü",
+"file": "05-tek-oyna/01A-mod-menusu.png"
+},
+{
+"id": "c05-01B",
+"label": "01B",
+"title": "Mod menüsü en iyi skorlar",
+"file": "05-tek-oyna/01B-mod-menusu-en-iyi-skorlar.png"
+},
+{
+"id": "c05-02A",
+"label": "02A",
+"title": "Kapsam dönem klasik",
+"file": "05-tek-oyna/02A-kapsam-donem-klasik.png"
+},
+{
+"id": "c05-02B",
+"label": "02B",
+"title": "Kapsam dönem lig seçili",
+"file": "05-tek-oyna/02B-kapsam-donem-lig-secili.png"
+},
+{
+"id": "c05-02C",
+"label": "02C",
+"title": "Kapsam dönem kariyer notu",
+"file": "05-tek-oyna/02C-kapsam-donem-kariyer-notu.png"
+},
+{
+"id": "c05-03A",
+"label": "03A",
+"title": "Yükleniyor",
+"file": "05-tek-oyna/03A-yukleniyor.png"
+},
+{
+"id": "c05-03B",
+"label": "03B",
+"title": "Sunucudan cevap gelmedi",
+"file": "05-tek-oyna/03B-sunucudan-cevap-gelmedi.png"
+}
+]
+},
+{
+"num": "06",
+"title": "Klasik merdiven",
+"items": [
+{
+"id": "c06-01A",
+"label": "01A",
+"title": "Basamak",
+"file": "06-klasik-merdiven/01A-basamak.png"
+},
+{
+"id": "c06-01B",
+"label": "01B",
+"title": "Öneriler",
+"file": "06-klasik-merdiven/01B-oneriler.png"
+},
+{
+"id": "c06-01C",
+"label": "01C",
+"title": "Yanlış tahmin",
+"file": "06-klasik-merdiven/01C-yanlis-tahmin.png"
+},
+{
+"id": "c06-01D",
+"label": "01D",
+"title": "Süre doldu can gitti",
+"file": "06-klasik-merdiven/01D-sure-doldu-can-gitti.png"
+},
+{
+"id": "c06-02A",
+"label": "02A",
+"title": "Sonuç kartı rekor",
+"file": "06-klasik-merdiven/02A-sonuc-karti-rekor.png"
+},
+{
+"id": "c06-02B",
+"label": "02B",
+"title": "Sonuç kartı uzun liste",
+"file": "06-klasik-merdiven/02B-sonuc-karti-uzun-liste.png"
+}
+]
+},
+{
+"num": "07",
+"title": "Beşte bir",
+"items": [
+{
+"id": "c07-01A",
+"label": "01A",
+"title": "Soru",
+"file": "07-beste-bir/01A-soru.png"
+},
+{
+"id": "c07-01B",
+"label": "01B",
+"title": "Cevap doğru: yeşil yanar",
+"file": "07-beste-bir/01B-cevap-dogru-yesil.png"
+},
+{
+"id": "c07-01C",
+"label": "01C",
+"title": "Cevap yanlış: kırmızı yanar",
+"file": "07-beste-bir/01C-cevap-yanlis-kirmizi.png"
+},
+{
+"id": "c07-02",
+"label": "02",
+"title": "Sonuç kartı",
+"file": "07-beste-bir/02-sonuc-karti.png"
+}
+]
+},
+{
+"num": "08",
+"title": "Kariyer yolu",
+"items": [
+{
+"id": "c08-01A",
+"label": "01A",
+"title": "Ilk kulüp",
+"file": "08-kariyer-yolu/01A-ilk-kulup.png"
+},
+{
+"id": "c08-01B",
+"label": "01B",
+"title": "Kulüpler açılıyor",
+"file": "08-kariyer-yolu/01B-kulupler-aciliyor.png"
+},
+{
+"id": "c08-01C",
+"label": "01C",
+"title": "Öneriler",
+"file": "08-kariyer-yolu/01C-oneriler.png"
+},
+{
+"id": "c08-01D",
+"label": "01D",
+"title": "Yanlış tahmin",
+"file": "08-kariyer-yolu/01D-yanlis-tahmin.png"
+},
+{
+"id": "c08-01E",
+"label": "01E",
+"title": "Doğru sıradaki oyuncu",
+"file": "08-kariyer-yolu/01E-dogru-siradaki-oyuncu.png"
+},
+{
+"id": "c08-02",
+"label": "02",
+"title": "Sonuç kartı",
+"file": "08-kariyer-yolu/02-sonuc-karti.png"
+}
+]
+},
+{
+"num": "09",
+"title": "Sıradaki kulüp",
+"items": [
+{
+"id": "c09-01A",
+"label": "01A",
+"title": "Ilk kulüp sorusu",
+"file": "09-siradaki-kulup/01A-ilk-kulup-sorusu.png"
+},
+{
+"id": "c09-01B",
+"label": "01B",
+"title": "Sonraki adım ipuçları",
+"file": "09-siradaki-kulup/01B-sonraki-adim-ipuclari.png"
+},
+{
+"id": "c09-01C",
+"label": "01C",
+"title": "Öneriler",
+"file": "09-siradaki-kulup/01C-oneriler.png"
+},
+{
+"id": "c09-01D",
+"label": "01D",
+"title": "Yanlış tahmin",
+"file": "09-siradaki-kulup/01D-yanlis-tahmin.png"
+},
+{
+"id": "c09-02",
+"label": "02",
+"title": "Sonuç kartı",
+"file": "09-siradaki-kulup/02-sonuc-karti.png"
+}
+]
+},
+{
+"num": "10",
+"title": "O mu bu mu",
+"items": [
+{
+"id": "c10-01A",
+"label": "01A",
+"title": "Soru",
+"file": "10-o-mu-bu-mu/01A-soru.png"
+},
+{
+"id": "c10-01B",
+"label": "01B",
+"title": "Kalan oyuncunun değeri açık",
+"file": "10-o-mu-bu-mu/01B-kalan-oyuncunun-degeri-acik.png"
+},
+{
+"id": "c10-01C",
+"label": "01C",
+"title": "Yeni kategori",
+"file": "10-o-mu-bu-mu/01C-yeni-kategori.png"
+},
+{
+"id": "c10-01D",
+"label": "01D",
+"title": "Cevap doğru: yeşil yanar",
+"file": "10-o-mu-bu-mu/01D-cevap-dogru-yesil.png"
+},
+{
+"id": "c10-01E",
+"label": "01E",
+"title": "Cevap yanlış: kırmızı yanar",
+"file": "10-o-mu-bu-mu/01E-cevap-yanlis-kirmizi.png"
+},
+{
+"id": "c10-02",
+"label": "02",
+"title": "Sonuç kartı",
+"file": "10-o-mu-bu-mu/02-sonuc-karti.png"
+}
+]
+},
+{
+"num": "11",
+"title": "Haftanın maçı",
+"items": [
+{
+"id": "c11-01A",
+"label": "01A",
+"title": "Giriş taraf seçilmemiş",
+"file": "11-haftanin-maci/01A-giris-taraf-secilmemis.png"
+},
+{
+"id": "c11-01B",
+"label": "01B",
+"title": "Giriş taraf seçildi",
+"file": "11-haftanin-maci/01B-giris-taraf-secildi.png"
+},
+{
+"id": "c11-01C",
+"label": "01C",
+"title": "Giriş taraf kilitli",
+"file": "11-haftanin-maci/01C-giris-taraf-kilitli.png"
+},
+{
+"id": "c11-02A",
+"label": "02A",
+"title": "Soru",
+"file": "11-haftanin-maci/02A-soru.png"
+},
+{
+"id": "c11-02B",
+"label": "02B",
+"title": "Cevap yanlış: kırmızı yanar",
+"file": "11-haftanin-maci/02B-cevap-yanlis-kirmizi.png"
+},
+{
+"id": "c11-03",
+"label": "03",
+"title": "Sonuç kartı",
+"file": "11-haftanin-maci/03-sonuc-karti.png"
+}
+]
+},
+{
+"num": "12",
+"title": "Nasıl oynanır",
+"items": [
+{
+"id": "c12-01A",
+"label": "01A",
+"title": "Online adım 1",
+"file": "12-nasil-oynanir/01A-online-adim-1.png"
+},
+{
+"id": "c12-01B",
+"label": "01B",
+"title": "Online adım 2",
+"file": "12-nasil-oynanir/01B-online-adim-2.png"
+},
+{
+"id": "c12-01C",
+"label": "01C",
+"title": "Online adım 3",
+"file": "12-nasil-oynanir/01C-online-adim-3.png"
+},
+{
+"id": "c12-01D",
+"label": "01D",
+"title": "Online adım 4",
+"file": "12-nasil-oynanir/01D-online-adim-4.png"
+},
+{
+"id": "c12-01E",
+"label": "01E",
+"title": "Online adım 5",
+"file": "12-nasil-oynanir/01E-online-adim-5.png"
+},
+{
+"id": "c12-02A",
+"label": "02A",
+"title": "Klasik merdiven adım 1",
+"file": "12-nasil-oynanir/02A-klasik-merdiven-adim-1.png"
+},
+{
+"id": "c12-02B",
+"label": "02B",
+"title": "Klasik merdiven adım 2",
+"file": "12-nasil-oynanir/02B-klasik-merdiven-adim-2.png"
+},
+{
+"id": "c12-02C",
+"label": "02C",
+"title": "Klasik merdiven adım 3",
+"file": "12-nasil-oynanir/02C-klasik-merdiven-adim-3.png"
+},
+{
+"id": "c12-03A",
+"label": "03A",
+"title": "Beşte bir adım 1",
+"file": "12-nasil-oynanir/03A-beste-bir-adim-1.png"
+},
+{
+"id": "c12-03B",
+"label": "03B",
+"title": "Beşte bir adım 2",
+"file": "12-nasil-oynanir/03B-beste-bir-adim-2.png"
+},
+{
+"id": "c12-03C",
+"label": "03C",
+"title": "Beşte bir adım 3",
+"file": "12-nasil-oynanir/03C-beste-bir-adim-3.png"
+},
+{
+"id": "c12-04A",
+"label": "04A",
+"title": "Kariyer yolu adım 1",
+"file": "12-nasil-oynanir/04A-kariyer-yolu-adim-1.png"
+},
+{
+"id": "c12-04B",
+"label": "04B",
+"title": "Kariyer yolu adım 2",
+"file": "12-nasil-oynanir/04B-kariyer-yolu-adim-2.png"
+},
+{
+"id": "c12-04C",
+"label": "04C",
+"title": "Kariyer yolu adım 3",
+"file": "12-nasil-oynanir/04C-kariyer-yolu-adim-3.png"
+},
+{
+"id": "c12-05A",
+"label": "05A",
+"title": "Sıradaki kulüp adım 1",
+"file": "12-nasil-oynanir/05A-siradaki-kulup-adim-1.png"
+},
+{
+"id": "c12-05B",
+"label": "05B",
+"title": "Sıradaki kulüp adım 2",
+"file": "12-nasil-oynanir/05B-siradaki-kulup-adim-2.png"
+},
+{
+"id": "c12-05C",
+"label": "05C",
+"title": "Sıradaki kulüp adım 3",
+"file": "12-nasil-oynanir/05C-siradaki-kulup-adim-3.png"
+},
+{
+"id": "c12-06A",
+"label": "06A",
+"title": "O mu bu mu adım 1",
+"file": "12-nasil-oynanir/06A-o-mu-bu-mu-adim-1.png"
+},
+{
+"id": "c12-06B",
+"label": "06B",
+"title": "O mu bu mu adım 2",
+"file": "12-nasil-oynanir/06B-o-mu-bu-mu-adim-2.png"
+},
+{
+"id": "c12-06C",
+"label": "06C",
+"title": "O mu bu mu adım 3",
+"file": "12-nasil-oynanir/06C-o-mu-bu-mu-adim-3.png"
+},
+{
+"id": "c12-07A",
+"label": "07A",
+"title": "Haftanın maçı adım 1",
+"file": "12-nasil-oynanir/07A-haftanin-maci-adim-1.png"
+},
+{
+"id": "c12-07B",
+"label": "07B",
+"title": "Haftanın maçı adım 2",
+"file": "12-nasil-oynanir/07B-haftanin-maci-adim-2.png"
+},
+{
+"id": "c12-07C",
+"label": "07C",
+"title": "Haftanın maçı adım 3",
+"file": "12-nasil-oynanir/07C-haftanin-maci-adim-3.png"
+}
+]
+},
+{
+"num": "13",
+"title": "Sistem",
+"items": [
+{
+"id": "c13-01",
+"label": "01",
+"title": "Yeni sürüm kartı",
+"file": "13-sistem/01-yeni-surum-karti.png"
+}
+]
+},
+{
+"num": "14",
+"title": "Klavye açıkken",
+"items": [
+{
+"id": "c14-01",
+"label": "01",
+"title": "Takma ad",
+"file": "14-klavye-acik/01-takma-ad.png"
+},
+{
+"id": "c14-02A",
+"label": "02A",
+"title": "Hesabım var: kod",
+"file": "14-klavye-acik/02A-hesabim-var-kod.png"
+},
+{
+"id": "c14-02B",
+"label": "02B",
+"title": "Hesabım var: kurtarma",
+"file": "14-klavye-acik/02B-hesabim-var-kurtarma.png"
+},
+{
+"id": "c14-03A",
+"label": "03A",
+"title": "Takım seçimi: boş",
+"file": "14-klavye-acik/03A-takim-secimi-bos.png"
+},
+{
+"id": "c14-03B",
+"label": "03B",
+"title": "Takım seçimi: öneriler",
+"file": "14-klavye-acik/03B-takim-secimi-oneriler.png"
+},
+{
+"id": "c14-03C",
+"label": "03C",
+"title": "Takım seçimi: süre azaldı",
+"file": "14-klavye-acik/03C-takim-secimi-sure-azaldi.png"
+},
+{
+"id": "c14-04A",
+"label": "04A",
+"title": "Tur: boş",
+"file": "14-klavye-acik/04A-tur-bos.png"
+},
+{
+"id": "c14-04B",
+"label": "04B",
+"title": "Tur: öneriler",
+"file": "14-klavye-acik/04B-tur-oneriler.png"
+},
+{
+"id": "c14-04C",
+"label": "04C",
+"title": "Tur: yanlış tahmin, kilit",
+"file": "14-klavye-acik/04C-tur-yanlis-tahmin-kilit.png"
+},
+{
+"id": "c14-04D",
+"label": "04D",
+"title": "Tur: rakip yanlış",
+"file": "14-klavye-acik/04D-tur-rakip-yanlis.png"
+},
+{
+"id": "c14-05A",
+"label": "05A",
+"title": "Klasik merdiven: boş",
+"file": "14-klavye-acik/05A-klasik-merdiven-bos.png"
+},
+{
+"id": "c14-05B",
+"label": "05B",
+"title": "Klasik merdiven: öneriler",
+"file": "14-klavye-acik/05B-klasik-merdiven-oneriler.png"
+},
+{
+"id": "c14-05C",
+"label": "05C",
+"title": "Klasik merdiven: yanlış tahmin",
+"file": "14-klavye-acik/05C-klasik-merdiven-yanlis-tahmin.png"
+},
+{
+"id": "c14-06A",
+"label": "06A",
+"title": "Kariyer yolu: kulüpler",
+"file": "14-klavye-acik/06A-kariyer-yolu-kulupler.png"
+},
+{
+"id": "c14-06B",
+"label": "06B",
+"title": "Kariyer yolu: öneriler",
+"file": "14-klavye-acik/06B-kariyer-yolu-oneriler.png"
+},
+{
+"id": "c14-06C",
+"label": "06C",
+"title": "Kariyer yolu: yanlış tahmin",
+"file": "14-klavye-acik/06C-kariyer-yolu-yanlis-tahmin.png"
+},
+{
+"id": "c14-07A",
+"label": "07A",
+"title": "Sıradaki kulüp: ipuçları",
+"file": "14-klavye-acik/07A-siradaki-kulup-ipuclari.png"
+},
+{
+"id": "c14-07B",
+"label": "07B",
+"title": "Sıradaki kulüp: öneriler",
+"file": "14-klavye-acik/07B-siradaki-kulup-oneriler.png"
+},
+{
+"id": "c14-07C",
+"label": "07C",
+"title": "Sıradaki kulüp: yanlış tahmin",
+"file": "14-klavye-acik/07C-siradaki-kulup-yanlis-tahmin.png"
+}
+]
+},
+{
+"num": "15",
+"title": "Tasarım kiti pilotu (yeni görünüm)",
+"items": [
+{
+"id": "c15-01A",
+"label": "01A",
+"title": "Ana menü",
+"file": "15-kit-pilotu/01A-ana-menu.png"
+},
+{
+"id": "c15-01B",
+"label": "01B",
+"title": "Ana menü: iki haftanın maçı",
+"file": "15-kit-pilotu/01B-ana-menu-iki-mac.png"
+},
+{
+"id": "c15-02",
+"label": "02",
+"title": "Tur: öneriler",
+"file": "15-kit-pilotu/02-tur-oneriler.png"
+},
+{
+"id": "c15-03",
+"label": "03",
+"title": "Tur: klavye açık",
+"file": "15-kit-pilotu/03-tur-klavye-acik.png"
+},
+{
+"id": "c15-04",
+"label": "04",
+"title": "Ayarlar",
+"file": "15-kit-pilotu/04-ayarlar.png"
+},
+{
+"id": "c15-05A",
+"label": "05A",
+"title": "Yanlış / kilit",
+"file": "15-kit-pilotu/05A-yanlis-kilit.png"
+},
+{
+"id": "c15-05B",
+"label": "05B",
+"title": "Yanlış / kilit: klavye açık",
+"file": "15-kit-pilotu/05B-yanlis-kilit-klavye-acik.png"
+},
+{
+"id": "c15-05C",
+"label": "05C",
+"title": "Tur: rakip koptu",
+"file": "15-kit-pilotu/05C-rakip-koptu.png"
+}
+]
+}
+]
