@@ -28,7 +28,7 @@ Güncelleme: 2026-10-06. Biten işler buradan silinir; ayrıntı ilgili doküman
 - [ ] Günlük koşu ve görevler (bilerek kaldırıldı, tablo gelince yeniden).
 
 ## Mobil ve yayın
-- [ ] Gerçek telefonda klavye testi (Android APK ve iPhone Safari): kutu klavyenin üstünde kalıyor mu.
+- [ ] **Gerçek cihaz testleri: `docs/cihaz-testleri.md`.** Hiçbiri yapılmadı; bu makineden telefon build'i çıkmıyor, bugüne kadarki doğrulama web görüntüsü ve klavye taklidiyle. Mağaza / EAS build'i çıkınca telefonu olan kişilerce yapılacak (klavye, ekran alanları, yazı boyutu, ekran okuyucu).
 - [ ] Android: kalıcı release anahtarı, AAB (gradle build), Play Console. Şu an debug imzalı APK.
 - [ ] iOS: Mac + Xcode + Apple Developer hesabı gerekir.
 - [ ] Ad ve logo: "MR GUESS" yönü konuşuldu, logo denemeleri beğenilmedi (`tools/logo/`). Ad kesinleşince uygulama adı, paket adı, ikon değişecek. Kaynak siluet bir basın fotoğrafından; yayında kullanılmamalı.
