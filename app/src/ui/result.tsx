@@ -5,7 +5,7 @@ import { Text, View } from "react-native";
 import { getLang, t } from "../i18n";
 import { useSettings } from "../store";
 import { FONT, useTheme } from "../theme";
-import { Chip, Eyebrow, Txt } from "./index";
+import { Chip, Eyebrow, Txt, Wordmark } from "./index";
 
 export const SITE = "kickoff.grandecorpo.com";
 const nf = (n: number) => Math.round(n).toLocaleString(getLang() === "tr" ? "tr-TR" : "en-US");
@@ -21,7 +21,7 @@ export function ResultCard({ mode, chips = [], big, label, sub, record, sections
   return (
     <View style={{ borderRadius: s(20), borderWidth: 2, borderColor: c.violet_fill, backgroundColor: c.surface, overflow: "hidden" }}>
       <View style={{ backgroundColor: c.violet_fill, paddingHorizontal: s(16), paddingVertical: s(10), flexDirection: "row", alignItems: "center" }}>
-        <Text style={{ flex: 1, fontFamily: FONT[800], fontStyle: "italic", fontSize: s(18), color: c.violet_on }}>3·2·1 <Text style={{ fontSize: s(11), fontStyle: "normal", fontFamily: FONT[700] }}>KICKOFF</Text></Text>
+        <View style={{ flex: 1 }}><Wordmark width={56} ink="on_primary" dash="on_primary" /></View>
         <Text numberOfLines={1} style={{ fontFamily: FONT[700], fontSize: s(12), color: c.violet_on }}>{mode.toLocaleUpperCase("tr")}</Text>
       </View>
       <View style={{ padding: s(16), gap: s(10) }}>

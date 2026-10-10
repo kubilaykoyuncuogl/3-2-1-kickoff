@@ -33,14 +33,15 @@ export function Eyebrow({ children, color = "muted", center, style }: TxtProps) 
   return <Txt size={12} w={700} color={color} center={center} style={[{ letterSpacing: 0.6 }, style]} upper>{children}</Txt>;
 }
 // Logo: çizgiler tools/logo/eras_logo.py'den (design/logo/ altındaki SVG'lerle aynı); yazı krem, tireler lime
-export function Wordmark({ width = 132 }: { width?: number }) {
+// ink / dash: lime zemin gibi yerlerde tek renk (on_primary) verilir
+export function Wordmark({ width = 132, ink = "text", dash = "primary" }: { width?: number; ink?: Token; dash?: Token }) {
   const { c, s } = useTheme();
   const [x, y, w, h] = LOGO.box;
   return (
     <Svg width={s(width)} height={s(width) * h / w} viewBox={`${x} ${y} ${w} ${h}`} accessibilityRole="image" accessibilityLabel="3-2-1 Kickoff">
-      <Path d={LOGO.digits} fill={c.fg} />
-      <Path d={LOGO.dashes} fill={c.primary} />
-      <Path d={LOGO.word} fill={c.fg} />
+      <Path d={LOGO.digits} fill={c[ink]} />
+      <Path d={LOGO.dashes} fill={c[dash]} />
+      <Path d={LOGO.word} fill={c[ink]} />
     </Svg>
   );
 }

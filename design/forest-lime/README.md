@@ -1,3 +1,5 @@
+> Repodaki kopya (2026-10-10): Tolga'nın `forest-lime-mobile-v1` paketi; stadyum PNG'leri ve font dosyaları alınmadı (fontlar `@expo-google-fonts/*` paketlerinden, çizimler SVG olarak `assets/illustrations/`). Uygulamadaki kararlar ve kitten sapmalar: kökteki `CLAUDE.md` "Tasarım: Forest Lime" maddesi.
+
 # 3·2·1 KICKOFF — Forest Lime mobile handoff v1
 
 10 Ekim 2026 · Teknolojiden bağımsız tasarım paketi · Dil: Türkçe
