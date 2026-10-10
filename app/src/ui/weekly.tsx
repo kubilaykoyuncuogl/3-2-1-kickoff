@@ -2,19 +2,15 @@
 import { useRouter } from "expo-router";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
-import { SvgXml } from "react-native-svg";
+import Svg, { Polygon } from "react-native-svg";
 import { getLang, t } from "../i18n";
 import { Weekly, useGame } from "../store";
 import { FONT, useTheme } from "../theme";
 import { Chevron } from "./index";
-import { STADIUM, STADIUM_RATIO } from "./stadium";
 
 export const num = (n: number) => Math.round(n).toLocaleString(getLang() === "tr" ? "tr-TR" : "en-US");
 
-// Stadyum çizimi: sol tribün A, sağ tribün B kulübünün renklerinde (tools/weekly_art.py)
-export const stadiumXml = (w: Weekly) => STADIUM.replace("__A0__", w.a.colors[0]).replace("__A1__", w.a.colors[1]).replace("__B0__", w.b.colors[0]).replace("__B1__", w.b.colors[1]);
-
-// Ana menüdeki düğme: tribünleri kulüp renkli stadyum, isimler ve puanlar çimin üstünde. Haftalık veri yoksa çizilmez.
+// Ana menüdeki düğme: sol üst yarı A kulübünün, sağ alt yarı B kulübünün rengi. Haftalık veri yoksa çizilmez.
 // Slug'ı verilen etkin maç; slug yoksa ilki (tek maçlı haftalar ve eski bağlantılar)
 export function useWeekly(slug?: string): Weekly | null {
   const all = useGame((g) => g.weeklies);
@@ -49,14 +45,17 @@ export function WeeklyButton({ w }: { w: Weekly }) {
         </View>
 
       </View>
-      <View style={{ aspectRatio: 1 / STADIUM_RATIO, justifyContent: "flex-end" }}>
-        <SvgXml xml={stadiumXml(w)} width="100%" height="100%" style={{ position: "absolute" }} />
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", paddingHorizontal: s(16), paddingBottom: s(12) }}>
+      <View style={{ minHeight: s(92) }}>
+        <Svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: "absolute" }}>
+          <Polygon points="0,0 54,0 46,100 0,100" fill={w.a.colors[0]} />
+          <Polygon points="54,0 100,0 100,100 46,100" fill={w.b.colors[0]} />
+        </Svg>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", padding: s(16) }}>
           {(["a", "b"] as const).map((side) => (
-            <View key={side} style={{ width: "46%", gap: s(2), alignItems: side === "b" ? "flex-end" : "flex-start" }}>
-              <Text numberOfLines={1} style={{ fontFamily: FONT[600], fontSize: s(14), lineHeight: s(19), color: "#F2F2F5" }}>{w[side].short}</Text>
-              <Text style={{ fontFamily: FONT[800], fontSize: s(20), lineHeight: s(26), color: "#FFFFFF", fontVariant: ["tabular-nums"] }}>{t("weekly.points", num(w[side].total))}</Text>
-              <Text style={{ fontFamily: FONT[500], fontSize: s(11), lineHeight: s(15), color: "#DCEBDF" }}>{t("weekly.runs", w[side].runs)}</Text>
+            <View key={side} style={{ width: "43%", gap: s(6), alignItems: side === "b" ? "flex-end" : "flex-start" }}>
+              <Text style={{ fontFamily: FONT[600], fontSize: s(15), lineHeight: s(20), color: w[side].colors[1], textAlign: side === "b" ? "right" : "left" }}>{w[side].short}</Text>
+              <Text style={{ fontFamily: FONT[800], fontSize: s(18), lineHeight: s(24), color: w[side].colors[1], fontVariant: ["tabular-nums"] }}>{t("weekly.points", num(w[side].total))}</Text>
+              <Text style={{ fontFamily: FONT[500], fontSize: s(11), lineHeight: s(15), color: w[side].colors[1], textAlign: side === "b" ? "right" : "left" }}>{t("weekly.runs", w[side].runs)}</Text>
             </View>
           ))}
         </View>
