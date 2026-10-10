@@ -3,6 +3,8 @@
   "version": "0.2.0",
   "main": "expo-router/entry",
   "dependencies": {
+    "@expo-google-fonts/barlow-condensed": "^0.4.1",
+    "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/sora": "^0.4.2",
     "@expo/metro-runtime": "~57.0.16",
     "@microsoft/clarity": "^1.0.2",
@@ -10,6 +12,7 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "@sentry/react-native": "~7.11.0",
     "expo": "~57.0.27",
+    "expo-blur": "~57.0.3",
     "expo-clipboard": "~57.0.2",
     "expo-constants": "~57.0.20",
     "expo-dev-client": "~57.0.19",

@@ -1,0 +1,35 @@
+{
+  "brand": {
+    "asset": "assets/brand/kickoff-logo.svg",
+    "sizing": "contain",
+    "component": "IdentityHeader",
+    "alt": "3·2·1 KICKOFF"
+  },
+  "stadiumTrabzon": {
+    "asset": "assets/illustrations/stadium-trabzon.svg",
+    "components": [
+      "WeeklyEntry",
+      "MatchCard fixture1"
+    ],
+    "sizing": "cover, preserve aspect ratio",
+    "alt": "decorative; empty alt"
+  },
+  "stadiumCity": {
+    "asset": "assets/illustrations/stadium-city.svg",
+    "component": "MatchCard fixture2",
+    "sizing": "cover, preserve aspect ratio",
+    "alt": "decorative; empty alt"
+  },
+  "icons": {
+    "directory": "assets/icons",
+    "normalSize": 24,
+    "hitSize": 48,
+    "color": "currentColor, according to state"
+  },
+  "fonts": {
+    "display": "Barlow Condensed",
+    "body": "Inter",
+    "nativeDirectory": "assets/fonts",
+    "licenses": "licenses/"
+  }
+}

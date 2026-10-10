@@ -1,0 +1,21 @@
+:root {
+  --canvas: #013026;
+  --surface: #043A2F;
+  --raised: #124B38;
+  --primary: #DAEC5A;
+  --primaryPressed: #C3DB46;
+  --text: #FFFBEA;
+  --textMuted: #B6C6B9;
+  --onPrimary: #013026;
+  --borderQuiet: #3E7862;
+  --borderControl: #78A38A;
+  --activeSurface: #235C3C;
+  --activeBorder: #6C9A5B;
+  --success: #DAEC5A;
+  --error: #FFB3AD;
+  --warning: #F7D680;
+  --scrim: #001A14CC;
+  --navSolid: #093D2E;
+  --gutter:20px; --radius-action:10px; --radius-card:12px; --radius-sheet:24px; --nav-height:72px;
+  --font-display:"Barlow Condensed",sans-serif; --font-body:"Inter",sans-serif;
+}

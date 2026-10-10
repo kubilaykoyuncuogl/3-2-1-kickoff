@@ -1,65 +1,110 @@
-// Haftanın maçı: iki tarafın toplam puanı, taraf seçimi (hafta boyunca sabit) ve Oyna.
+// Haftanın maçları (kit: references/approved-weekly.png): kimlik başlığı, başlık + karşılaşma sayısı, maç kartları, alt menü.
+// Kart: mod adı + kalan süre rozeti, stadyum (mock, slug'a göre), iki takım + puan, "Tarafını seç" → alt sayfa; taraf hafta boyunca değişmez
+// (kitteki "Değiştir" yok, karar 2026-10-10). Seçim onaylanınca kart altı "X için oyna" olur, oyun oradan başlar; taraf sunucuda ilk koşuyla kilitlenir.
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
-import Svg, { Circle, Path } from "react-native-svg";
+import { SvgXml } from "react-native-svg";
 import { api, connect } from "@/net/socket";
-import { useGame } from "@/store";
-import { useTheme } from "@/theme";
-import { Nav, Page, Spacer, Txt, t } from "@/ui";
+import { Weekly, useGame } from "@/store";
+import { RADII, useTheme } from "@/theme";
+import { Btn, Icon, IdentityHeader, Page, Txt, t } from "@/ui";
 import { LearnSteps } from "@/ui/learn";
-import { SideCard, num, useWeekly } from "@/ui/weekly";
+import { ChoiceRow, Sheet } from "@/ui/sheet";
+import { stadiumFor } from "@/ui/stadium";
+import { num } from "@/ui/weekly";
 
-export default function WeeklyHome() {
+export default function Matches() {
   const router = useRouter();
-  const { c, s } = useTheme();
+  const { s } = useTheme();
   const { slug } = useLocalSearchParams<{ slug?: string }>();
-  const w = useWeekly(slug);
+  const all = useGame((g) => g.weeklies);
   const connected = useGame((g) => g.connected);
+  const [chosen, setChosen] = useState<Record<string, "a" | "b">>({});
+  const [sheet, setSheet] = useState<Weekly | null>(null);
   const [pick, setPick] = useState<"a" | "b" | null>(null);
   useEffect(() => { if (!useGame.getState().connected) connect(); else api.weeklyInfo(); }, [connected]);
-  if (!w) return <Page><Nav title={t("weekly.title")} /><Txt size={14} w={600} color="muted">{connected ? t("weekly.none") : t("net.connecting")}</Txt></Page>;
-  const locked = w.me?.side ?? null;
-  const side = locked ?? pick;
-  const disabled = !side || !connected;
-  const diff = Math.abs(w.a.total - w.b.total);
-  const lead = w.a.total === w.b.total ? t("weekly.tied") : t("weekly.lead", w.a.total > w.b.total ? w.a.short : w.b.short, num(diff));
-  const sum = w.a.total + w.b.total;
+  const list = slug ? [...all].sort((x, y) => (x.slug === slug ? -1 : y.slug === slug ? 1 : 0)) : all;      // bağlantıyla gelen maç en üstte
+  const countText = all.length === 1 ? t("weekly.count_one") : t("weekly.count", all.length);
+  const open = (w: Weekly) => { setPick(chosen[w.slug] ?? null); setSheet(w); };
+  const confirm = () => { if (sheet && pick) { setChosen({ ...chosen, [sheet.slug]: pick }); setSheet(null); } };
   return (
     <>
-      <Page scroll>
-        <Nav title={t("weekly.title")} />
-        <Txt size={24} w={800} center>{`${w.a.short} – ${w.b.short}`}</Txt>
-        <Txt size={13} w={600} color="muted" center>{lead}</Txt>
-        <View style={{ flexDirection: "row", gap: s(10) }}>
-          <SideCard w={w} side="a" selected={side === "a"} dim={!!side && side !== "a"} onPress={locked ? undefined : () => setPick("a")} />
-          <SideCard w={w} side="b" selected={side === "b"} dim={!!side && side !== "b"} onPress={locked ? undefined : () => setPick("b")} />
+      <Page scroll nav="matches">
+        <IdentityHeader />
+        <View style={{ height: s(8) }} />
+        <View style={{ flexDirection: "row", alignItems: "flex-end", gap: s(12), flexWrap: "wrap" }}>
+          <Txt role="pageTitle" style={{ flexShrink: 1 }}>{t("weekly.matches")}</Txt>
+          {all.length ? <Txt role="label" color="muted" style={{ marginLeft: "auto", paddingBottom: s(4) }}>{countText}</Txt> : null}
         </View>
-        <View style={{ flexDirection: "row", height: s(10), borderRadius: 999, overflow: "hidden", backgroundColor: c.line, borderWidth: 1, borderColor: c.line }}>
-          <View style={{ flex: sum ? w.a.total : 1, backgroundColor: w.a.colors[0] }} />
-          <View style={{ flex: sum ? w.b.total : 1, backgroundColor: w.b.colors[0] }} />
-        </View>
-        <Txt size={13} color="muted" center>{w.format === "career" ? t("weekly.note_career", w.years?.[0] ?? 2000) : t("weekly.note")}</Txt>
-        {locked ? <Txt size={14} w={700} color="violet_ink" center>{t("weekly.your", w[locked].short, num(w.me!.points))}</Txt> : !side ? <Txt size={14} w={700} color="violet_ink" center>{t("weekly.pick")}</Txt> : null}
-        {side ? <View style={{ flexDirection: "row", alignItems: "center", gap: s(10), padding: s(14), backgroundColor: c.violet_soft, borderRadius: s(10), borderLeftWidth: s(3), borderLeftColor: c.violet_fill }}>
-          <Svg width={s(20)} height={s(20)} viewBox="0 0 24 24">
-            <Circle cx={12} cy={12} r={9} stroke={c.violet_ink} strokeWidth={1.8} fill="none" />
-            <Path d="M12 7v6m0 3v1" stroke={c.violet_ink} strokeWidth={2} strokeLinecap="round" />
-          </Svg>
-          <Txt size={13} w={600} color="violet_ink" style={{ flex: 1 }}>{t("weekly.pick_note")}</Txt>
-        </View> : null}
-        <Pressable accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled}
-          onPress={() => side && router.push({ pathname: "/weekly/play", params: { side, slug: w.slug } })}
-          style={({ pressed }) => ({ backgroundColor: disabled ? c.line : w[side!].colors[0], borderRadius: s(14), minHeight: Math.max(56, s(56)), paddingHorizontal: s(18), paddingVertical: s(14), flexDirection: "row", alignItems: "center", gap: s(12), opacity: pressed ? 0.8 : 1 })}>
-          <Txt size={17} w={700} color={disabled ? "muted" : "violet_on"} style={{ flex: 1, color: disabled ? c.muted : w[side!].colors[1] }}>{side ? t("weekly.play_for", w[side].short) : t("weekly.pick")}</Txt>
-          {!disabled ? <Svg width={s(20)} height={s(20)} viewBox="0 0 24 24"><Path d="m9 5 7 7-7 7" stroke={w[side!].colors[1]} strokeWidth={2.2} fill="none" strokeLinecap="round" strokeLinejoin="round" /></Svg> : null}
-        </Pressable>
-        {!connected ? <View accessibilityLiveRegion="polite"><Txt size={12} color="muted" center>{t("net.connecting")}</Txt></View> : null}
-        <Spacer />
+        <Txt role="body" color="muted">{all.length ? t("weekly.helper") : connected ? t("weekly.none") : t("net.connecting")}</Txt>
+        {list.map((w) => <MatchCard key={w.slug} w={w} side={w.me?.side ?? chosen[w.slug] ?? null} locked={!!w.me}
+          onPick={() => open(w)} onPlay={(side) => router.push({ pathname: "/weekly/play", params: { side, slug: w.slug } })} />)}
       </Page>
-      <LearnSteps id={w.format === "career" ? "weekly_career" : "weekly"} title={t("weekly.title")} />
+      <Sheet open={!!sheet} title={t("weekly.sheet_title")} sub={sheet ? `${sheet.a.short} – ${sheet.b.short}` : undefined} onClose={() => setSheet(null)}>
+        {sheet ? (["a", "b"] as const).map((k) => <ChoiceRow key={k} title={sheet[k].short} selected={pick === k} onPress={() => setPick(k)} />) : null}
+        <Btn text={t("weekly.confirm")} onPress={confirm} disabled={!pick} />
+        <Txt role="caption" color="muted" center>{t("weekly.pick_note")}</Txt>
+      </Sheet>
+      {all[0] ? <LearnSteps id={all[0].format === "career" ? "weekly_career" : "weekly"} title={t("weekly.matches")} /> : null}
     </>
   );
 }
 
+// Kalan süre: hafta dosyasındaki `date` günün sonu sayılır; SS:DD:SN (saat 24'ü aşabilir). Tarih yoksa "Bu hafta", geçtiyse "Sona erdi".
+function useCountdown(date: string) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { if (!date) return; const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id); }, [date]);
+  if (!date) return t("weekly.this_week");
+  const end = new Date(`${date}T23:59:59`).getTime();
+  const left = Math.floor((end - now) / 1000);
+  if (!Number.isFinite(left)) return t("weekly.this_week");
+  if (left <= 0) return t("weekly.ended");
+  const h = Math.floor(left / 3600), m = Math.floor((left % 3600) / 60), sec = left % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+}
 
+// Maç kartı (kit C04): başlık satırı, stadyum, takımlar ve puanlar (VS ortada), ayırıcı, alt eylem satırı
+function MatchCard({ w, side, locked, onPick, onPlay }: { w: Weekly; side: "a" | "b" | null; locked: boolean; onPick: () => void; onPlay: (side: "a" | "b") => void }) {
+  const { c, s, col } = useTheme();
+  const mode = t(w.format === "career" ? "mode.career" : "weekly.mode_name");
+  const timeLeft = useCountdown(w.date);
+  const art = Math.round((col - 2) / 3);
+  const action = side ? t("weekly.play_for", w[side].short) : t("weekly.pick");
+  const onAction = side ? () => onPlay(side) : onPick;
+  return (
+    <View style={{ borderRadius: s(RADII.card), borderWidth: 1, borderColor: c.border_quiet, backgroundColor: c.surface, overflow: "hidden" }}
+      accessible accessibilityLabel={`${mode}. ${timeLeft}. ${w.a.short}, ${t("weekly.points", num(w.a.total))}. ${w.b.short}, ${t("weekly.points", num(w.b.total))}.`}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: s(12), paddingHorizontal: s(16), paddingTop: s(12), paddingBottom: s(6) }}>
+        <Txt role="cardTitle" lines={1} style={{ flex: 1 }}>{mode}</Txt>
+        <View style={{ borderRadius: 999, borderWidth: 1, borderColor: c.border_control, paddingHorizontal: s(12), paddingVertical: s(5) }}>
+          <Txt role="caption" style={{ fontVariant: ["tabular-nums"] }}>{timeLeft}</Txt>
+        </View>
+      </View>
+      <View style={{ height: art, backgroundColor: c.canvas }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <SvgXml xml={stadiumFor(w.slug)} width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
+      </View>
+      <View style={{ flexDirection: "row", alignItems: "flex-end", paddingHorizontal: s(16), paddingTop: s(10), paddingBottom: s(12), gap: s(8) }}>
+        {(["a", "b"] as const).map((k, i) => (
+          <React.Fragment key={k}>
+            {i === 1 ? <Txt role="team" color="muted" style={{ paddingBottom: s(6) }}>{t("weekly.vs")}</Txt> : null}
+            <View style={{ flex: 1, alignItems: k === "b" ? "flex-end" : "flex-start", gap: s(2) }}>
+              <Txt role="team" lines={2} style={{ textAlign: k === "b" ? "right" : "left" }}>{w[k].short}</Txt>
+              <View style={{ flexDirection: "row", alignItems: "baseline", gap: s(6), flexWrap: "wrap", justifyContent: k === "b" ? "flex-end" : "flex-start" }}>
+                <Txt role="points" style={{ fontVariant: ["tabular-nums"] }}>{num(w[k].total)}</Txt>
+                <Txt role="label" color="muted">{t("weekly.points_unit")}</Txt>
+              </View>
+            </View>
+          </React.Fragment>
+        ))}
+      </View>
+      <View style={{ height: 1, backgroundColor: c.border_quiet, marginHorizontal: s(16) }} />
+      <Pressable accessibilityRole="button" accessibilityLabel={action} onPress={onAction}
+        style={({ pressed }) => ({ minHeight: s(56), paddingHorizontal: s(16), flexDirection: "row", alignItems: "center", gap: s(12), backgroundColor: pressed ? c.raised : "transparent" })}>
+        {locked ? <Icon name="check_circle" color="primary" size={22} /> : null}
+        <Txt role="team" color={side ? "primary" : "text"} lines={1} style={{ flex: 1 }}>{action}</Txt>
+        <Icon name="arrow_right" color={side ? "primary" : "text"} size={24} />
+      </Pressable>
+    </View>
+  );
+}

@@ -1,5 +1,6 @@
-// Kök düzen: font, ayarlar, bağlantı, tema; sayfa yığını (sağdan kayarak gelir, "hareketi azalt" açıksa anında).
-import { Sora_400Regular, Sora_500Medium, Sora_600SemiBold, Sora_700Bold, Sora_800ExtraBold, useFonts } from "@expo-google-fonts/sora";
+// Kök düzen: fontlar (Barlow Condensed + Inter), ayarlar, bağlantı; sayfa yığını (sağdan kayarak gelir, "hareketi azalt" açıksa anında).
+import { BarlowCondensed_500Medium, BarlowCondensed_600SemiBold, BarlowCondensed_700Bold, BarlowCondensed_800ExtraBold } from "@expo-google-fonts/barlow-condensed";
+import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold, useFonts } from "@expo-google-fonts/inter";
 import { ErrorBoundary as RouterErrorBoundary, type ErrorBoundaryProps, Stack, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -24,10 +25,10 @@ export function ErrorBoundary(props: ErrorBoundaryProps) {
 function RootLayout() {
   const segments = useSegments();
   const screen = segments.length ? segments.join("/") : "home";
-  const [fontsLoaded] = useFonts({ Sora_400Regular, Sora_500Medium, Sora_600SemiBold, Sora_700Bold, Sora_800ExtraBold });
+  const [fontsLoaded] = useFonts({ BarlowCondensed_500Medium, BarlowCondensed_600SemiBold, BarlowCondensed_700Bold, BarlowCondensed_800ExtraBold, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold });
   const loaded = useSettings((s) => s.loaded);
   const reduce = useSettings((s) => s.reduce_motion);
-  const { c, dark } = useTheme();
+  const { c } = useTheme();
 
   const view = useKeyboard();
   const web = Platform.OS === "web";
@@ -42,7 +43,7 @@ function RootLayout() {
   if (!fontsLoaded || !loaded) return <View style={{ flex: 1, backgroundColor: c.bg }} />;
   return (
     <SafeAreaProvider>
-      <StatusBar style={dark ? "light" : "dark"} />
+      <StatusBar style="light" />
       {/* web: klavye açıkken kök, ekranın görünen kısmına (klavyenin üstüne) sığar; yoksa içerik klavyenin altında kalır */}
       <View style={[{ flex: 1, backgroundColor: c.bg }, web && view.open ? ({ position: "fixed", flex: 0, top: view.top, left: 0, right: 0, height: view.height } as any) : null]}>
         <Stack screenOptions={{ headerShown: false, animation: reduce ? "none" : "slide_from_right", contentStyle: { backgroundColor: c.bg } }} />
@@ -55,8 +56,7 @@ function RootLayout() {
 
 // Yalnızca geliştirme (?kb=1): ekran görüntülerinde klavyenin kapladığı alanı gösterir
 function FakeKeyboard({ h }: { h: number }) {
-  const { dark } = useTheme();
-  const bg = dark ? "#2B2B2E" : "#D3D5DB", key = dark ? "#6A6A6E" : "#FFFFFF", ink = dark ? "#FFFFFF" : "#1B1A21";
+  const bg = "#2B2B2E", key = "#6A6A6E", ink = "#FFFFFF";
   const rows = ["qwertyuıopğü", "asdfghjklşi", "zxcvbnmöç"];
   return (
     <View style={{ position: "fixed", left: 0, right: 0, bottom: 0, height: h, backgroundColor: bg, paddingTop: 70, paddingHorizontal: 4, gap: 12 } as any}>

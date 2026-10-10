@@ -1,12 +1,15 @@
-// Yapı taşları (game/scripts/ui.gd karşılığı). Tüm renkler paletten, tüm yazılar Sora'dan. Boyutlar ölçekle çarpılır (useTheme().s).
+// Yapı taşları. Tüm renkler paletten (Forest Lime), yazılar Barlow Condensed (başlık / sayı) ve Inter (gövde). Boyutlar ölçekle çarpılır (useTheme().s).
 import React, { PropsWithChildren, ReactNode } from "react";
 import { Pressable, ScrollView, StyleProp, Text, TextInput, TextInputProps, TextStyle, View, ViewStyle, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 import { LOGO } from "./logo";
+import { ICONS, IconName } from "./icons";
+import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
-import { FONT, SIZE, TYPE, Token, TypeRole, Weight, useTheme } from "../theme";
-import { t } from "../i18n";
+import { FONT, RADII, SIZE, TYPE, Token, TypeRole, Weight, family, useTheme } from "../theme";
+import { getLang, t } from "../i18n";
+import { useSettings } from "../store";
 
 export const RADIUS = 14;
 export const BORDER = 1;      // dekoratif çizgi ve kontrol sınırı (kit: 1); odak / seçili vurgu FOCUS
@@ -19,9 +22,9 @@ type TxtProps = PropsWithChildren<{ role?: TypeRole; size?: number; w?: Weight; 
 export function Txt({ children, role, size = 17, w = 500, color = "fg", center, style, lines, upper }: TxtProps) {
   const { c, s } = useTheme();
   const text = upper && typeof children === "string" ? children.toLocaleUpperCase("tr") : children;
-  const [fs, lh, fw] = role ? TYPE[role] : [size, size * 1.3, w];
+  const [fs, lh, fw, fam] = role ? TYPE[role] : ([size, size * 1.3, w, "text"] as const);
   return (
-    <Text numberOfLines={lines} style={[{ fontFamily: FONT[fw as Weight], fontSize: s(fs), lineHeight: s(lh), color: c[color], textAlign: center ? "center" : "left" }, style]}>
+    <Text numberOfLines={lines} style={[{ fontFamily: family(fw as Weight, fam, getLang()), fontSize: s(fs), lineHeight: s(lh), color: c[color], textAlign: center ? "center" : "left" }, style]}>
       {text}
     </Text>
   );
@@ -29,20 +32,45 @@ export function Txt({ children, role, size = 17, w = 500, color = "fg", center, 
 export function Eyebrow({ children, color = "muted", center, style }: TxtProps) {
   return <Txt size={12} w={700} color={color} center={center} style={[{ letterSpacing: 0.6 }, style]} upper>{children}</Txt>;
 }
-// Logo: çizgiler tools/logo/eras_logo.py'den (design/logo/ altındaki SVG'lerle aynı); tireler amber, yazı tema rengi
+// Logo: çizgiler tools/logo/eras_logo.py'den (design/logo/ altındaki SVG'lerle aynı); yazı krem, tireler lime
 export function Wordmark({ width = 132 }: { width?: number }) {
   const { c, s } = useTheme();
   const [x, y, w, h] = LOGO.box;
   return (
     <Svg width={s(width)} height={s(width) * h / w} viewBox={`${x} ${y} ${w} ${h}`} accessibilityRole="image" accessibilityLabel="3-2-1 Kickoff">
       <Path d={LOGO.digits} fill={c.fg} />
-      <Path d={LOGO.dashes} fill={c.amber_fill} />
+      <Path d={LOGO.dashes} fill={c.primary} />
       <Path d={LOGO.word} fill={c.fg} />
     </Svg>
   );
 }
 
+// Kimlik başlığı (kit C01): solda logo, sağda avatar (baş harf) + takma ad; avatar Ayarlar'a gider (hesap ayarların içinde; v0.3'te değişebilir)
+export function IdentityHeader() {
+  const { c, s } = useTheme();
+  const router = useRouter();
+  const nickname = useSettings((x) => x.nickname);
+  const name = nickname || t("guest");
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: s(16), minHeight: s(60) }}>
+      <View style={{ flex: 1 }}><Wordmark width={108} /></View>
+      <Pressable accessibilityRole="button" accessibilityLabel={`${t("menu.settings")}, ${name}`} onPress={() => router.push("/settings")}
+        style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: s(10), maxWidth: "50%", minHeight: 48, opacity: pressed ? 0.7 : 1 })}>
+        <View style={{ width: s(38), height: s(38), borderRadius: 999, backgroundColor: c.active_surface, borderWidth: 1, borderColor: c.active_border, justifyContent: "center", alignItems: "center" }}>
+          <Txt role="team" color="primary">{name.slice(0, 1).toLocaleUpperCase("tr")}</Txt>
+        </View>
+        <Txt role="team" lines={1} style={{ flexShrink: 1 }}>{name}</Txt>
+      </Pressable>
+    </View>
+  );
+}
+
 // ---------- ikonlar ----------
+// Phosphor (kit ikon seti): <Icon name="house" />; renk token, boyut tasarım px (ölçeklenir)
+export function Icon({ name, color = "fg", size = SIZE.icon, style }: { name: IconName; color?: Token; size?: number; style?: StyleProp<ViewStyle> }) {
+  const { c, s } = useTheme();
+  return <Svg width={s(size)} height={s(size)} viewBox="0 0 256 256" style={style}><Path d={ICONS[name]} fill={c[color]} /></Svg>;
+}
 export function Chevron({ color = "muted", left, size = 18 }: { color?: Token; left?: boolean; size?: number }) {
   const { c, s } = useTheme();
   return (
@@ -422,19 +450,55 @@ export function Nav({ title, onBack, right, keep }: { title: string; onBack?: ()
   );
 }
 
-// Güvenli alan + 20 px kenar + ortalanmış sütun; gap 12. scroll: içerik ekrandan uzunsa kaydırılır (varsayılan kapalı: ekranlar tek sayfaya sığar)
-export function Page({ children, scroll, gap = 12, style }: PropsWithChildren<{ scroll?: boolean; gap?: number; style?: StyleProp<ViewStyle> }>) {
+// Alt menü (kit C05 FloatingNav): Ana sayfa / Maçlar / Ayarlar; yalnızca bu üç sayfada görünür, oyun içinde yok. Konum: alt güvenli alan + 12, yanlar 20.
+// Yarı saydam koyu yeşil + blur (web ve iOS'ta gerçek, Android'de dimezis yöntemi), üstünde 1 px kenar; aktif öğe lime yazı + ikon, aktif yeşil kapsül.
+export type NavDest = "home" | "matches" | "settings";
+const NAV_ITEMS: { key: NavDest; icon: IconName; label: string; href: string }[] = [
+  { key: "home", icon: "house", label: "nav.home", href: "/" }, { key: "matches", icon: "soccer_ball", label: "nav.matches", href: "/weekly" }, { key: "settings", icon: "gear", label: "nav.settings", href: "/settings" },
+];
+export function BottomNav({ active }: { active: NavDest }) {
+  const { c, s, col } = useTheme();
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+  return (
+    <View pointerEvents="box-none" style={{ position: "absolute", left: 0, right: 0, bottom: insets.bottom + s(12), alignItems: "center" }}>
+      <BlurView intensity={20} tint="dark" experimentalBlurMethod="dimezisBlurView"
+        style={{ width: col, height: s(SIZE.nav), borderRadius: 999, overflow: "hidden", backgroundColor: c.nav_surface, borderWidth: 1, borderColor: c.border_quiet, flexDirection: "row", alignItems: "center", padding: s(8) }}>
+        {NAV_ITEMS.map((it) => {
+          const on = it.key === active;
+          return (
+            <Pressable key={it.key} accessibilityRole="tab" accessibilityState={{ selected: on }} accessibilityLabel={t(it.label)}
+              onPress={() => { if (!on) router.replace(it.href as any); }}
+              style={{ flex: 1, height: s(SIZE.navItem), borderRadius: 999, backgroundColor: on ? c.active_surface : "transparent", borderWidth: on ? 1 : 0, borderColor: c.active_border, alignItems: "center", justifyContent: "center", gap: s(4) }}>
+              <Icon name={it.icon} color={on ? "primary" : "text"} />
+              <Txt role="nav" color={on ? "primary" : "text"} lines={1}>{t(it.label)}</Txt>
+            </Pressable>
+          );
+        })}
+      </BlurView>
+    </View>
+  );
+}
+
+// Güvenli alan + 20 px kenar + ortalanmış sütun; gap 12. scroll: içerik ekrandan uzunsa kaydırılır (varsayılan kapalı: ekranlar tek sayfaya sığar).
+// nav: alt menü çizilir ve içeriğin altına menü + 36 boşluk eklenir (kit: contentBottomRule).
+export function Page({ children, scroll, gap = 12, style, nav }: PropsWithChildren<{ scroll?: boolean; gap?: number; style?: StyleProp<ViewStyle>; nav?: NavDest }>) {
   const { c, s, col, kb } = useTheme();
   const insets = useSafeAreaInsets();
-  const inner = { width: col, alignSelf: "center" as const, gap: s(kb ? Math.min(gap, 8) : gap), flex: 1, paddingTop: Math.max(insets.top, s(kb ? 10 : 16)), paddingBottom: kb ? s(8) : Math.max(insets.bottom, s(16)) };
+  const bottom = kb ? s(8) : Math.max(insets.bottom, s(16)) + (nav ? s(SIZE.nav + 36) : 0);
+  const inner = { width: col, alignSelf: "center" as const, gap: s(kb ? Math.min(gap, 8) : gap), flex: 1, paddingTop: Math.max(insets.top, s(kb ? 10 : 16)), paddingBottom: bottom };
+  const menu = nav && !kb ? <BottomNav active={nav} /> : null;
   if (scroll) {
     return (
-      <ScrollView style={{ flex: 1, backgroundColor: c.bg }} contentContainerStyle={[{ flexGrow: 1 }]} keyboardShouldPersistTaps="handled">
-        <View style={[inner, style]}>{children}</View>
-      </ScrollView>
+      <View style={{ flex: 1, backgroundColor: c.bg }}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={[{ flexGrow: 1 }]} keyboardShouldPersistTaps="handled">
+          <View style={[inner, style]}>{children}</View>
+        </ScrollView>
+        {menu}
+      </View>
     );
   }
-  return <View style={{ flex: 1, backgroundColor: c.bg }}><View style={[inner, style]}>{children}</View></View>;
+  return <View style={{ flex: 1, backgroundColor: c.bg }}><View style={[inner, style]}>{children}</View>{menu}</View>;
 }
 
 export { t };

@@ -14,7 +14,7 @@
     "android": {
       "package": "com.kickoff321.app",
       "adaptiveIcon": {
-        "backgroundColor": "#5E4BC9",
+        "backgroundColor": "#013026",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -39,7 +39,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#5E4BC9"
+      "backgroundColor": "#013026"
     },
     "updates": {
       "url": "",

@@ -11,7 +11,7 @@ import argparse, asyncio, json, pathlib, re, sys, urllib.parse
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ap = argparse.ArgumentParser()
-ap.add_argument("--theme", default="ikisi"); ap.add_argument("--lang", default="tr"); ap.add_argument("--only", default="")
+ap.add_argument("--theme", default="koyu"); ap.add_argument("--lang", default="tr"); ap.add_argument("--only", default="")      # tek tema (Forest Lime, 2026-10-10); "acik" aynı görüntüyü verir
 ap.add_argument("--out", default=str(ROOT / "screenshots")); ap.add_argument("--jobs", type=int, default=4); ap.add_argument("--size", default="400x880")
 A = ap.parse_args()
 L = json.loads((ROOT / "app" / "lang" / f"{A.lang}.json").read_text())
@@ -20,22 +20,22 @@ T = lambda k: L[k]
 # (kategori, numara, ad, yol, parametreler, eylemler, bekleme sn). Eylem: ("tap", metin, sn) | ("type", metin, sn)
 SHOTS = [
     # 01 açılış ve menü
-    ("01-acilis-menu", "1", "ana-menu", "/", {"mock": "weekly_fresh"}, [], 4),
-    ("01-acilis-menu", "1C", "ana-menu-iki-mac", "/", {"mock": "weekly_two"}, [], 4),
+    ("01-acilis-menu", "1", "ana-menu", "/", {"mock": "weekly_two"}, [], 4),
     ("01-acilis-menu", "1B", "ana-menu-haftanin-maci-yok", "/", {"mock": "weekly_none"}, [], 4),
+    ("01-acilis-menu", "1C", "maclar", "/weekly", {"mock": "weekly_two"}, [], 4),
+    ("01-acilis-menu", "1D", "maclar-taraf-sec", "/weekly", {"mock": "weekly_two"}, [("tap", T("weekly.pick"), 3)], 4.5),
+    ("01-acilis-menu", "1E", "maclar-taraf-secildi", "/weekly", {"mock": "weekly_locked"}, [], 4),
     ("01-acilis-menu", "2", "takma-ad-bos", "/nickname", {"nick": ""}, [], 3),
     ("01-acilis-menu", "2B", "takma-ad-yazili", "/nickname", {"nick": ""}, [("type", "kubilay", 2)], 3.5),
     # 02 ayarlar ve hesap
     ("02-ayarlar-hesap", "1", "ayarlar", "/settings", {}, [], 3),
     ("02-ayarlar-hesap", "1B", "ayarlar-hesap-bagli", "/settings", {"mock": "linked"}, [], 4),
-    ("02-ayarlar-hesap", "2", "hesap-misafir", "/account", {}, [], 3),
-    ("02-ayarlar-hesap", "2B", "hesap-bagli", "/account", {"mock": "linked"}, [], 4),
-    ("02-ayarlar-hesap", "2C", "hesap-kurtarma-kodu", "/account", {"mock": "acct_recovery"}, [], 4),
-    ("02-ayarlar-hesap", "2D", "hesap-cihaz-kodu", "/account", {"mock": "linked,acct_code"}, [], 4),
-    ("02-ayarlar-hesap", "2E", "hesabim-var-kod", "/account", {}, [("tap", T("acct.have"), 2)], 3.5),
-    ("02-ayarlar-hesap", "2F", "hesabim-var-kurtarma", "/account", {}, [("tap", T("acct.have"), 2), ("tap", T("acct.tab_recovery"), 2.8)], 4),
-    ("02-ayarlar-hesap", "2G", "hesabim-var-hatali-kod", "/account", {"mock": "acct_error"}, [("tap", T("acct.have"), 2)], 4),
-    ("02-ayarlar-hesap", "2H", "hesap-silme-onayi", "/account", {"mock": "linked"}, [("tap", T("acct.delete"), 3.2)], 4.5),
+    ("02-ayarlar-hesap", "2C", "hesap-kurtarma-kodu", "/settings", {"mock": "acct_recovery"}, [], 4),
+    ("02-ayarlar-hesap", "2D", "hesap-cihaz-kodu", "/settings", {"mock": "linked,acct_code"}, [], 4),
+    ("02-ayarlar-hesap", "2E", "hesabim-var-kod", "/settings", {}, [("tap", T("acct.have"), 2)], 3.5),
+    ("02-ayarlar-hesap", "2F", "hesabim-var-kurtarma", "/settings", {}, [("tap", T("acct.have"), 2), ("tap", T("acct.tab_recovery"), 2.8)], 4),
+    ("02-ayarlar-hesap", "2G", "hesabim-var-hatali-kod", "/settings", {"mock": "acct_error"}, [("tap", T("acct.have"), 2)], 4),
+    ("02-ayarlar-hesap", "2H", "hesap-silme-onayi", "/settings", {"mock": "linked"}, [("tap", T("acct.delete"), 3.2)], 4.5),
     # 03 online giriş
     ("03-online", "1", "online-menu", "/online", {}, [], 3.5),
     ("03-online", "1B", "online-menu-lig-donem-sure", "/online", {"scope": "TR1", "era": "6", "round": "30"}, [], 3.5),

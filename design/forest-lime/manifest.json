@@ -1,0 +1,342 @@
+{
+  "name": "forest-lime-mobile-v1",
+  "version": "1.0.0",
+  "date": "2026-10-10",
+  "scope": "technology-independent mobile design handoff; not production app",
+  "approvedReferences": [
+    "references/approved-home.png",
+    "references/approved-weekly.png"
+  ],
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 2776,
+      "sha256": "7d85f810625bb8d9ef82c4bacd9fb28acd361c91cc0d1f7d339e969aaf97e0a1"
+    },
+    {
+      "path": "assets/asset-map.json",
+      "bytes": 875,
+      "sha256": "77b9bdf0a2a8ae32e32af184547b387b879b52baaad7bf663d9bd101df8fce00"
+    },
+    {
+      "path": "assets/brand/kickoff-logo.png",
+      "bytes": 1480,
+      "sha256": "ba7683883cf41d339a5ee921e4dbae3c6891729117f1dbb17644a4fc2275d709"
+    },
+    {
+      "path": "assets/brand/kickoff-logo.svg",
+      "bytes": 7912,
+      "sha256": "f94fb27e6f378d1f1df4657b2462397422bb6320f5f3bcb3c402db3a7cc27040"
+    },
+    {
+      "path": "assets/fonts/BarlowCondensed-Bold.ttf",
+      "bytes": 109912,
+      "sha256": "e476562ec9c1e16cf16475895b511f08c804f438cc9a9f80a44ea50a0eeb5b65"
+    },
+    {
+      "path": "assets/fonts/BarlowCondensed-ExtraBold.ttf",
+      "bytes": 110296,
+      "sha256": "724c9c25952d5f4a2d87185d9767aa006144c5f0d944dc05bf7d5d603551c260"
+    },
+    {
+      "path": "assets/fonts/BarlowCondensed-SemiBold.ttf",
+      "bytes": 109428,
+      "sha256": "7b619d14bc2327509a9ef32b0890f709626f7ecc9ff61191c2a4314c5499d2d9"
+    },
+    {
+      "path": "assets/fonts/Inter-Variable.ttf",
+      "bytes": 876576,
+      "sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031"
+    },
+    {
+      "path": "assets/fonts/barlow-condensed-latin-600-normal.woff2",
+      "bytes": 22308,
+      "sha256": "215a93c696f442034a46fbb382958f753fda60e30490683aeea6b235fcbb2b66"
+    },
+    {
+      "path": "assets/fonts/barlow-condensed-latin-700-normal.woff2",
+      "bytes": 22444,
+      "sha256": "3787a5a419171630e6890cfa47c4da067474d005cd0ff8dc11ec090fdc3ee2b8"
+    },
+    {
+      "path": "assets/fonts/barlow-condensed-latin-800-normal.woff2",
+      "bytes": 22464,
+      "sha256": "2515494e8cc2ca07c86ea78766cfa104b796aa6ed5d66821c01d51dbb0b52bce"
+    },
+    {
+      "path": "assets/fonts/barlow-condensed-latin-ext-600-normal.woff2",
+      "bytes": 14516,
+      "sha256": "aef7edf54f79a5329fbca9c065b56dcec3852c680d58cf89a9ef2db6940ca4b3"
+    },
+    {
+      "path": "assets/fonts/barlow-condensed-latin-ext-700-normal.woff2",
+      "bytes": 14640,
+      "sha256": "9d351bd9222bfab90f943850f8039aa73cdb40e0a6cfe4127308a48bef59d5f5"
+    },
+    {
+      "path": "assets/fonts/barlow-condensed-latin-ext-800-normal.woff2",
+      "bytes": 14548,
+      "sha256": "22539b785b3cbcee08e0722ff37fa16a18e71e4482d9078f7da79da1258e7614"
+    },
+    {
+      "path": "assets/fonts/inter-latin-400-normal.woff2",
+      "bytes": 23664,
+      "sha256": "8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc"
+    },
+    {
+      "path": "assets/fonts/inter-latin-600-normal.woff2",
+      "bytes": 24452,
+      "sha256": "f9a06e79cd3a2a20951c0f0e28f66dd0e6d3fda73911d640a2125c8fcb78f21a"
+    },
+    {
+      "path": "assets/fonts/inter-latin-700-normal.woff2",
+      "bytes": 24356,
+      "sha256": "6f56409fd3d64bb85f7d070bce20749db2d66b6d63cec586cc22d1c761be2491"
+    },
+    {
+      "path": "assets/fonts/inter-latin-ext-400-normal.woff2",
+      "bytes": 35000,
+      "sha256": "6744a7f509ebc6ab220a6cd4ea77e898adf014f03d88dcda5d45d8a9feefb4e9"
+    },
+    {
+      "path": "assets/fonts/inter-latin-ext-600-normal.woff2",
+      "bytes": 36260,
+      "sha256": "e4bdf67b0cd15ca9e184509275be95db942195d3cc2b17f6a0452f2adf75d0bf"
+    },
+    {
+      "path": "assets/fonts/inter-latin-ext-700-normal.woff2",
+      "bytes": 36244,
+      "sha256": "143f9504f1377012aa3e39c90c4354ef429cb0494b9ac0e1437f1a81e5412236"
+    },
+    {
+      "path": "assets/icons/arrow-left.svg",
+      "bytes": 248,
+      "sha256": "3c2001cf957d182fc54927e4b286cc8cf66dd97830f441ca2650d42a63a9006a"
+    },
+    {
+      "path": "assets/icons/arrow-right.svg",
+      "bytes": 245,
+      "sha256": "e45bc4a12592b8723110db42c6deffdf177e4fe7704cf50324963fa0a59b2d74"
+    },
+    {
+      "path": "assets/icons/caret-right.svg",
+      "bytes": 219,
+      "sha256": "e6dec01e074807965b7f3146b976a9b5e82c31d9c2c88aeb52e77cc2ab16c1d7"
+    },
+    {
+      "path": "assets/icons/check-circle.svg",
+      "bytes": 339,
+      "sha256": "e02a080c3d1a758de5c5fd41abd913dec4cffbc70fe1e9637dbf7ce35f377055"
+    },
+    {
+      "path": "assets/icons/check.svg",
+      "bytes": 215,
+      "sha256": "cbb89a8c42f283d4f846eb935e05d88c1be04462f16480e068c0f82b9ce40b12"
+    },
+    {
+      "path": "assets/icons/circle-notch.svg",
+      "bytes": 306,
+      "sha256": "7db6049b3b6f951dba2872d63c52f85c6de9ea95e7bda4d598c84bc443a5f035"
+    },
+    {
+      "path": "assets/icons/clock.svg",
+      "bytes": 287,
+      "sha256": "b8c6c2899d2b9af48a55ba02ba6d7faf89b757915772dd24f5397f7b0d02aa5c"
+    },
+    {
+      "path": "assets/icons/gear.svg",
+      "bytes": 1977,
+      "sha256": "5c0cb3ba307c72babf78d952d9140c682ff30307fedc7fbb87c9a293c1e2fd64"
+    },
+    {
+      "path": "assets/icons/house.svg",
+      "bytes": 356,
+      "sha256": "180e9259e99e23da197b59b19394d006d6a5d33e384cc2b9c8381cb0214a5716"
+    },
+    {
+      "path": "assets/icons/info.svg",
+      "bytes": 348,
+      "sha256": "438a1f319d53d86e840af73fb7b1d224c9224a437b9fa449a4e2cb45a82a3552"
+    },
+    {
+      "path": "assets/icons/magnifying-glass.svg",
+      "bytes": 243,
+      "sha256": "f9fa2561978a9a3291e8ae0ebfcb651104f5069fade8f84871627bca68889cde"
+    },
+    {
+      "path": "assets/icons/soccer-ball.svg",
+      "bytes": 958,
+      "sha256": "32f4b1b42d041b9b7ba35cd16230bcb478955259df609402ffd96ea731d115a3"
+    },
+    {
+      "path": "assets/icons/speaker-high.svg",
+      "bytes": 514,
+      "sha256": "caca5fc1ee8489ac19232301d2c96f6d4048802491d75d761bbb89d5c98e459d"
+    },
+    {
+      "path": "assets/icons/speaker-slash.svg",
+      "bytes": 647,
+      "sha256": "66b75267ea8ba8759a70e4c8312bfe06b834fc8fcf0dd1710d9819877f0c8013"
+    },
+    {
+      "path": "assets/icons/trophy.svg",
+      "bytes": 519,
+      "sha256": "45b065edc939de7246e5b5c114dd26b9bd6fb25f88013d6ab09e6cbbf76da9fa"
+    },
+    {
+      "path": "assets/icons/users.svg",
+      "bytes": 506,
+      "sha256": "b3385e4c6aa03f7e16d1b03887c2cdff9900f5a7edbd5ea5176055938ccfb908"
+    },
+    {
+      "path": "assets/icons/warning-circle.svg",
+      "bytes": 294,
+      "sha256": "e48a90760a68659fd3f06dd9187e471aead4877c72e915339071b2c7f7bd714c"
+    },
+    {
+      "path": "assets/icons/wifi-slash.svg",
+      "bytes": 786,
+      "sha256": "39ed62ae822a3917ac70239bbaa2144152049783451f4687456aae8f044152fc"
+    },
+    {
+      "path": "assets/icons/x.svg",
+      "bytes": 284,
+      "sha256": "7397b15e1fa66eaf6ff9b59fe91d483cb5c3bcf75b2fe052097ab6f0593b513a"
+    },
+    {
+      "path": "assets/illustrations/stadium-city.png",
+      "bytes": 1367059,
+      "sha256": "545d97106136ebb552e18f3a9f91a4d625ff0146b3fec67d96f99456a8dfc020"
+    },
+    {
+      "path": "assets/illustrations/stadium-city.svg",
+      "bytes": 110872,
+      "sha256": "d802102581847bbbbe905965f38496106368f412635e8fda5868831f07bf2530"
+    },
+    {
+      "path": "assets/illustrations/stadium-trabzon.png",
+      "bytes": 1398507,
+      "sha256": "a8edfba0d2abe7f9d5677633e397dd78659652ba7c8a8915cfffa704e65782bb"
+    },
+    {
+      "path": "assets/illustrations/stadium-trabzon.svg",
+      "bytes": 143119,
+      "sha256": "f09c12d443855899b4578082df4895f2d7827c35a48f4a7f379bc7e3eef27d45"
+    },
+    {
+      "path": "assets/source-records.json",
+      "bytes": 737,
+      "sha256": "68926e852acf27ae263fb8bd96ca81902fefdca05d393d6c5edbe9cea5288dbf"
+    },
+    {
+      "path": "catalog/catalog.css",
+      "bytes": 15964,
+      "sha256": "c48627be4e8c1cd15cbe188348d794d2d4c59c029e36d3dd42754c74e85f41ba"
+    },
+    {
+      "path": "catalog/catalog.js",
+      "bytes": 5522,
+      "sha256": "604668dd0683ab9932cb477609d5a2b51a496b41a25196ccbb65a35045df444a"
+    },
+    {
+      "path": "catalog/index.html",
+      "bytes": 17292,
+      "sha256": "5002ae2bcaa123f8bf597de6c8a55e4f24a031ea545c6e6f54630fb2a14af0d3"
+    },
+    {
+      "path": "docs/01-design-system.md",
+      "bytes": 3219,
+      "sha256": "1af5d303978a044e409db368eb24a10c4286c3db5f15d9e25150aa30deb3b44b"
+    },
+    {
+      "path": "docs/02-screen-specs.md",
+      "bytes": 3877,
+      "sha256": "c9b8db16b1f0f99495994fab08415e1b0510e984372a8b02021b86f0f41e3440"
+    },
+    {
+      "path": "docs/03-components.md",
+      "bytes": 4463,
+      "sha256": "68e3ca5a2630d8ae8bada553bbd58b4fe822b9802069dae5b9e9ee289d2978e8"
+    },
+    {
+      "path": "docs/04-interactions.md",
+      "bytes": 2456,
+      "sha256": "6b1e942253d49e481af04e9d22ffd012d8ce41d078c357bc334fdb836e9095af"
+    },
+    {
+      "path": "docs/05-mobile-qa.md",
+      "bytes": 2234,
+      "sha256": "4546fa23708c2fa77af94adee3598d3a34885db2cd24ca99f499661dc59c48d9"
+    },
+    {
+      "path": "docs/06-assets.md",
+      "bytes": 3239,
+      "sha256": "b40f20c98a3ca887ff296dc75dd9be87a9778a34f20deaf01eccd8cbd63f85f6"
+    },
+    {
+      "path": "docs/07-product-review.md",
+      "bytes": 2197,
+      "sha256": "f1250ed0a34ae225d623f840d7ac220cd8a5116917acb599c1da345d3a88998f"
+    },
+    {
+      "path": "licenses/Phosphor-LICENSE.txt",
+      "bytes": 1071,
+      "sha256": "b5b1f1da112d18ea2147decfd48ddc1bf2b5aeb6c265381579340e95b15a2bb2"
+    },
+    {
+      "path": "licenses/README.md",
+      "bytes": 277,
+      "sha256": "6396b826ef2c5544fda55ef8198b8aee4169ac007a5a15e828a623e5541120fd"
+    },
+    {
+      "path": "licenses/barlowcondensed-OFL.txt",
+      "bytes": 4377,
+      "sha256": "186d750eb496a4c17a76385f82be6aea2ac1cf2de074a811d63786cf374ea73f"
+    },
+    {
+      "path": "licenses/inter-OFL.txt",
+      "bytes": 4377,
+      "sha256": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57"
+    },
+    {
+      "path": "previews/team-sheet.png",
+      "bytes": 27690,
+      "sha256": "e64828a8f31bdba1cec5f52feaeb02e5c71bb14a0fdc29fdbe9770a937b8dd46"
+    },
+    {
+      "path": "previews/ui-kit.png",
+      "bytes": 71409,
+      "sha256": "8597a1b80450ca9486377a3e34d59f7da042d2fb58e779645af786dffd170245"
+    },
+    {
+      "path": "qa/svg-inventory.json",
+      "bytes": 2548,
+      "sha256": "147c028aab17207c6134dae96863c411a4525d9ba914611cfb77cdd3f3500754"
+    },
+    {
+      "path": "qa/verification.md",
+      "bytes": 2186,
+      "sha256": "2aa09207a5881ea7d1e3bd3c61b969acc0ccf282f979dbade270f8ff53446d8a"
+    },
+    {
+      "path": "references/approved-home.png",
+      "bytes": 1482219,
+      "sha256": "a2e472efd2db30119b2ae03a1dfda7e9baf168d0a1f356f00a779a8794eba8af"
+    },
+    {
+      "path": "references/approved-weekly.png",
+      "bytes": 1599084,
+      "sha256": "5df2b3de4149f5e586cc5ec5f2ea0c432c76a2525bb923fd792af2df3b94e7d4"
+    },
+    {
+      "path": "tokens/tokens.css",
+      "bytes": 589,
+      "sha256": "700ecc3c6b8526018192123cda86d2ff44b66a0e026ea7cda9c8c63b59d0c6a2"
+    },
+    {
+      "path": "tokens/tokens.json",
+      "bytes": 6462,
+      "sha256": "0c7cfd73353bd78b810b23f8456a7bb3c28400637b435c72488d6f7541ab458e"
+    }
+  ]
+}

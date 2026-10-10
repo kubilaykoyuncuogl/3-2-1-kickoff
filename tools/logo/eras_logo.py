@@ -21,8 +21,8 @@ A = ap.parse_args()
 K = 0.34            # KICKOFF'un punto oranı (3-2-1 = 1)
 DROP = 519          # iki satırın taban çizgileri arası (3-2-1'in 1000 birimlik ölçüsünde)
 GAP = 460           # yatay logoda iki parça arası boşluk
-THEMES = {"acik": ("#1B1A21", "#E9A23B"), "koyu": ("#ECEBF2", "#F0B45A")}      # yazı, tire (palette.ts fg / amber_fill)
-VIOLET, WHITE, AMBER = "#5E4BC9", "#FFFFFF", "#E9A23B"
+THEMES = {"forest": ("#FFFBEA", "#DAEC5A")}      # yazı, tire (Forest Lime: text / primary); tek tema
+CANVAS, CREAM, LIME = "#013026", "#FFFBEA", "#DAEC5A"      # ikon: koyu yeşil zemin, krem yazı, lime tire
 
 class Face:
     def __init__(self, path):
@@ -73,12 +73,14 @@ for name, (fg, dash) in THEMES.items():
     (out / f"kickoff-logo-{name}.svg").write_text(svg(sb, group(stacked, fg, dash)))
     (out / f"kickoff-yatay-{name}.svg").write_text(svg(fb, group(flat, fg, dash)))
 
-# ikon: mor zemin, dikey logo beyaz; kare (mağaza kaynağı, köşeyi mağaza keser) ve yuvarlak köşeli (gösterim)
+# ikon: koyu yeşil zemin, dikey logo krem + lime; kare (mağaza kaynağı, köşeyi mağaza keser) ve yuvarlak köşeli (gösterim)
 S = 1024; w = S * 0.70; k = w / (sb[2] - sb[0]); h = (sb[3] - sb[1]) * k
-place = f'<g transform="translate({(S - w) / 2 - sb[0] * k:.2f} {(S - h) / 2 - sb[1] * k:.2f}) scale({k:.5f})">{group(stacked, WHITE, AMBER)}</g>'
-(out / "kickoff-ikon-kare.svg").write_text(svg((0, 0, S, S), f'<rect width="{S}" height="{S}" fill="{VIOLET}"/>{place}'))
-(out / "kickoff-ikon.svg").write_text(svg((0, 0, S, S), f'<rect width="{S}" height="{S}" rx="{S * 0.225:.0f}" fill="{VIOLET}"/>{place}'))
+place = f'<g transform="translate({(S - w) / 2 - sb[0] * k:.2f} {(S - h) / 2 - sb[1] * k:.2f}) scale({k:.5f})">{group(stacked, CREAM, LIME)}</g>'
+(out / "kickoff-ikon-kare.svg").write_text(svg((0, 0, S, S), f'<rect width="{S}" height="{S}" fill="{CANVAS}"/>{place}'))
+(out / "kickoff-ikon.svg").write_text(svg((0, 0, S, S), f'<rect width="{S}" height="{S}" rx="{S * 0.225:.0f}" fill="{CANVAS}"/>{place}'))
 
+(out / "kickoff-ikon-tek-renk.svg").write_text(svg((0, 0, S, S), f'<g transform="translate({(S - w) / 2 - sb[0] * k:.2f} {(S - h) / 2 - sb[1] * k:.2f}) scale({k:.5f})">{group(stacked, CREAM, CREAM)}</g>'))
+(out / "kickoff-acilis.svg").write_text(svg((0, 0, S, S), place))      # şeffaf zemin; açılış ekranının zemini app.json'da canvas rengi
 vb = lambda b: [round(b[0], 1), round(b[1], 1), round(b[2] - b[0], 1), round(b[3] - b[1], 1)]
 pathlib.Path(A.app).write_text("// Logonun çizgileri: tools/logo/eras_logo.py üretir, elle düzenleme. (3-2-1 ITC Eras Bold, KICKOFF ITC Eras Ultra)\n"
     f"export const LOGO = {json.dumps({'box': vb(sb), **stacked}, indent=2)};\n"

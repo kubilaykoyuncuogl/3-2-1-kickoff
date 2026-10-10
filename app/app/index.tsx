@@ -1,57 +1,65 @@
-// Ana menü: oyun seçenekleri ve etkin haftalık maçlar.
+// Ana sayfa (kit: references/approved-home.png): kimlik başlığı, Online oyna (lime), Tek oyna, Haftanın maçları giriş kartı, alt menü.
+// Giriş kartı yalnızca Maçlar sayfasına yönlendirir; maç adları ve puanlar bu karta geri eklenmez (kit 02-screen-specs).
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { Pressable, View } from "react-native";
-import Svg, { Path } from "react-native-svg";
-import { useProfile, useSettings } from "@/store";
-import { useTheme } from "@/theme";
-import { Chevron, Page, Spacer, Txt, Wordmark, t } from "@/ui";
-import { WeeklyButtons } from "@/ui/weekly";
+import { SvgXml } from "react-native-svg";
+import { useGame, useProfile, useSettings } from "@/store";
+import { RADII, useTheme } from "@/theme";
+import { Icon, IdentityHeader, Page, Txt, t } from "@/ui";
+import { stadiumFor } from "@/ui/stadium";
 
 export default function Menu() {
   const router = useRouter();
   const { c, s } = useTheme();
   const nickname = useSettings((x) => x.nickname);
   const elo = useProfile((p) => p.elo);
+  const weeklies = useGame((g) => g.weeklies);
   useEffect(() => { if (!nickname) router.push("/nickname"); }, [nickname, router]);
   return (
-    <Page scroll>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: s(20) }}>
-        <View style={{ flex: 1 }}><Wordmark /></View>
-        <Pressable accessibilityRole="button" accessibilityLabel={`${t("set.account")}, ${nickname || t("guest")}`} onPress={() => router.push("/account")}
-          style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: s(8), maxWidth: "48%", minHeight: 48, opacity: pressed ? 0.7 : 1 })}>
-          <View style={{ width: s(36), height: s(36), borderRadius: s(18), backgroundColor: c.violet_soft, justifyContent: "center", alignItems: "center" }}>
-            <Txt size={15} w={700} color="violet_ink">{(nickname || t("guest")).slice(0, 1).toLocaleUpperCase("tr")}</Txt>
-          </View>
-          <Txt size={14} w={600} style={{ flexShrink: 1 }}>{nickname || t("guest")}</Txt>
-        </Pressable>
-      </View>
-      <Spacer h={12} flex={false} />
+    <Page scroll nav="home">
+      <IdentityHeader />
+      <View style={{ height: s(8) }} />
       <Pressable accessibilityRole="button" accessibilityLabel={`${t("menu.online")}, ${t("menu.elo", elo)}`} onPress={() => router.push("/online")}
-        style={({ pressed }) => ({ backgroundColor: c.violet_fill, opacity: pressed ? 0.8 : 1, borderRadius: s(16), minHeight: Math.max(56, s(72)), padding: s(18), flexDirection: "row", alignItems: "center", gap: s(14) })}>
-        <Txt size={20} w={700} color="violet_on" style={{ flex: 1 }}>{t("menu.online")}</Txt>
-        <View style={{ borderLeftWidth: 1, borderColor: c.violet_on, paddingLeft: s(14), maxWidth: "40%" }}>
-          <Txt size={13} w={600} color="violet_on" style={{ fontVariant: ["tabular-nums"] }}>{t("menu.elo", elo)}</Txt>
+        style={({ pressed }) => ({ backgroundColor: pressed ? c.primary_pressed : c.primary, borderRadius: s(RADII.action), minHeight: s(84), paddingHorizontal: s(20), paddingVertical: s(14), flexDirection: "row", alignItems: "center", gap: s(14) })}>
+        <View style={{ flex: 1, gap: s(2) }}>
+          <Txt role="action" color="on_primary" lines={1}>{t("menu.online")}</Txt>
+          <Txt role="label" color="on_primary" style={{ fontVariant: ["tabular-nums"] }}>{t("menu.elo", elo)}</Txt>
         </View>
-        <Chevron color="violet_on" />
+        <Icon name="caret_right" color="on_primary" size={28} />
       </Pressable>
       <Pressable accessibilityRole="button" onPress={() => router.push("/single")}
-        style={({ pressed }) => ({ backgroundColor: c.violet_soft, opacity: pressed ? 0.75 : 1, borderRadius: s(16), minHeight: Math.max(56, s(64)), padding: s(18), flexDirection: "row", alignItems: "center", gap: s(14) })}>
-        <Txt size={20} w={700} color="violet_ink" style={{ flex: 1 }}>{t("menu.single")}</Txt>
-        <Chevron color="violet_ink" />
+        style={({ pressed }) => ({ backgroundColor: pressed ? c.raised : c.surface, borderRadius: s(RADII.action), borderWidth: 1, borderColor: c.border_quiet, minHeight: s(60), paddingHorizontal: s(20), paddingVertical: s(10), flexDirection: "row", alignItems: "center", gap: s(14) })}>
+        <Txt role="action" lines={1} style={{ flex: 1 }}>{t("menu.single")}</Txt>
+        <Icon name="caret_right" color="text" size={28} />
       </Pressable>
-      <WeeklyButtons />
-      <Pressable accessibilityRole="button" onPress={() => router.push("/settings")}
-        style={({ pressed }) => ({ backgroundColor: c.surface, borderColor: pressed ? c.violet_fill : c.line, borderWidth: 1, borderRadius: s(14), minHeight: Math.max(48, s(56)), padding: s(16), flexDirection: "row", alignItems: "center", gap: s(12) })}>
-        <Svg width={s(22)} height={s(22)} viewBox="0 0 24 24">
-          <Path d="M9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1 1-3ZM15.5 12a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" stroke={c.fg} strokeWidth={1.7} fill="none" strokeLinejoin="round" />
-        </Svg>
-        <Txt size={16} w={600} style={{ flex: 1 }}>{t("menu.settings")}</Txt>
-        <Chevron />
-      </Pressable>
-      <Spacer />
-      <Txt size={11} w={600} color="muted" center>{t("menu.footer")}</Txt>
+      <View style={{ height: s(8) }} />
+      <WeeklyEntry count={weeklies.length} slug={weeklies[0]?.slug} onPress={() => router.push("/weekly")} />
     </Page>
   );
 }
 
+// Haftanın maçları giriş kartı (kit C03 WeeklyEntry): üstte stadyum, altta opak okuma bölgesi; kartın tamamı tek yönlendirme eylemi
+function WeeklyEntry({ count, slug, onPress }: { count: number; slug?: string; onPress: () => void }) {
+  const { c, s, col } = useTheme();
+  const countText = count === 1 ? t("weekly.count_one") : t("weekly.count", count);
+  const art = Math.round(col * 0.31);
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={`${t("weekly.matches")}, ${count ? countText : t("weekly.entry_none")}. ${t("weekly.helper")}`} onPress={onPress} disabled={!count}
+      style={({ pressed }) => ({ borderRadius: s(RADII.card), borderWidth: 1, borderColor: pressed ? c.border_control : c.border_quiet, backgroundColor: c.surface, overflow: "hidden" })}>
+      {count ? <View style={{ height: art, backgroundColor: c.canvas }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <SvgXml xml={stadiumFor(slug ?? "")} width="100%" height="100%" preserveAspectRatio="xMidYMax slice" />
+      </View> : null}
+      <View style={{ padding: s(16), paddingTop: s(12), gap: s(4) }}>
+        <View style={{ flexDirection: "row", alignItems: "flex-end", gap: s(12), flexWrap: "wrap" }}>
+          <Txt role="cardTitle" style={{ flexShrink: 1 }}>{t("weekly.matches")}</Txt>
+          <Txt role="label" color="muted" style={{ marginLeft: "auto", paddingBottom: s(4) }}>{count ? countText : t("weekly.entry_none")}</Txt>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: s(12) }}>
+          <Txt role="body" color="muted" style={{ flex: 1 }}>{t("weekly.helper")}</Txt>
+          <Icon name="caret_right" color="text" size={24} />
+        </View>
+      </View>
+    </Pressable>
+  );
+}

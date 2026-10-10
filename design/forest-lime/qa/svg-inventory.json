@@ -1,0 +1,134 @@
+[
+  {
+    "path": "assets/brand/kickoff-logo.svg",
+    "bytes": 7912,
+    "paths": 12,
+    "viewBox": "0 0 237 131"
+  },
+  {
+    "path": "assets/icons/arrow-left.svg",
+    "bytes": 248,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/arrow-right.svg",
+    "bytes": 245,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/caret-right.svg",
+    "bytes": 219,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/check-circle.svg",
+    "bytes": 339,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/check.svg",
+    "bytes": 215,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/circle-notch.svg",
+    "bytes": 306,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/clock.svg",
+    "bytes": 287,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/gear.svg",
+    "bytes": 1977,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/house.svg",
+    "bytes": 356,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/info.svg",
+    "bytes": 348,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/magnifying-glass.svg",
+    "bytes": 243,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/soccer-ball.svg",
+    "bytes": 958,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/speaker-high.svg",
+    "bytes": 514,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/speaker-slash.svg",
+    "bytes": 647,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/trophy.svg",
+    "bytes": 519,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/users.svg",
+    "bytes": 506,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/warning-circle.svg",
+    "bytes": 294,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/wifi-slash.svg",
+    "bytes": 786,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/icons/x.svg",
+    "bytes": 284,
+    "paths": 1,
+    "viewBox": "0 0 256 256"
+  },
+  {
+    "path": "assets/illustrations/stadium-city.svg",
+    "bytes": 110872,
+    "paths": 61,
+    "viewBox": "0 0 2172 724"
+  },
+  {
+    "path": "assets/illustrations/stadium-trabzon.svg",
+    "bytes": 143119,
+    "paths": 62,
+    "viewBox": "0 0 2172 724"
+  }
+]
