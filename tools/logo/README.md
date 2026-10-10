@@ -1,3 +1,10 @@
+# 3-2-1 Kickoff logosu (geçerli, 2026-10-10)
+
+`design/logo/`: `kickoff-logo-{acik,koyu}.svg` (dikey), `kickoff-yatay-{acik,koyu}.svg` (tek satır), `kickoff-ikon.svg` (yuvarlak köşe, gösterim) ve `kickoff-ikon-kare.svg` (mağaza kaynağı). "3-2-1" ITC Eras Bold, "KICKOFF" ITC Eras Ultra, tireler amber; harfler çizgiye çevrili, yazı gömülü değil.
+Üretim: `python3 tools/logo/eras_logo.py --fonts <Eras .otf klasörü>` (SVG'ler + uygulamadaki `app/src/ui/logo.ts`). Yazı dosyaları repoda yok; ITC Eras lisanslı bir yazıdır, yayından önce lisansı alınmalı.
+
+Aşağısı eski ad ve eski denemeler.
+
 # MR GUESS logosu
 
 `game/assets/logo/mrguess-{figur,kompakt,blok}.svg`: tek renk, şeffaf zemin, harfler kontura çevrili (font gerekmez).

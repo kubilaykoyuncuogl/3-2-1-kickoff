@@ -3,6 +3,7 @@ import React, { PropsWithChildren, ReactNode } from "react";
 import { Pressable, ScrollView, StyleProp, Text, TextInput, TextInputProps, TextStyle, View, ViewStyle, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
+import { LOGO } from "./logo";
 import { useRouter } from "expo-router";
 import { FONT, SIZE, TYPE, Token, TypeRole, Weight, useTheme } from "../theme";
 import { t } from "../i18n";
@@ -28,13 +29,16 @@ export function Txt({ children, role, size = 17, w = 500, color = "fg", center, 
 export function Eyebrow({ children, color = "muted", center, style }: TxtProps) {
   return <Txt size={12} w={700} color={color} center={center} style={[{ letterSpacing: 0.6 }, style]} upper>{children}</Txt>;
 }
-export function Wordmark() {
-  const { s } = useTheme();
+// Logo: çizgiler tools/logo/eras_logo.py'den (design/logo/ altındaki SVG'lerle aynı); tireler amber, yazı tema rengi
+export function Wordmark({ width = 132 }: { width?: number }) {
+  const { c, s } = useTheme();
+  const [x, y, w, h] = LOGO.box;
   return (
-    <View>
-      <Txt size={44} w={800} style={{ fontStyle: "italic", lineHeight: s(48) }}>3·2·1</Txt>
-      <Eyebrow>KICKOFF</Eyebrow>
-    </View>
+    <Svg width={s(width)} height={s(width) * h / w} viewBox={`${x} ${y} ${w} ${h}`} accessibilityRole="image" accessibilityLabel="3-2-1 Kickoff">
+      <Path d={LOGO.digits} fill={c.fg} />
+      <Path d={LOGO.dashes} fill={c.amber_fill} />
+      <Path d={LOGO.word} fill={c.fg} />
+    </Svg>
   );
 }
 
